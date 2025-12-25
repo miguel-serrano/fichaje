@@ -5,6 +5,7 @@ use App\DDD\User\Domain\User;
 use App\DDD\User\Domain\UserId;
 use App\DDD\User\Domain\UserRepositoryInterface;
 use App\Models\User as EloquentUser;
+use Illuminate\Support\Facades\DB;
 class EloquentUserRepository implements UserRepositoryInterface {
     public function save(User $user): User {
         $id = $user->id()->getValue();
@@ -24,6 +25,8 @@ class EloquentUserRepository implements UserRepositoryInterface {
             $eloquentUser->is_active ?? true
         );
     }
+
+
     public function findById(UserId $id): ?User {
         $eloquentUser = EloquentUser::find($id->getValue());
         if (!$eloquentUser) return null;
@@ -34,19 +37,22 @@ class EloquentUserRepository implements UserRepositoryInterface {
             $eloquentUser->is_active ?? true
         );
     }
+
     public function existsByEmail(Email $email): bool {
         return EloquentUser::where('email', $email->getValue())->exists();
     }
+
     /** @return User[] */
     public function findAll(): array {
-        $eloquentUsers = EloquentUser::all();
-        return $eloquentUsers->map(function ($eloquentUser) {
+        $users = DB::select('SELECT id, email, name, is_active FROM users');
+        dd($users);
+        return array_map(function ($user) {
             return User::fromPrimitives(
-                $eloquentUser->id,
-                $eloquentUser->email,
-                $eloquentUser->name,
-                $eloquentUser->is_active ?? true
+                $user->id,
+                $user->email,
+                $user->name,
+                $user->is_active ?? true
             );
-        })->toArray();
+        }, $users);
     }
 }

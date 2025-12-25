@@ -11,6 +11,7 @@ class GetAllUsersUseCase
     public function execute(): array
     {
         $users = $this->userRepository->findAll();
+    
         return array_map(fn($user) => $user->toArray(), $users);
     }
 }
