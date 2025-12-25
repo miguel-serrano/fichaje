@@ -7,7 +7,9 @@ use App\DDD\User\Application\GetAllUsersUseCase;
 use App\DDD\User\Application\GetUserByIdUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class UserController extends Controller
 {
@@ -17,33 +19,66 @@ class UserController extends Controller
         private GetAllUsersUseCase $getAllUsersUseCase
     ) {}
 
-    public function store(Request $request): JsonResponse
+    public function index(Request $request): View|JsonResponse
+    {
+        $users = $this->getAllUsersUseCase->execute();
+        
+        if ($request->wantsJson() || $request->expectsJson()) {
+            return response()->json($users);
+        }
+        
+        return view('users.index', ['users' => $users]);
+    }
+
+    public function create(): View
+    {
+        return view('users.create');
+    }
+
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'email' => 'required|email',
             'name' => 'required|string|max:255'
         ]);
+        
         try {
             $user = $this->createUserUseCase->execute($validated['email'], $validated['name']);
-            return response()->json($user->toArray(), 201);
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json($user->toArray(), 201);
+            }
+            
+            return redirect()->route('users.index')
+                ->with('success', 'User created successfully!');
         } catch (\InvalidArgumentException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+            
+            return back()
+                ->withInput()
+                ->withErrors(['email' => $e->getMessage()]);
         }
     }
 
-    public function index(): JsonResponse
-    {
-        $users = $this->getAllUsersUseCase->execute();
-        return response()->json($users);
-    }
-
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): View|JsonResponse
     {
         try {
             $user = $this->getUserUseCase->execute($id);
-            return response()->json($user);
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json($user);
+            }
+            
+            return view('users.show', ['user' => $user]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => $e->getMessage()], 404);
+            }
+            
+            return redirect()->route('users.index')
+                ->with('error', $e->getMessage());
         }
     }
 }

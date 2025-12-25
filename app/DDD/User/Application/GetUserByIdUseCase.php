@@ -7,7 +7,9 @@ class GetUserByIdUseCase {
     public function __construct(private UserRepositoryInterface $userRepository) {}
     public function execute(string $id): array {
         $userId = new UserId($id);
+
         $user = $this->userRepository->findById($userId);
+        
         if (!$user) {
             throw new UserNotFoundException("User {$id} not found");
         }
