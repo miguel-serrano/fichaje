@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\DDD\User\Application\CreateUserUseCase;
+use App\DDD\User\Application\DeleteUserUseCase;
 use App\DDD\User\Application\GetAllUsersUseCase;
 use App\DDD\User\Application\GetUserByIdUseCase;
 use App\Http\Controllers\Controller;
@@ -16,7 +17,8 @@ class UserController extends Controller
     public function __construct(
         private CreateUserUseCase $createUserUseCase,
         private GetUserByIdUseCase $getUserUseCase,
-        private GetAllUsersUseCase $getAllUsersUseCase
+        private GetAllUsersUseCase $getAllUsersUseCase,
+        private DeleteUserUseCase $deleteUserUseCase
     ) {}
 
     public function index(Request $request): View|JsonResponse
@@ -75,6 +77,28 @@ class UserController extends Controller
         } catch (\Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json(['error' => $e->getMessage()], 404);
+            }
+            
+            return redirect()->route('users.index')
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    public function destroy(Request $request, string $id): RedirectResponse|JsonResponse
+    {
+        try {
+            $this->deleteUserUseCase->execute($id);
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['message' => 'User deleted successfully'], 200);
+            }
+            
+            return redirect()->route('users.index')
+                ->with('success', 'User deleted successfully!');
+        } catch (\Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                $statusCode = $e instanceof \App\DDD\User\Domain\exceptions\UserNotFoundException ? 404 : 500;
+                return response()->json(['error' => $e->getMessage()], $statusCode);
             }
             
             return redirect()->route('users.index')

@@ -9,10 +9,17 @@
             <h1 class="text-3xl font-semibold text-gray-900">User Details</h1>
             <p class="mt-2 text-sm text-gray-700">View user information.</p>
         </div>
-        <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex gap-3">
             <a href="{{ route('users.index') }}" class="block rounded-md bg-gray-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-500">
                 Back to Users
             </a>
+            <form action="{{ route('users.destroy', $user['id']) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="block rounded-md bg-red-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-red-500">
+                    Delete User
+                </button>
+            </form>
         </div>
     </div>
 

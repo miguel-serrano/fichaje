@@ -3,10 +3,26 @@
 namespace Tests\Feature\User;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class UserTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Create users_tests table if it doesn't exist (only in testing)
+        if (!Schema::hasTable('users_tests')) {
+            Schema::create('users_tests', function ($table) {
+                $table->uuid('id')->primary();
+                $table->string('email')->unique();
+                $table->string('name');
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        }
+    }
 
     public function test_can_create_user_via_web()
     {
@@ -40,6 +56,81 @@ class UserTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('users.index');
+    }
+
+    public function test_can_delete_user_via_web()
+    {
+        // First create a user
+        $email = 'delete_test_' . time() . '@example.com';
+        $createResponse = $this->post('/users', [
+            'name' => 'User To Delete',
+            'email' => $email
+        ]);
+
+        $createResponse->assertRedirect();
+        
+        // Get the created user ID
+        $user = DB::table('users_tests')->where('email', $email)->first();
+        $this->assertNotNull($user, 'User should exist before deletion');
+
+        // Delete the user
+        $deleteResponse = $this->delete(route('users.destroy', $user->id));
+
+        $deleteResponse->assertRedirect(route('users.index'));
+        $deleteResponse->assertSessionHas('success');
+
+        // Verify user was deleted from users_tests table
+        $this->assertDatabaseMissing('users_tests', [
+            'id' => $user->id
+        ]);
+    }
+
+    public function test_can_delete_user_via_api()
+    {
+        // First create a user
+        $email = 'delete_api_' . time() . '@example.com';
+        $createResponse = $this->postJson('/api/users', [
+            'name' => 'User To Delete',
+            'email' => $email
+        ]);
+
+        $createResponse->assertStatus(201);
+        $userId = $createResponse->json('id');
+
+        // Delete the user via API
+        $deleteResponse = $this->deleteJson("/api/users/{$userId}");
+
+        $deleteResponse->assertStatus(200);
+        $deleteResponse->assertJson([
+            'message' => 'User deleted successfully'
+        ]);
+
+        // Verify user was deleted
+        $this->assertDatabaseMissing('users_tests', [
+            'id' => $userId
+        ]);
+    }
+
+    public function test_delete_returns_404_when_user_not_found_via_api()
+    {
+        $nonExistentId = '123e4567-e89b-12d3-a456-426614174999';
+        
+        $response = $this->deleteJson("/api/users/{$nonExistentId}");
+
+        $response->assertStatus(404);
+        $response->assertJson([
+            'error' => "User {$nonExistentId} not found"
+        ]);
+    }
+
+    public function test_delete_returns_error_when_user_not_found_via_web()
+    {
+        $nonExistentId = '123e4567-e89b-12d3-a456-426614174999';
+        
+        $response = $this->delete(route('users.destroy', $nonExistentId));
+
+        $response->assertRedirect(route('users.index'));
+        $response->assertSessionHas('error');
     }
 
     public function test_debug_table_usage()

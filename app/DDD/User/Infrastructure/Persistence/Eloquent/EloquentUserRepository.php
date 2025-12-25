@@ -82,4 +82,9 @@ class EloquentUserRepository implements UserRepositoryInterface {
             );
         })->toArray();
     }
+
+    public function delete(UserId $id): bool {
+        $tableName = $this->getTableName();
+        return DB::table($tableName)->where('id', $id->getValue())->delete() > 0;
+    }
 }

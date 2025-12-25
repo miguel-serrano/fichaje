@@ -6,4 +6,5 @@ interface UserRepositoryInterface {
     public function existsByEmail(Email $email): bool;
     /** @return User[] */
     public function findAll(): array;
+    public function delete(UserId $id): bool;
 }
