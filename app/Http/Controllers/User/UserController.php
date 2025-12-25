@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\DDD\User\Application\CreateUserUseCase;
+use App\DDD\User\Application\GetAllUsersUseCase;
 use App\DDD\User\Application\GetUserByIdUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -12,7 +13,8 @@ class UserController extends Controller
 {
     public function __construct(
         private CreateUserUseCase $createUserUseCase,
-        private GetUserByIdUseCase $getUserUseCase
+        private GetUserByIdUseCase $getUserUseCase,
+        private GetAllUsersUseCase $getAllUsersUseCase
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -27,6 +29,12 @@ class UserController extends Controller
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    public function index(): JsonResponse
+    {
+        $users = $this->getAllUsersUseCase->execute();
+        return response()->json($users);
     }
 
     public function show(string $id): JsonResponse
