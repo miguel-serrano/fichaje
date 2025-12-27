@@ -13,9 +13,14 @@
 
     <div class="mt-8">
         <div class="bg-white shadow sm:rounded-lg">
-            <form action="{{ route('registro_horario.index') }}" method="GET" class="p-6 border-b border-gray-200">
+            <form id="tokenUserForm" action="{{ route('registro_horario.index') }}" method="GET" class="p-6 border-b border-gray-200">
                 <div class="space-y-6">
                     <div>
+                        <label for="remember_token_code" class="block text-sm font-medium leading-6 text-gray-900">Código personal</label>
+                        <div class="mt-2">
+                            <input type="text" id="remember_token_code" name="remember_token_code" minlength="8" maxlength="255" autocomplete="off" placeholder="Introduce tu código" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                        </div>
+                    </div>
                         <label for="userUuid" class="block text-sm font-medium leading-6 text-gray-900">Usuario</label>
                         <div class="mt-2">
                             <select 
@@ -25,16 +30,12 @@
                                 class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             >
                                 <option value="">Selecciona un usuario</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user['uuid'] }}" {{ $selectedUserUuid == $user['uuid'] ? 'selected' : '' }}>
-                                        {{ $user['name'] }} ({{ $user['email'] }})
-                                    </option>
-                                @endforeach
                             </select>
                         </div>
                     </div>
                 </div>
             </form>
+            <script src="/js/registro_horario_token.js"></script>
 
             @if($selectedUserUuid)
             <div class="px-4 py-5 sm:p-6">

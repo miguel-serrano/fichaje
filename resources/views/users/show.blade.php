@@ -13,13 +13,6 @@
             <a href="{{ route('users.index') }}" class="block rounded-md bg-gray-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-500">
                 Back to Users
             </a>
-            <form action="{{ route('users.destroy', $user['id']) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="block rounded-md bg-red-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-red-500">
-                    Delete User
-                </button>
-            </form>
         </div>
     </div>
 
@@ -65,7 +58,7 @@
             <div class="px-4 py-5 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-3 sm:space-y-0">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900">Fichajes por Día</h3>
+                        <h3 class="text-lg font-medium leading-6 text-gray-900"></h3>
                         @if(isset($totalMes) && $totalMes['segundos'] > 0)
                         <div class="flex items-center space-x-2">
                             <span class="text-sm text-gray-500">Total {{ $totalMes['mes'] }}:</span>

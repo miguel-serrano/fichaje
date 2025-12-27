@@ -52,6 +52,17 @@ class UserController extends Controller
         ]);
         
         try {
+            // Limitar máximo 10 usuarios
+            $userCount = app(\App\Models\User::class)->count();
+            if ($userCount >= 10) {
+                $errorMsg = 'No es posible crear más de 10 usuarios.';
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json(['error' => $errorMsg], 422);
+                }
+                return back()
+                    ->withInput()
+                    ->withErrors(['name' => $errorMsg]);
+            }
             $command = new CreateUserCommand($validated['email'], $validated['name']);
             $user = $this->createUserHandler->handle($command);
             

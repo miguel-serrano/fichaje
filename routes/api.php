@@ -3,25 +3,28 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\UserController;
+use App\Models\User;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
+// ...
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware('api')->group(function () {
+    Route::get('/users/by-remember-token', function(Request $request) {
+        $code = $request->get('code');
+        if (!$code || strlen($code) < 8) {
+            return response()->json([]);
+        }
+        $users = User::query()
+            ->where('remember_token', $code)
+            ->select(['uuid', 'name', 'email'])
+            ->get();
+        return response()->json($users);
+    });
 
-Route::prefix('users')->group(function () {
-    Route::get('/', [UserController::class, 'index']);
-    Route::post('/', [UserController::class, 'store']);
-    Route::get('{id}', [UserController::class, 'show']);
-    Route::delete('{id}', [UserController::class, 'destroy']);
+    // Resto de las rutas API
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::get('{id}', [UserController::class, 'show']);
+        Route::delete('{id}', [UserController::class, 'destroy']);
+    });
 });
