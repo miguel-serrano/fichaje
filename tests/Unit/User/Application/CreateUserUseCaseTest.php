@@ -35,6 +35,7 @@ class CreateUserUseCaseTest extends TestCase
         $emailVO = new Email($email);
         
         $savedUser = User::fromPrimitives(
+            1,
             '123e4567-e89b-12d3-a456-426614174000',
             $email,
             $name,
@@ -63,6 +64,7 @@ class CreateUserUseCaseTest extends TestCase
         $this->assertInstanceOf(User::class, $result);
         $this->assertEquals($email, $result->email()->getValue());
         $this->assertEquals($name, $result->name());
+        $this->assertTrue($result->isActive());
     }
 
     public function test_it_throws_exception_when_email_already_exists(): void

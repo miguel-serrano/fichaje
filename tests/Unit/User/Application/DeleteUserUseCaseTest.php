@@ -6,8 +6,8 @@ use App\DDD\User\Application\DeleteUserUseCase;
 use App\DDD\User\Domain\Email;
 use App\DDD\User\Domain\User;
 use App\DDD\User\Domain\UserId;
-use App\DDD\User\Domain\exceptions\UserNotFoundException;
 use App\DDD\User\Domain\UserRepositoryInterface;
+use App\DDD\User\Domain\exceptions\UserNotFoundException;
 use PHPUnit\Framework\TestCase;
 use Mockery;
 
@@ -29,11 +29,13 @@ class DeleteUserUseCaseTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_it_deletes_user_successfully(): void
+    public function test_it_deletes_a_user_successfully(): void
     {
-        $userId = '123e4567-e89b-12d3-a456-426614174000';
+        $userId = '123';
+        $userIdVO = new UserId($userId);
         $user = User::fromPrimitives(
-            $userId,
+            123,
+            '123e4567-e89b-12d3-a456-426614174000',
             'test@example.com',
             'Test User',
             true
@@ -42,34 +44,32 @@ class DeleteUserUseCaseTest extends TestCase
         $this->userRepository
             ->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(function ($arg) use ($userId) {
-                return $arg instanceof UserId && $arg->getValue() === $userId;
+            ->with(Mockery::on(function ($arg) use ($userIdVO) {
+                return $arg->getValue() === $userIdVO->getValue();
             }))
             ->andReturn($user);
 
         $this->userRepository
             ->shouldReceive('delete')
             ->once()
-            ->with(Mockery::on(function ($arg) use ($userId) {
-                return $arg instanceof UserId && $arg->getValue() === $userId;
+            ->with(Mockery::on(function ($arg) use ($userIdVO) {
+                return $arg->getValue() === $userIdVO->getValue();
             }))
             ->andReturn(true);
 
         $this->useCase->execute($userId);
-        
-        // If we get here without exception, the test passes
-        $this->assertTrue(true);
     }
 
     public function test_it_throws_exception_when_user_not_found(): void
     {
-        $userId = '123e4567-e89b-12d3-a456-426614174000';
+        $userId = '999';
+        $userIdVO = new UserId($userId);
 
         $this->userRepository
             ->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(function ($arg) use ($userId) {
-                return $arg instanceof UserId && $arg->getValue() === $userId;
+            ->with(Mockery::on(function ($arg) use ($userIdVO) {
+                return $arg->getValue() === $userIdVO->getValue();
             }))
             ->andReturn(null);
 
@@ -84,9 +84,11 @@ class DeleteUserUseCaseTest extends TestCase
 
     public function test_it_throws_exception_when_delete_fails(): void
     {
-        $userId = '123e4567-e89b-12d3-a456-426614174000';
+        $userId = '123';
+        $userIdVO = new UserId($userId);
         $user = User::fromPrimitives(
-            $userId,
+            123,
+            '123e4567-e89b-12d3-a456-426614174000',
             'test@example.com',
             'Test User',
             true
@@ -95,16 +97,16 @@ class DeleteUserUseCaseTest extends TestCase
         $this->userRepository
             ->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(function ($arg) use ($userId) {
-                return $arg instanceof UserId && $arg->getValue() === $userId;
+            ->with(Mockery::on(function ($arg) use ($userIdVO) {
+                return $arg->getValue() === $userIdVO->getValue();
             }))
             ->andReturn($user);
 
         $this->userRepository
             ->shouldReceive('delete')
             ->once()
-            ->with(Mockery::on(function ($arg) use ($userId) {
-                return $arg instanceof UserId && $arg->getValue() === $userId;
+            ->with(Mockery::on(function ($arg) use ($userIdVO) {
+                return $arg->getValue() === $userIdVO->getValue();
             }))
             ->andReturn(false);
 
