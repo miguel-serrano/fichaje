@@ -47,7 +47,12 @@
                         <dt class="text-sm font-medium text-gray-500">Tiempo acumulado hoy</dt>
                         <dd class="mt-1 text-sm text-gray-900 font-semibold">
                             <span class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
-                                {{ number_format($segundos, 0) }} segundos
+                                @php
+                                    $horas = floor($segundos / 3600);
+                                    $minutos = floor(($segundos % 3600) / 60);
+                                    $segundosRestantes = $segundos % 60;
+                                @endphp
+                                {{ str_pad($horas, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($minutos, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($segundosRestantes, 2, '0', STR_PAD_LEFT) }}
                             </span>
                         </dd>
                     </div>
