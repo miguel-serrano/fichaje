@@ -2,7 +2,7 @@
 
 namespace App\DDD\RegistroHorario\Services;
 
-use App\DDD\RegistroHorario\Repositories\RegistroHorarioRepositoryInterface;
+use App\DDD\RegistroHorario\Domain\RegistroHorarioRepositoryInterface;
 
 class RegistroHorarioService
 {

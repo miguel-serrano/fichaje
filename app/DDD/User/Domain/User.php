@@ -1,5 +1,10 @@
 <?php
 namespace App\DDD\User\Domain;
+
+use App\DDD\User\Domain\ValueObjects\Email;
+use App\DDD\User\Domain\ValueObjects\UserId;
+use App\DDD\User\Domain\ValueObjects\Uuid;
+
 final class User {
     private ?UserId $id;
     private Uuid $uuid;

@@ -2,7 +2,7 @@
 
 namespace App\DDD\User\Application;
 
-use App\DDD\User\Domain\UserId;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\UserRepositoryInterface;
 use App\DDD\User\Domain\exceptions\UserNotFoundException;
 

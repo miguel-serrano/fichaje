@@ -3,9 +3,9 @@
 namespace Tests\Unit\User\Application;
 
 use App\DDD\User\Application\CreateUserUseCase;
-use App\DDD\User\Domain\Email;
+use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\User;
-use App\DDD\User\Domain\UserId;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\UserRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 use Mockery;

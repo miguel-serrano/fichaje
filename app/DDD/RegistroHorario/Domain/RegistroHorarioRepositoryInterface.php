@@ -1,8 +1,8 @@
 <?php
 
-namespace App\DDD\RegistroHorario\Repositories;
+namespace App\DDD\RegistroHorario\Domain;
 
-use App\DDD\RegistroHorario\Entities\RegistroHorario;
+use App\DDD\RegistroHorario\Domain\RegistroHorario;
 
 interface RegistroHorarioRepositoryInterface
 {

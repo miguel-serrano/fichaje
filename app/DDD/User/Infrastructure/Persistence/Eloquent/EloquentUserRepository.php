@@ -1,8 +1,8 @@
 <?php
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
-use App\DDD\User\Domain\Email;
+use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\User;
-use App\DDD\User\Domain\UserId;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\UserRepositoryInterface;
 use App\Models\User as EloquentUser;
 use Illuminate\Support\Facades\DB;

@@ -2,8 +2,10 @@
 
 namespace App\DDD\RegistroHorario\Repositories;
 
-use App\DDD\RegistroHorario\Entities\RegistroHorario as RegistroHorarioEntity;
+use App\DDD\RegistroHorario\Domain\RegistroHorario as RegistroHorarioEntity;
 use App\Models\RegistroHorario;
+
+use App\DDD\RegistroHorario\Domain\RegistroHorarioRepositoryInterface;
 
 class RegistroHorarioRepositoryEloquent implements RegistroHorarioRepositoryInterface
 {

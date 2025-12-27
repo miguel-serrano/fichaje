@@ -1,6 +1,6 @@
 <?php
 namespace App\DDD\User\Application;
-use App\DDD\User\Domain\Email;
+use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\User;
 use App\DDD\User\Domain\UserRepositoryInterface;
 class CreateUserUseCase {

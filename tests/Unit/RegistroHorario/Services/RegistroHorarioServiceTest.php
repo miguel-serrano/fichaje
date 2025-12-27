@@ -3,8 +3,8 @@
 namespace Tests\Unit\RegistroHorario\Services;
 
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
-use App\DDD\RegistroHorario\Repositories\RegistroHorarioRepositoryInterface;
-use App\DDD\RegistroHorario\Entities\RegistroHorario;
+use App\DDD\RegistroHorario\Domain\RegistroHorarioRepositoryInterface;
+use App\DDD\RegistroHorario\Domain\RegistroHorario;
 use PHPUnit\Framework\TestCase;
 use Mockery;
 

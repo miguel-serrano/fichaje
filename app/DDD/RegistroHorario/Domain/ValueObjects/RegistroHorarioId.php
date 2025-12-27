@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\RegistroHorario\ValueObjects;
+namespace App\DDD\RegistroHorario\Domain\ValueObjects;
 
 class RegistroHorarioId
 {

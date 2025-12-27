@@ -1,5 +1,8 @@
 <?php
 namespace App\DDD\User\Domain;
+
+use App\DDD\User\Domain\ValueObjects\Email;
+use App\DDD\User\Domain\ValueObjects\UserId;
 interface UserRepositoryInterface {
     public function save(User $user): User;
     public function findById(UserId $id): ?User;

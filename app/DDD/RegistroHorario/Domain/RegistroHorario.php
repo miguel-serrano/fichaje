@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\RegistroHorario\Entities;
+namespace App\DDD\RegistroHorario\Domain;
 
 class RegistroHorario
 {
