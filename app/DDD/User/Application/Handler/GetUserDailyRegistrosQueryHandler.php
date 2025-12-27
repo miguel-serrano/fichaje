@@ -61,7 +61,24 @@ class GetUserDailyRegistrosQueryHandler
             $registrosPorDia[$fecha]['total_formateado'] = $this->formatearTiempo($registrosPorDia[$fecha]['total_segundos']);
         }
 
-        return array_values($registrosPorDia);
+        // Calcular total del mes actual
+        $totalSegundosMes = 0;
+        $mesActual = date('Y-m');
+        
+        foreach ($registrosPorDia as $dia) {
+            if (strpos($dia['fecha'], $mesActual) === 0) {
+                $totalSegundosMes += $dia['total_segundos'];
+            }
+        }
+        
+        return [
+            'registros' => array_values($registrosPorDia),
+            'total_mes_actual' => [
+                'segundos' => $totalSegundosMes,
+                'formateado' => $this->formatearTiempo($totalSegundosMes),
+                'mes' => $this->formatearMes(date('Y-m'))
+            ]
+        ];
     }
 
     private function formatearTiempo(int $segundos): string
@@ -73,5 +90,17 @@ class GetUserDailyRegistrosQueryHandler
         return str_pad($horas, 2, '0', STR_PAD_LEFT) . ':' . 
                str_pad($minutos, 2, '0', STR_PAD_LEFT) . ':' . 
                str_pad($segundosRestantes, 2, '0', STR_PAD_LEFT);
+    }
+
+    private function formatearMes(string $yearMonth): string
+    {
+        $meses = [
+            '01' => 'Enero', '02' => 'Febrero', '03' => 'Marzo', '04' => 'Abril',
+            '05' => 'Mayo', '06' => 'Junio', '07' => 'Julio', '08' => 'Agosto',
+            '09' => 'Septiembre', '10' => 'Octubre', '11' => 'Noviembre', '12' => 'Diciembre'
+        ];
+        
+        [$year, $month] = explode('-', $yearMonth);
+        return $meses[$month] . ' ' . $year;
     }
 }

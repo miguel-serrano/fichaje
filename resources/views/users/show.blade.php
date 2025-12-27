@@ -63,51 +63,101 @@
     <div class="mt-8">
         <div class="bg-white shadow sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-6">Fichajes por Día</h3>
-                
-                <div class="space-y-6">
-                    @foreach($dailyRegistros as $dia)
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <div class="flex justify-between items-center mb-3">
-                            <h4 class="text-md font-semibold text-gray-900">{{ $dia['fecha_formateada'] }}</h4>
-                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                Total: {{ $dia['total_formateado'] }}
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-3 sm:space-y-0">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">Fichajes por Día</h3>
+                        @if(isset($totalMes) && $totalMes['segundos'] > 0)
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-500">Total {{ $totalMes['mes'] }}:</span>
+                            <span class="inline-flex items-center rounded-md bg-green-50 px-3 py-1 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
+                                {{ $totalMes['formateado'] }}
                             </span>
                         </div>
+                        @endif
+                    </div>
+                    <div class="flex space-x-2">
+                        <button 
+                            type="button" 
+                            onclick="toggleAll(true)"
+                            class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                            Expandir Todo
+                        </button>
+                        <button 
+                            type="button" 
+                            onclick="toggleAll(false)"
+                            class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                            </svg>
+                            Colapsar Todo
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    @foreach($dailyRegistros as $index => $dia)
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <!-- Header clickeable -->
+                        <button 
+                            type="button" 
+                            class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                            onclick="toggleDay('day-{{ $index }}')"
+                        >
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-3">
+                                    <svg id="icon-day-{{ $index }}" class="h-5 w-5 text-gray-400 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                    <h4 class="text-md font-semibold text-gray-900">{{ $dia['fecha_formateada'] }}</h4>
+                                    <span class="text-sm text-gray-500">({{ count($dia['registros']) }} {{ count($dia['registros']) == 1 ? 'fichaje' : 'fichajes' }})</span>
+                                </div>
+                                <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                    Total: {{ $dia['total_formateado'] }}
+                                </span>
+                            </div>
+                        </button>
                         
-                        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                            <table class="min-w-full divide-y divide-gray-300">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                            Entrada
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                            Salida
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                            Duración
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($dia['registros'] as $registro)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $registro['entrada'] }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $registro['salida'] }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                {{ $registro['duracion'] }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                        <!-- Contenido colapsable -->
+                        <div id="content-day-{{ $index }}" class="hidden">
+                            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5">
+                                <table class="min-w-full divide-y divide-gray-300">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Entrada
+                                            </th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Salida
+                                            </th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Duración
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($dia['registros'] as $registro)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {{ $registro['entrada'] }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {{ $registro['salida'] }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                    {{ $registro['duracion'] }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     @endforeach
@@ -132,5 +182,45 @@
     </div>
     @endif
 </div>
+
+<script>
+function toggleDay(dayId) {
+    const content = document.getElementById('content-' + dayId);
+    const icon = document.getElementById('icon-' + dayId);
+    
+    if (content.classList.contains('hidden')) {
+        // Expandir
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-90');
+    } else {
+        // Colapsar
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-90');
+    }
+}
+
+// Función para expandir/colapsar todos
+function toggleAll(expand = true) {
+    const allContents = document.querySelectorAll('[id^="content-day-"]');
+    const allIcons = document.querySelectorAll('[id^="icon-day-"]');
+    
+    allContents.forEach(content => {
+        if (expand) {
+            content.classList.remove('hidden');
+        } else {
+            content.classList.add('hidden');
+        }
+    });
+    
+    allIcons.forEach(icon => {
+        if (expand) {
+            icon.classList.add('rotate-90');
+        } else {
+            icon.classList.remove('rotate-90');
+        }
+    });
+}
+</script>
+
 @endsection
 

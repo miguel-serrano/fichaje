@@ -80,18 +80,20 @@ class UserController extends Controller
             
             // Obtener fichajes por día del usuario
             $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user['uuid']);
-            $dailyRegistros = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
+            $registrosData = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
             
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
                     'user' => $user,
-                    'daily_registros' => $dailyRegistros
+                    'daily_registros' => $registrosData['registros'],
+                    'total_mes' => $registrosData['total_mes_actual']
                 ]);
             }
             
             return view('users.show', [
                 'user' => $user,
-                'dailyRegistros' => $dailyRegistros
+                'dailyRegistros' => $registrosData['registros'],
+                'totalMes' => $registrosData['total_mes_actual']
             ]);
         } catch (\Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
