@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\RegistroHorario\Repositories;
+namespace App\DDD\RegistroHorario\Infrastructure\Persistence\Eloquent;
 
 use App\DDD\RegistroHorario\Domain\RegistroHorario as RegistroHorarioEntity;
 use App\Models\RegistroHorario;
@@ -15,6 +15,7 @@ class RegistroHorarioRepositoryEloquent implements RegistroHorarioRepositoryInte
             'user_id' => $userUuid,
             'entrada' => $entrada,
         ]);
+
         return $this->toEntity($registro);
     }
 
@@ -23,6 +24,7 @@ class RegistroHorarioRepositoryEloquent implements RegistroHorarioRepositoryInte
         $registro = RegistroHorario::findOrFail($registroId);
         $registro->salida = $salida;
         $registro->save();
+        
         return $this->toEntity($registro);
     }
 
@@ -32,19 +34,23 @@ class RegistroHorarioRepositoryEloquent implements RegistroHorarioRepositoryInte
             ->whereNull('salida')
             ->latest('entrada')
             ->first();
+
         return $registro ? $this->toEntity($registro) : null;
     }
 
     public function obtenerRegistros($userUuid, $fecha = null)
     {
         $query = RegistroHorario::where('user_id', $userUuid);
+
         if ($fecha) {
             $query->whereDate('entrada', $fecha);
         }
+
         $result = [];
         foreach ($query->get() as $registro) {
             $result[] = $this->toEntity($registro);
         }
+
         return $result;
     }
 

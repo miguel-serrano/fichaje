@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\DDD\RegistroHorario\Application\FicharEntrada;
 use App\DDD\RegistroHorario\Application\FicharSalida;
 use App\DDD\RegistroHorario\Application\ObtenerSegundosAcumulados;
-use App\DDD\RegistroHorario\Repositories\RegistroHorarioRepositoryEloquent;
+use App\DDD\RegistroHorario\Infrastructure\Persistence\Eloquent\RegistroHorarioRepositoryEloquent;
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
 use App\DDD\User\Application\GetAllUsersUseCase;
 use App\Http\Controllers\Controller;

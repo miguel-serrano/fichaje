@@ -6,7 +6,7 @@ use App\DDD\User\Application\CreateUserUseCase;
 use App\DDD\User\Application\DeleteUserUseCase;
 use App\DDD\User\Application\GetAllUsersUseCase;
 use App\DDD\User\Application\GetUserByIdUseCase;
-use App\DDD\RegistroHorario\Repositories\RegistroHorarioRepositoryEloquent;
+use App\DDD\RegistroHorario\Infrastructure\Persistence\Eloquent\RegistroHorarioRepositoryEloquent;
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
