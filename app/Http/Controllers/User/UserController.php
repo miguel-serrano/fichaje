@@ -9,7 +9,6 @@ use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
 use App\DDD\User\Application\Handler\CreateUserCommandHandler;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
-use App\DDD\User\Application\Handler\GetAllUsersQueryHandler;
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\Http\Controllers\Controller;
@@ -23,7 +22,6 @@ class UserController extends Controller
     public function __construct(
         private CreateUserCommandHandler $createUserHandler,
         private GetUserByIdQueryHandler $getUserHandler,
-        private GetAllUsersQueryHandler $getAllUsersHandler,
         private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler,
         private DeleteUserCommandHandler $deleteUserHandler
     ) {}

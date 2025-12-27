@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\DDD\User\Application\Handler\CreateUserCommandHandler;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
-use App\DDD\User\Application\Handler\GetAllUsersQueryHandler;
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
@@ -20,7 +19,6 @@ class UserServiceProvider extends ServiceProvider
         $this->app->singleton(CreateUserCommandHandler::class);
         $this->app->singleton(DeleteUserCommandHandler::class);
         $this->app->singleton(GetUserByIdQueryHandler::class);
-        $this->app->singleton(GetAllUsersQueryHandler::class);
         $this->app->singleton(GetAllUsersWithTimeQueryHandler::class);
     }
 }

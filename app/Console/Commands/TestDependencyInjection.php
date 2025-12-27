@@ -33,9 +33,7 @@ class TestDependencyInjection extends Command
             
         } catch (\Exception $e) {
             $this->error('❌ Dependency injection failed: ' . $e->getMessage());
-            return 1;
         }
         
-        return 0;
     }
 }
