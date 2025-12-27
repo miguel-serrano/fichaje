@@ -14,13 +14,13 @@ use Mockery;
 class GetUserByIdUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
-    private GetUserByIdUseCase $useCase;
+    private GetUserByIdQueryHandler $handler;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->useCase = new GetUserByIdUseCase($this->userRepository);
+        $this->handler = new GetUserByIdQueryHandler($this->userRepository);
     }
 
     protected function tearDown(): void
@@ -49,7 +49,8 @@ class GetUserByIdUseCaseTest extends TestCase
             }))
             ->andReturn($user);
 
-        $result = $this->useCase->execute($userId);
+        $query = new GetUserByIdQuery($userId);
+        $result = $this->handler->handle($query);
 
         $this->assertIsArray($result);
         $this->assertEquals(123, $result['id']);
@@ -75,7 +76,8 @@ class GetUserByIdUseCaseTest extends TestCase
         $this->expectException(UserNotFoundException::class);
         $this->expectExceptionMessage("User {$userId} not found");
 
-        $this->useCase->execute($userId);
+        $query = new GetUserByIdQuery($userId);
+        $this->handler->handle($query);
     }
 
     public function test_it_returns_user_with_all_required_fields(): void
@@ -98,7 +100,8 @@ class GetUserByIdUseCaseTest extends TestCase
             }))
             ->andReturn($user);
 
-        $result = $this->useCase->execute($userId);
+        $query = new GetUserByIdQuery($userId);
+        $result = $this->handler->handle($query);
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('id', $result);

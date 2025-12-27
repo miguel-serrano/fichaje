@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\DDD\User\Application\Command\CreateUserCommand;
 use App\DDD\User\Application\Command\DeleteUserCommand;
-use App\DDD\User\Application\Command\GetAllUsersQuery;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
 use App\DDD\User\Application\Handler\CreateUserCommandHandler;

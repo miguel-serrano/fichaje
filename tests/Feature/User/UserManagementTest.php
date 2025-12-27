@@ -18,15 +18,7 @@ class UserManagementTest extends TestCase
         parent::setUp();
         
         // Crear tabla de usuarios para tests
-        DB::statement('CREATE TABLE IF NOT EXISTS users_tests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            uuid TEXT NOT NULL UNIQUE,
-            email TEXT NOT NULL UNIQUE,
-            name TEXT NOT NULL,
-            is_active BOOLEAN DEFAULT 1,
-            created_at DATETIME,
-            updated_at DATETIME
-        )');
+        // RefreshDatabase se encarga de las migraciones automáticamente
     }
 
     public function test_can_view_users_index_page(): void
@@ -59,7 +51,7 @@ class UserManagementTest extends TestCase
         $response->assertSessionHas('success', 'User created successfully!');
         
         // Verificar que el usuario fue creado en la base de datos
-        $this->assertDatabaseHas('users_tests', [
+        $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
             'name' => 'Test User',
             'is_active' => true
@@ -111,7 +103,7 @@ class UserManagementTest extends TestCase
         $response->assertSessionHas('success', 'User deleted successfully!');
         
         // Verificar que el usuario fue eliminado
-        $this->assertDatabaseMissing('users_tests', [
+        $this->assertDatabaseMissing('users', [
             'id' => $savedUser->id()->getValue()
         ]);
     }

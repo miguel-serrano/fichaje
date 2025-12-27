@@ -2,10 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistroHorario\RegistroHorarioController;
-
-// ... otras rutas ...
-
 use App\Http\Controllers\User\UserController;
+
+// Ruta raíz
+Route::get('/', function () {
+    return view('welcome');
+});
 
 // Rutas de usuarios
 Route::get('/users', [UserController::class, 'index'])->name('users.index');

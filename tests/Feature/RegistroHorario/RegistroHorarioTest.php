@@ -18,24 +18,7 @@ class RegistroHorarioTest extends TestCase
         parent::setUp();
         
         // Crear tablas necesarias para tests
-        DB::statement('CREATE TABLE IF NOT EXISTS users_tests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            uuid TEXT NOT NULL UNIQUE,
-            email TEXT NOT NULL UNIQUE,
-            name TEXT NOT NULL,
-            is_active BOOLEAN DEFAULT 1,
-            created_at DATETIME,
-            updated_at DATETIME
-        )');
-
-        DB::statement('CREATE TABLE IF NOT EXISTS registro_horarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            entrada DATETIME NOT NULL,
-            salida DATETIME NULL,
-            created_at DATETIME,
-            updated_at DATETIME
-        )');
+        // RefreshDatabase se encarga de las migraciones automáticamente
     }
 
     public function test_can_view_registro_horario_index(): void

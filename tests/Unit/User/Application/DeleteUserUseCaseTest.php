@@ -15,13 +15,13 @@ use Mockery;
 class DeleteUserUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
-    private DeleteUserUseCase $useCase;
+    private DeleteUserCommandHandler $handler;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->useCase = new DeleteUserUseCase($this->userRepository);
+        $this->handler = new DeleteUserCommandHandler($this->userRepository);
     }
 
     protected function tearDown(): void
@@ -58,7 +58,11 @@ class DeleteUserUseCaseTest extends TestCase
             }))
             ->andReturn(true);
 
-        $this->useCase->execute($userId);
+        $command = new DeleteUserCommand($userId);
+        $this->handler->handle($command);
+        
+        // Assert that the test completed without exceptions
+        $this->assertTrue(true);
     }
 
     public function test_it_throws_exception_when_user_not_found(): void
@@ -80,7 +84,8 @@ class DeleteUserUseCaseTest extends TestCase
         $this->expectException(UserNotFoundException::class);
         $this->expectExceptionMessage("User {$userId} not found");
 
-        $this->useCase->execute($userId);
+        $command = new DeleteUserCommand($userId);
+        $this->handler->handle($command);
     }
 
     public function test_it_throws_exception_when_delete_fails(): void
@@ -114,7 +119,8 @@ class DeleteUserUseCaseTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Failed to delete user {$userId}");
 
-        $this->useCase->execute($userId);
+        $command = new DeleteUserCommand($userId);
+        $this->handler->handle($command);
     }
 }
 

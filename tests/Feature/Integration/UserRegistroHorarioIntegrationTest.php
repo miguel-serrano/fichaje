@@ -16,26 +16,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Crear tablas necesarias para tests
-        DB::statement('CREATE TABLE IF NOT EXISTS users_tests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            uuid TEXT NOT NULL UNIQUE,
-            email TEXT NOT NULL UNIQUE,
-            name TEXT NOT NULL,
-            is_active BOOLEAN DEFAULT 1,
-            created_at DATETIME,
-            updated_at DATETIME
-        )');
-
-        DB::statement('CREATE TABLE IF NOT EXISTS registro_horarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            entrada DATETIME NOT NULL,
-            salida DATETIME NULL,
-            created_at DATETIME,
-            updated_at DATETIME
-        )');
+        // RefreshDatabase se encarga de las migraciones automáticamente
     }
 
     public function test_users_index_shows_accumulated_time(): void
@@ -148,6 +129,9 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $tieneRegistroAbierto = $registroResponse->viewData('tieneRegistroAbierto');
         $this->assertTrue($tieneRegistroAbierto);
 
+        // 5. Esperar un segundo para simular tiempo trabajado
+        sleep(1);
+        
         // 5. Fichar salida
         $salidaResponse = $this->post('/registro-horario/salida', [
             'userUuid' => $createdUser->uuid()->getValue()
@@ -193,7 +177,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $deleteResponse->assertSessionHas('success');
 
         // Verificar que el usuario fue eliminado
-        $this->assertDatabaseMissing('users_tests', [
+        $this->assertDatabaseMissing('users', [
             'id' => $savedUser->id()->getValue()
         ]);
 

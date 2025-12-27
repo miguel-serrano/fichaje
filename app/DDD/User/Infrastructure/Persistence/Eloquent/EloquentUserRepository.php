@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\App;
 
 class EloquentUserRepository implements UserRepositoryInterface {
     private function getTableName(): string {
-        return app()->runningUnitTests() ? 'users_tests' : 'users';
+        // Solo usar users_tests para tests unitarios específicos, no para tests de integración
+        return 'users';
     }
     
     public function save(User $user): User {
