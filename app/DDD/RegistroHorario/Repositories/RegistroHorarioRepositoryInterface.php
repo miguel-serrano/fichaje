@@ -6,9 +6,9 @@ use App\DDD\RegistroHorario\Entities\RegistroHorario;
 
 interface RegistroHorarioRepositoryInterface
 {
-    public function crearEntrada($userId, $entrada): RegistroHorario;
+    public function crearEntrada($userUuid, $entrada): RegistroHorario;
     public function cerrarRegistro($registroId, $salida): RegistroHorario;
-    public function obtenerUltimoAbierto($userId): ?RegistroHorario;
-    public function obtenerRegistros($userId, $fecha = null);
+    public function obtenerUltimoAbierto($userUuid): ?RegistroHorario;
+    public function obtenerRegistros($userUuid, $fecha = null);
 }
 

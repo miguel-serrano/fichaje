@@ -9,10 +9,12 @@ return new class extends Migration {
     {
         Schema::create('registro_horarios', function (Blueprint $table) {
             $table->id();
-            $table->char('user_id', 36);
+            $table->uuid('user_id');
             $table->timestamp('entrada');
             $table->timestamp('salida')->nullable();
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->timestamps();
+            
+            $table->foreign('user_id')->references('uuid')->on('users')->onDelete('cascade');
         });
     }
 
@@ -21,4 +23,3 @@ return new class extends Migration {
         Schema::dropIfExists('registro_horarios');
     }
 };
-

@@ -10,6 +10,9 @@ class RegistroHorario extends Model
     use HasFactory;
     protected $table = 'registro_horarios';
     protected $fillable = ['user_id', 'entrada', 'salida'];
+    protected $casts = [
+        'user_id' => 'string',
+    ];
 
     public $timestamps = false;
 }

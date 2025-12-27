@@ -11,9 +11,9 @@ class FicharEntrada
     {
         $this->service = $service;
     }
-    public function handle($userId)
+    public function handle($userUuid)
     {
-        return $this->service->fichar($userId);
+        return $this->service->fichar($userUuid);
     }
 }
 

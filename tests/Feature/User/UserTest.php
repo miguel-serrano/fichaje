@@ -16,6 +16,7 @@ class UserTest extends TestCase
         if (!Schema::hasTable('users_tests')) {
             Schema::create('users_tests', function ($table) {
                 $table->uuid('id')->primary();
+                $table->uuid('uuid')->unique();
                 $table->string('email')->unique();
                 $table->string('name');
                 $table->boolean('is_active')->default(true);

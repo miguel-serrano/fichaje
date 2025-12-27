@@ -3,26 +3,31 @@
 namespace App\DDD\User\Domain;
 
 use InvalidArgumentException;
-use Illuminate\Support\Str;
 
 final class UserId
 {
     private string $value;
 
-    public function __construct(string $value)
+    public function __construct(string|int $value)
     {
-        if (!Str::isUuid($value)) {
-            throw new InvalidArgumentException('User ID must be a valid UUID');
+        if (empty($value)) {
+            throw new InvalidArgumentException('User ID cannot be empty');
         }
-        $this->value = $value;
+        $this->value = (string) $value;
     }
 
-    public static function generate(): self
+    public function getValue(): string
     {
-        return new self(Str::orderedUuid()->toString());
+        return $this->value;
     }
 
-    public function getValue(): string { return $this->value; }
-    public function equals(UserId $other): bool { return $this->value === $other->value; }
-    public function __toString(): string { return $this->value; }
+    public function equals(UserId $other): bool
+    {
+        return $this->value === $other->value;
+    }
+
+    public function __toString(): string
+    {
+        return $this->value;
+    }
 }

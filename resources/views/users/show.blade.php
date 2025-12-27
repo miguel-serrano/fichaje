@@ -32,6 +32,10 @@
                         <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $user['id'] }}</dd>
                     </div>
                     <div>
+                        <dt class="text-sm font-medium text-gray-500">UUID</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $user['uuid'] }}</dd>
+                    </div>
+                    <div>
                         <dt class="text-sm font-medium text-gray-500">Status</dt>
                         <dd class="mt-1 text-sm text-gray-900">
                             @if($user['is_active'])

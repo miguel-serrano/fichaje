@@ -7,10 +7,10 @@ use App\Models\RegistroHorario;
 
 class RegistroHorarioRepositoryEloquent implements RegistroHorarioRepositoryInterface
 {
-    public function crearEntrada($userId, $entrada): RegistroHorarioEntity
+    public function crearEntrada($userUuid, $entrada): RegistroHorarioEntity
     {
         $registro = RegistroHorario::create([
-            'user_id' => $userId,
+            'user_id' => $userUuid,
             'entrada' => $entrada,
         ]);
         return $this->toEntity($registro);
@@ -24,18 +24,18 @@ class RegistroHorarioRepositoryEloquent implements RegistroHorarioRepositoryInte
         return $this->toEntity($registro);
     }
 
-    public function obtenerUltimoAbierto($userId): ?RegistroHorarioEntity
+    public function obtenerUltimoAbierto($userUuid): ?RegistroHorarioEntity
     {
-        $registro = RegistroHorario::where('user_id', $userId)
+        $registro = RegistroHorario::where('user_id', $userUuid)
             ->whereNull('salida')
             ->latest('entrada')
             ->first();
         return $registro ? $this->toEntity($registro) : null;
     }
 
-    public function obtenerRegistros($userId, $fecha = null)
+    public function obtenerRegistros($userUuid, $fecha = null)
     {
-        $query = RegistroHorario::where('user_id', $userId);
+        $query = RegistroHorario::where('user_id', $userUuid);
         if ($fecha) {
             $query->whereDate('entrada', $fecha);
         }

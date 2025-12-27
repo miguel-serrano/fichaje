@@ -11,9 +11,9 @@ class ObtenerSegundosAcumulados
     {
         $this->service = $service;
     }
-    public function handle($userId)
+    public function handle($userUuid)
     {
-        return $this->service->segundosAcumulados($userId);
+        return $this->service->segundosAcumulados($userUuid);
     }
 }
 

@@ -13,21 +13,24 @@ class RegistroHorarioTest extends TestCase
     public function test_usuario_puede_fichar_entrada_y_salida()
     {
         $user = User::factory()->create();
-        $this->actingAs($user);
 
         // Fichar entrada
-        $response = $this->post(route('registro_horario.fichar'));
+        $response = $this->post(route('registro_horario.fichar'), [
+            'userUuid' => $user->uuid
+        ]);
         $response->assertRedirect(route('registro_horario.index'));
         $this->assertDatabaseHas('registro_horarios', [
-            'user_id' => $user->id,
+            'user_id' => $user->uuid,
             'salida' => null,
         ]);
 
         // Fichar salida
-        $response = $this->post(route('registro_horario.fichar'));
+        $response = $this->post(route('registro_horario.fichar'), [
+            'userUuid' => $user->uuid
+        ]);
         $response->assertRedirect(route('registro_horario.index'));
         $this->assertDatabaseMissing('registro_horarios', [
-            'user_id' => $user->id,
+            'user_id' => $user->uuid,
             'salida' => null,
         ]);
     }
@@ -35,12 +38,15 @@ class RegistroHorarioTest extends TestCase
     public function test_sumatorio_segundos()
     {
         $user = User::factory()->create();
-        $this->actingAs($user);
 
-        $this->post(route('registro_horario.fichar'));
+        $this->post(route('registro_horario.fichar'), [
+            'userUuid' => $user->uuid
+        ]);
         sleep(2);
-        $this->post(route('registro_horario.fichar'));
-        $response = $this->get(route('registro_horario.index'));
+        $this->post(route('registro_horario.fichar'), [
+            'userUuid' => $user->uuid
+        ]);
+        $response = $this->get(route('registro_horario.index', ['userUuid' => $user->uuid]));
 
         $response->assertSee('Tiempo acumulado hoy:');
     }

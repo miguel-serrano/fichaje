@@ -13,22 +13,22 @@ class RegistroHorarioService
         $this->repository = $repository;
     }
 
-    public function fichar($userId)
+    public function fichar($userUuid)
     {
-        $registroAbierto = $this->repository->obtenerUltimoAbierto($userId);
+        $registroAbierto = $this->repository->obtenerUltimoAbierto($userUuid);
 
         if ($registroAbierto) {
             // Registrar salida
             return $this->repository->cerrarRegistro($registroAbierto->id, now());
         } else {
             // Registrar nueva entrada
-            return $this->repository->crearEntrada($userId, now());
+            return $this->repository->crearEntrada($userUuid, now());
         }
     }
 
-    public function segundosAcumulados($userId)
+    public function segundosAcumulados($userUuid)
     {
-        $registros = $this->repository->obtenerRegistros($userId, now()->toDateString());
+        $registros = $this->repository->obtenerRegistros($userUuid, now()->toDateString());
         $suma = 0;
         foreach ($registros as $registro) {
             $suma += $registro->segundosTrabajados();
