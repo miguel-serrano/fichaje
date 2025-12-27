@@ -10,12 +10,9 @@ use Illuminate\Support\Facades\App;
 
 class EloquentUserRepository implements UserRepositoryInterface {
     private function getTableName(): string {
-        // Use users_tests when running tests or when APP_ENV is testing
-        if (App::runningUnitTests() || App::environment('testing')) {
-            return 'users_tests';
-        }
-        return 'users';
+        return app()->runningUnitTests() ? 'users_tests' : 'users';
     }
+    
     public function save(User $user): User {
         $id = $user->id()->getValue();
         $tableName = $this->getTableName();
