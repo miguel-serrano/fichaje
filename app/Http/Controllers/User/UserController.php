@@ -6,10 +6,12 @@ use App\DDD\User\Application\Command\CreateUserCommand;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
+use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Handler\CreateUserCommandHandler;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
+use App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +24,8 @@ class UserController extends Controller
         private CreateUserCommandHandler $createUserHandler,
         private GetUserByIdQueryHandler $getUserHandler,
         private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler,
-        private DeleteUserCommandHandler $deleteUserHandler
+        private DeleteUserCommandHandler $deleteUserHandler,
+        private GetUserDailyRegistrosQueryHandler $getUserDailyRegistrosHandler
     ) {}
 
     public function index(Request $request): View|JsonResponse
@@ -75,18 +78,27 @@ class UserController extends Controller
             $query = new GetUserByIdQuery($id);
             $user = $this->getUserHandler->handle($query);
             
+            // Obtener fichajes por día del usuario
+            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user['uuid']);
+            $dailyRegistros = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
+            
             if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json($user);
+                return response()->json([
+                    'user' => $user,
+                    'daily_registros' => $dailyRegistros
+                ]);
             }
             
-            return view('users.show', ['user' => $user]);
+            return view('users.show', [
+                'user' => $user,
+                'dailyRegistros' => $dailyRegistros
+            ]);
         } catch (\Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json(['error' => $e->getMessage()], 404);
             }
             
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
+            // return redirect()->route('users.index')->with('error', $e->getMessage());
         }
     }
 
