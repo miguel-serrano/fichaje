@@ -13,17 +13,25 @@ class RegistroHorarioService
         $this->repository = $repository;
     }
 
-    public function fichar($userUuid)
+    public function ficharEntrada($userUuid)
+    {
+        return $this->repository->crearEntrada($userUuid, now());
+    }
+
+    public function ficharSalida($userUuid)
     {
         $registroAbierto = $this->repository->obtenerUltimoAbierto($userUuid);
-
-        if ($registroAbierto) {
-            // Registrar salida
-            return $this->repository->cerrarRegistro($registroAbierto->id, now());
-        } else {
-            // Registrar nueva entrada
-            return $this->repository->crearEntrada($userUuid, now());
+        
+        if (!$registroAbierto) {
+            throw new \InvalidArgumentException('No hay registro de entrada abierto para cerrar');
         }
+        
+        return $this->repository->cerrarRegistro($registroAbierto->id, now());
+    }
+
+    public function obtenerUltimoRegistro($userUuid)
+    {
+        return $this->repository->obtenerUltimoAbierto($userUuid);
     }
 
     public function segundosAcumulados($userUuid)

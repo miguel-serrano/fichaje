@@ -53,15 +53,27 @@
                     </div>
                 </dl>
 
-                <div class="mt-8">
-                    <form method="POST" action="{{ route('registro_horario.fichar') }}">
+                <div class="mt-8 flex gap-4">
+                    <form method="POST" action="{{ route('registro_horario.entrada') }}">
                         @csrf
                         <input type="hidden" name="userUuid" value="{{ $selectedUserUuid }}">
                         <button 
                             type="submit" 
-                            class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            @if($tieneRegistroAbierto) disabled @endif
+                            class="rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 @if($tieneRegistroAbierto) bg-gray-400 cursor-not-allowed @else bg-green-600 hover:bg-green-500 @endif"
                         >
-                            Fichar entrada/salida
+                            Fichar Entrada
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('registro_horario.salida') }}">
+                        @csrf
+                        <input type="hidden" name="userUuid" value="{{ $selectedUserUuid }}">
+                        <button 
+                            type="submit" 
+                            @if(!$tieneRegistroAbierto) disabled @endif
+                            class="rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 @if(!$tieneRegistroAbierto) bg-gray-400 cursor-not-allowed @else bg-red-600 hover:bg-red-500 @endif"
+                        >
+                            Fichar Salida
                         </button>
                     </form>
                 </div>
