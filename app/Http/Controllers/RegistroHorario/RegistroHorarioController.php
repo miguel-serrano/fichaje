@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\RegistroHorario;
 
 use Illuminate\Http\Request;
-use App\DDD\RegistroHorario\UseCases\FicharEntrada;
-use App\DDD\RegistroHorario\UseCases\FicharSalida;
-use App\DDD\RegistroHorario\UseCases\ObtenerSegundosAcumulados;
+use App\DDD\RegistroHorario\Application\FicharEntrada;
+use App\DDD\RegistroHorario\Application\FicharSalida;
+use App\DDD\RegistroHorario\Application\ObtenerSegundosAcumulados;
 use App\DDD\RegistroHorario\Repositories\RegistroHorarioRepositoryEloquent;
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
 use App\DDD\User\Application\GetAllUsersUseCase;
+use App\Http\Controllers\Controller;
 
 class RegistroHorarioController extends Controller
 {

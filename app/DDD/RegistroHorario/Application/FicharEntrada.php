@@ -1,10 +1,10 @@
 <?php
 
-namespace App\DDD\RegistroHorario\UseCases;
+namespace App\DDD\RegistroHorario\Application;
 
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
 
-class ObtenerSegundosAcumulados
+class FicharEntrada
 {
     private $service;
     public function __construct(RegistroHorarioService $service)
@@ -13,7 +13,7 @@ class ObtenerSegundosAcumulados
     }
     public function handle($userUuid)
     {
-        return $this->service->segundosAcumulados($userUuid);
+        return $this->service->ficharEntrada($userUuid);
     }
 }
 

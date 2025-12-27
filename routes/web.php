@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RegistroHorarioController;
+use App\Http\Controllers\RegistroHorario\RegistroHorarioController;
 
 // ... otras rutas ...
 

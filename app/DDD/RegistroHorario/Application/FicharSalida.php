@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\RegistroHorario\UseCases;
+namespace App\DDD\RegistroHorario\Application;
 
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
 
