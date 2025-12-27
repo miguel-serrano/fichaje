@@ -196,6 +196,9 @@ return [
         App\Providers\RouteServiceProvider::class,
         //ddd_user
         App\Providers\UserServiceProvider::class,
+        App\DDD\User\Infrastructure\LaravelServiceProvider::class,
+        //ddd_registro_horario
+        App\DDD\RegistroHorario\Infrastructure\LaravelServiceProvider::class,
 
 
     ],

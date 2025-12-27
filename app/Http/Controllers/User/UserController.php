@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\User;
 
-use App\DDD\User\Application\CreateUserUseCase;
-use App\DDD\User\Application\DeleteUserUseCase;
-use App\DDD\User\Application\GetAllUsersUseCase;
-use App\DDD\User\Application\GetUserByIdUseCase;
-use App\DDD\RegistroHorario\Infrastructure\Persistence\Eloquent\RegistroHorarioRepositoryEloquent;
-use App\DDD\RegistroHorario\Services\RegistroHorarioService;
+use App\DDD\User\Application\Command\CreateUserCommand;
+use App\DDD\User\Application\Command\DeleteUserCommand;
+use App\DDD\User\Application\Command\GetAllUsersQuery;
+use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
+use App\DDD\User\Application\Command\GetUserByIdQuery;
+use App\DDD\User\Application\Handler\CreateUserCommandHandler;
+use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
+use App\DDD\User\Application\Handler\GetAllUsersQueryHandler;
+use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
+use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,38 +20,18 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    private $registroHorarioService;
-
     public function __construct(
-        private CreateUserUseCase $createUserUseCase,
-        private GetUserByIdUseCase $getUserUseCase,
-        private GetAllUsersUseCase $getAllUsersUseCase,
-        private DeleteUserUseCase $deleteUserUseCase
-    ) {
-        $repository = new RegistroHorarioRepositoryEloquent();
-        $this->registroHorarioService = new RegistroHorarioService($repository);
-    }
+        private CreateUserCommandHandler $createUserHandler,
+        private GetUserByIdQueryHandler $getUserHandler,
+        private GetAllUsersQueryHandler $getAllUsersHandler,
+        private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler,
+        private DeleteUserCommandHandler $deleteUserHandler
+    ) {}
 
     public function index(Request $request): View|JsonResponse
     {
-        $users = $this->getAllUsersUseCase->execute();
-        
-        // Añadir tiempo acumulado de registro horario para cada usuario
-        foreach ($users as &$user) {
-            try {
-                $segundos = $this->registroHorarioService->segundosAcumulados($user['uuid']);
-                $horas = floor($segundos / 3600);
-                $minutos = floor(($segundos % 3600) / 60);
-                $segundosRestantes = $segundos % 60;
-                $user['tiempo_acumulado'] = str_pad($horas, 2, '0', STR_PAD_LEFT) . ':' . 
-                                           str_pad($minutos, 2, '0', STR_PAD_LEFT) . ':' . 
-                                           str_pad($segundosRestantes, 2, '0', STR_PAD_LEFT);
-            } catch (\Exception $e) {
-                $user['tiempo_acumulado'] = '00:00:00';
-            }
-        }
-        unset($user);
-        
+        $users = $this->getAllUsersWithTimeHandler->handle(new GetAllUsersWithTimeQuery());
+
         if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json($users);
         }
@@ -68,7 +52,8 @@ class UserController extends Controller
         ]);
         
         try {
-            $user = $this->createUserUseCase->execute($validated['email'], $validated['name']);
+            $command = new CreateUserCommand($validated['email'], $validated['name']);
+            $user = $this->createUserHandler->handle($command);
             
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json($user->toArray(), 201);
@@ -90,7 +75,8 @@ class UserController extends Controller
     public function show(Request $request, string $id): View|JsonResponse
     {
         try {
-            $user = $this->getUserUseCase->execute($id);
+            $query = new GetUserByIdQuery($id);
+            $user = $this->getUserHandler->handle($query);
             
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json($user);
@@ -110,7 +96,8 @@ class UserController extends Controller
     public function destroy(Request $request, string $id): RedirectResponse|JsonResponse
     {
         try {
-            $this->deleteUserUseCase->execute($id);
+            $command = new DeleteUserCommand($id);
+            $this->deleteUserHandler->handle($command);
             
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json(['message' => 'User deleted successfully'], 200);

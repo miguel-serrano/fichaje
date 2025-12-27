@@ -2,11 +2,12 @@
 
 namespace Tests\Unit\User\Application;
 
-use App\DDD\User\Application\DeleteUserUseCase;
+use App\DDD\User\Application\Command\DeleteUserCommand;
+use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
 use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\User\Domain\User;
+use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\UserRepositoryInterface;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\exceptions\UserNotFoundException;
 use PHPUnit\Framework\TestCase;
 use Mockery;

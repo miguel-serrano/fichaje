@@ -2,9 +2,10 @@
 
 namespace Tests\Unit\User\Application;
 
-use App\DDD\User\Application\GetAllUsersUseCase;
-use App\DDD\User\Domain\User;
-use App\DDD\User\Domain\UserRepositoryInterface;
+use App\DDD\User\Application\Command\GetAllUsersQuery;
+use App\DDD\User\Application\Handler\GetAllUsersQueryHandler;
+use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 use Mockery;
 

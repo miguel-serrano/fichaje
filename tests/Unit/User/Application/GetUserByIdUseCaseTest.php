@@ -2,10 +2,11 @@
 
 namespace Tests\Unit\User\Application;
 
-use App\DDD\User\Application\GetUserByIdUseCase;
-use App\DDD\User\Domain\User;
+use App\DDD\User\Application\Command\GetUserByIdQuery;
+use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
+use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\UserRepositoryInterface;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\exceptions\UserNotFoundException;
 use PHPUnit\Framework\TestCase;
 use Mockery;

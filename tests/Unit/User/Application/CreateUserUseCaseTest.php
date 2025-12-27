@@ -2,24 +2,25 @@
 
 namespace Tests\Unit\User\Application;
 
-use App\DDD\User\Application\CreateUserUseCase;
+use App\DDD\User\Application\Command\CreateUserCommand;
+use App\DDD\User\Application\Handler\CreateUserCommandHandler;
 use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\User\Domain\User;
+use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\UserRepositoryInterface;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 use Mockery;
 
 class CreateUserUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
-    private CreateUserUseCase $useCase;
+    private CreateUserCommandHandler $handler;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->useCase = new CreateUserUseCase($this->userRepository);
+        $this->handler = new CreateUserCommandHandler($this->userRepository);
     }
 
     protected function tearDown(): void
@@ -59,7 +60,8 @@ class CreateUserUseCaseTest extends TestCase
             }))
             ->andReturn($savedUser);
 
-        $result = $this->useCase->execute($email, $name);
+        $command = new CreateUserCommand($email, $name);
+        $result = $this->handler->handle($command);
 
         $this->assertInstanceOf(User::class, $result);
         $this->assertEquals($email, $result->email()->getValue());
@@ -87,7 +89,8 @@ class CreateUserUseCaseTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Email already exists');
 
-        $this->useCase->execute($email, $name);
+        $command = new CreateUserCommand($email, $name);
+        $this->handler->handle($command);
     }
 }
 

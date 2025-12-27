@@ -8,7 +8,8 @@ use App\DDD\RegistroHorario\Application\FicharSalida;
 use App\DDD\RegistroHorario\Application\ObtenerSegundosAcumulados;
 use App\DDD\RegistroHorario\Infrastructure\Persistence\Eloquent\RegistroHorarioRepositoryEloquent;
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
-use App\DDD\User\Application\GetAllUsersUseCase;
+use App\DDD\User\Application\Command\GetAllUsersQuery;
+use App\DDD\User\Application\Handler\GetAllUsersQueryHandler;
 use App\Http\Controllers\Controller;
 
 class RegistroHorarioController extends Controller
@@ -19,7 +20,7 @@ class RegistroHorarioController extends Controller
     private $service;
 
     public function __construct(
-        private GetAllUsersUseCase $getAllUsersUseCase
+        private GetAllUsersQueryHandler $getAllUsersHandler
     )
     {
         $repository = new RegistroHorarioRepositoryEloquent();
@@ -63,7 +64,7 @@ class RegistroHorarioController extends Controller
 
     public function index(Request $request)
     {
-        $users = $this->getAllUsersUseCase->execute();
+        $users = $this->getAllUsersHandler->handle(new GetAllUsersQuery());
         $userUuid = $request->input('userUuid');
         $segundos = 0;
         $tieneRegistroAbierto = false;
