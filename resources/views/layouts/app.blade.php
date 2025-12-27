@@ -20,7 +20,7 @@
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
                         <a href="{{ route('users.index') }}" class="text-xl font-bold text-gray-900">
-                            Gestión de Horarios
+                            Gestión de Horarios IA
                         </a>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
