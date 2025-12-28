@@ -7,8 +7,6 @@ use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler;
-use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class UserServiceProvider extends ServiceProvider

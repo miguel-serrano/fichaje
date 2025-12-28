@@ -4,28 +4,28 @@ namespace App\Http\Controllers\User;
 
 use App\DDD\User\Application\Command\CreateUserCommand;
 use App\DDD\User\Application\Command\DeleteUserCommand;
-use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
-use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Handler\CreateUserCommandHandler;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
+use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
-use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
+use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Joselfonseca\LaravelTactician\CommandBusInterface;
 
 class UserController extends Controller
 {
     public function __construct(
         private CreateUserCommandHandler $createUserHandler,
-        private GetUserByIdQueryHandler $getUserHandler,
         private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler,
         private DeleteUserCommandHandler $deleteUserHandler,
-        private GetUserDailyRegistrosQueryHandler $getUserDailyRegistrosHandler
+        private GetUserDailyRegistrosQueryHandler $getUserDailyRegistrosHandler,
+        private CommandBusInterface $querybus
     ) {}
 
     public function index(Request $request): View|JsonResponse
@@ -87,33 +87,40 @@ class UserController extends Controller
     {
         try {
             $query = new GetUserByIdQuery($id);
-            $user = $this->getUserHandler->handle($query);
             
-            // Obtener fichajes por día del usuario
-            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user['uuid']);
+            $userResponse = $this->querybus->dispatch($query);
+
+            $userArr             = is_array($userResponse) ? $userResponse : (method_exists($userResponse, 'toArray') ? $userResponse->toArray() : []);
+            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($userArr['uuid']);
             $registrosData = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
-            
+
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
-                    'user' => $user,
+                    'user' => $userArr,
                     'daily_registros' => $registrosData['registros'],
                     'total_mes' => $registrosData['total_mes_actual']
                 ]);
             }
-            
+
             return view('users.show', [
-                'user' => $user,
+                'user' => $userArr,
                 'dailyRegistros' => $registrosData['registros'],
                 'totalMes' => $registrosData['total_mes_actual']
             ]);
         } catch (\Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['error' => $e->getMessage()], 404);
+                return response()->json([
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ], 500);
             }
-            
-            // return redirect()->route('users.index')->with('error', $e->getMessage());
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
     }
+
 
     public function destroy(Request $request, string $id): RedirectResponse|JsonResponse
     {

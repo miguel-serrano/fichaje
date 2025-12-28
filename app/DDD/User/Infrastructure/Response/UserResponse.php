@@ -23,6 +23,13 @@ class UserResponse
         );
     }
 
+    public static function fromModel($user): self
+    {
+        // Admite tanto a entidad como a Eloquent. Probamos toArray
+        $array = method_exists($user, 'toArray') ? $user->toArray() : [];
+        return self::fromArray($array);
+    }
+
     public function toArray(): array
     {
         return [

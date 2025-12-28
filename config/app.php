@@ -185,7 +185,7 @@ return [
         /*
          * Package Service Providers...
          */
-
+        Joselfonseca\LaravelTactician\Providers\LaravelTacticianServiceProvider::class,
         /*
          * Application Service Providers...
          */
