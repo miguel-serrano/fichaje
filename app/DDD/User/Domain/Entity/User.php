@@ -35,8 +35,8 @@ final class User {
             'id' => $this->id ? $this->id->getValue() : null,
             'uuid' => $this->uuid->getValue(),
             'email' => $this->email->getValue(),
-            'name' => $this->name,
-            'is_active' => $this->isActive
+            'name' => $this->name(),
+            'is_active' => $this->isActive(),
         ];
     }
 }
