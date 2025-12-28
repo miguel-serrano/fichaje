@@ -65,42 +65,28 @@ class UserController extends Controller
             }
             $command = new CreateUserCommand($validated['email'], $validated['name']);
             $user = $this->createUserHandler->handle($command);
-            
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json($user->toArray(), 201);
-            }
-            
+
             return redirect()->route('users.index')
                 ->with('success', 'User created successfully!');
         } catch (\InvalidArgumentException $e) {
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['error' => $e->getMessage()], 422);
-            }
-            
+
             return back()
                 ->withInput()
                 ->withErrors(['email' => $e->getMessage()]);
         }
     }
 
-    public function show(Request $request, string $id): View|JsonResponse
+
+    public function show(Request $request, string $id): View|JsonResponse|RedirectResponse
     {
         try {
             $query = new GetUserByIdQuery($id);
-            
+
             $userResponse = $this->querybus->dispatch($query);
 
             $userArr             = is_array($userResponse) ? $userResponse : (method_exists($userResponse, 'toArray') ? $userResponse->toArray() : []);
             $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($userArr['uuid']);
             $registrosData = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
-
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json([
-                    'user' => $userArr,
-                    'daily_registros' => $registrosData['registros'],
-                    'total_mes' => $registrosData['total_mes_actual']
-                ]);
-            }
 
             return view('users.show', [
                 'user' => $userArr,
@@ -108,18 +94,12 @@ class UserController extends Controller
                 'totalMes' => $registrosData['total_mes_actual']
             ]);
         } catch (\Exception $e) {
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json([
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ], 500);
-            }
-            return response()->json([
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ], 500);
+            return redirect()->route('users.index')->with('error', $e->getMessage());
         }
     }
+
+
+
 
 
     public function destroy(Request $request, string $id): RedirectResponse|JsonResponse
@@ -127,11 +107,7 @@ class UserController extends Controller
         try {
             $command = new DeleteUserCommand($id);
             $this->deleteUserHandler->handle($command);
-            
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['message' => 'User deleted successfully'], 200);
-            }
-            
+
             return redirect()->route('users.index')
                 ->with('success', 'User deleted successfully!');
         } catch (\Exception $e) {
@@ -140,8 +116,7 @@ class UserController extends Controller
                 return response()->json(['error' => $e->getMessage()], $statusCode);
             }
             
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
+
         }
     }
 }
