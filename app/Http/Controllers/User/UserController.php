@@ -81,15 +81,17 @@ class UserController extends Controller
     {
         try {
             $query = new GetUserByIdQuery($id);
+            
+            // Object queryResponse
+            $user = $this->querybus->dispatch($query);
+            $user = $user->toArray();
 
-            $userResponse = $this->querybus->dispatch($query);
-
-            $userArr             = is_array($userResponse) ? $userResponse : (method_exists($userResponse, 'toArray') ? $userResponse->toArray() : []);
-            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($userArr['uuid']);
+            // pasarlo al querybus de get user y devolver en el response
+            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user['uuid']);
             $registrosData = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
 
             return view('users.show', [
-                'user' => $userArr,
+                'user' => $user,
                 'dailyRegistros' => $registrosData['registros'],
                 'totalMes' => $registrosData['total_mes_actual']
             ]);
