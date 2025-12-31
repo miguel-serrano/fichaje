@@ -1,0 +1,8 @@
+{
+    "mcpServers": [
+        {
+            "name": "default",
+            "url": "http://localhost"
+        }
+    ]
+}
