@@ -5,19 +5,14 @@ namespace App\DDD\User\Application\Handler;
 use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
-use App\DDD\RegistroHorario\Domain\RegistroHorarioRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
 class GetUserDailyRegistrosQueryHandler
 {
-    private RegistroHorarioService $registroHorarioService;
-
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private RegistroHorarioRepositoryInterface $registroHorarioRepository,
-    ) {
-        $this->registroHorarioService = new RegistroHorarioService($registroHorarioRepository);
-    }
+        private RegistroHorarioService $registroHorarioService, // Injected directly
+    ) {}
 
     public function handle(GetUserDailyRegistrosQuery $query): array
     {

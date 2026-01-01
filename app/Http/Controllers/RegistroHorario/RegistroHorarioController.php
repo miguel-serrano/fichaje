@@ -6,29 +6,24 @@ use Illuminate\Http\Request;
 use App\DDD\RegistroHorario\Application\FicharEntrada;
 use App\DDD\RegistroHorario\Application\FicharSalida;
 use App\DDD\RegistroHorario\Application\ObtenerSegundosAcumulados;
-use App\DDD\RegistroHorario\Infrastructure\Persistence\Eloquent\RegistroHorarioRepositoryEloquent;
-use App\DDD\RegistroHorario\Services\RegistroHorarioService;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
 use App\Http\Controllers\Controller;
+use App\DDD\RegistroHorario\Services\RegistroHorarioService;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface; // Import UserRepositoryInterface
+use App\DDD\User\Domain\ValueObjects\Uuid; // Import Uuid Value Object
+use App\DDD\User\Domain\exceptions\UserNotFoundException; // Import UserNotFoundException
 
 class RegistroHorarioController extends Controller
 {
-    private $entradaUC;
-    private $salidaUC;
-    private $segundosUC;
-    private $service;
-
     public function __construct(
-        private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler
-    )
-    {
-        $repository = new RegistroHorarioRepositoryEloquent();
-        $this->service = new RegistroHorarioService($repository);
-        $this->entradaUC = new FicharEntrada($this->service);
-        $this->salidaUC = new FicharSalida($this->service);
-        $this->segundosUC = new ObtenerSegundosAcumulados($this->service);
-    }
+        private FicharEntrada $entradaUC,
+        private FicharSalida $salidaUC,
+        private ObtenerSegundosAcumulados $segundosUC,
+        private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler,
+        private RegistroHorarioService $registroHorarioService,
+        private UserRepositoryInterface $userRepository // Inject UserRepositoryInterface
+    ) {}
 
     public function ficharEntrada(Request $request)
     {
@@ -38,10 +33,19 @@ class RegistroHorarioController extends Controller
 
         try {
             $this->entradaUC->handle($validated['userUuid']);
-            return redirect()->route('registro_horario.index', ['userUuid' => $validated['userUuid']])
+            
+            // Get User ID for redirection
+            $user = $this->userRepository->findByUuid(new Uuid($validated['userUuid']));
+            if (!$user) {
+                // This case should ideally not happen if handle() succeeded, but for safety
+                throw new UserNotFoundException('User not found after clock-in for redirection.');
+            }
+
+            return redirect()->route('users.show', ['id' => $user->id()->getValue()]) // Changed redirect
                 ->with('success', 'Entrada registrada correctamente');
         } catch (\Exception $e) {
-            return redirect()->route('registro_horario.index', ['userUuid' => $validated['userUuid']])
+            // If user not found during redirection or other error
+            return redirect()->route('users.index') // Fallback redirect
                 ->with('error', $e->getMessage());
         }
     }
@@ -54,10 +58,19 @@ class RegistroHorarioController extends Controller
 
         try {
             $this->salidaUC->handle($validated['userUuid']);
-            return redirect()->route('registro_horario.index', ['userUuid' => $validated['userUuid']])
+
+            // Get User ID for redirection
+            $user = $this->userRepository->findByUuid(new Uuid($validated['userUuid']));
+            if (!$user) {
+                // This case should ideally not happen if handle() succeeded, but for safety
+                throw new UserNotFoundException('User not found after clock-out for redirection.');
+            }
+            
+            return redirect()->route('users.show', ['id' => $user->id()->getValue()]) // Changed redirect
                 ->with('success', 'Salida registrada correctamente');
         } catch (\Exception $e) {
-            return redirect()->route('registro_horario.index', ['userUuid' => $validated['userUuid']])
+            // If user not found during redirection or other error
+            return redirect()->route('users.index') // Fallback redirect
                 ->with('error', $e->getMessage());
         }
     }
@@ -71,8 +84,7 @@ class RegistroHorarioController extends Controller
 
         if ($userUuid) {
             $segundos = $this->segundosUC->handle($userUuid);
-            $ultimoRegistro = $this->service->obtenerUltimoRegistro($userUuid);
-            $tieneRegistroAbierto = $ultimoRegistro !== null;
+            $tieneRegistroAbierto = $this->registroHorarioService->hasOpenRegistro($userUuid);
         }
 
         return view('registro_horario', [
@@ -83,4 +95,3 @@ class RegistroHorarioController extends Controller
         ]);
     }
 }
-

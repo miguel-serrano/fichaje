@@ -17,6 +17,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Joselfonseca\LaravelTactician\CommandBusInterface;
+use App\DDD\User\Domain\exceptions\UserNotFoundException; // Import UserNotFoundException
+use App\DDD\User\Domain\Entity\User; // Import User entity
 
 class UserController extends Controller
 {
@@ -83,25 +85,27 @@ class UserController extends Controller
             $query = new GetUserByIdQuery($id);
             
             // Object queryResponse
-            $user = $this->querybus->dispatch($query);
-            $user = $user->toArray();
+            // Catch UserNotFoundException specifically
+            try {
+                /** @var User $user */
+                $user = $this->querybus->dispatch($query);
+            } catch (UserNotFoundException $e) {
+                return redirect()->route('users.index')->with('error', $e->getMessage());
+            }
 
-            // pasarlo al querybus de get user y devolver en el response
-            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user['uuid']);
+            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->getValue()); // Use integer ID
             $registrosData = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
 
             return view('users.show', [
-                'user' => $user,
+                'user' => $user, // Pass the User entity object
+                'allRegistros' => $user->registrosHorarios(), // Pass all time entries
                 'dailyRegistros' => $registrosData['registros'],
                 'totalMes' => $registrosData['total_mes_actual']
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception $e) { // Catch other potential exceptions
             return redirect()->route('users.index')->with('error', $e->getMessage());
         }
     }
-
-
-
 
 
     public function destroy(Request $request, string $id): RedirectResponse|JsonResponse

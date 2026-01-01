@@ -3,21 +3,29 @@
 namespace Tests\Unit\RegistroHorario\Services;
 
 use App\DDD\RegistroHorario\Services\RegistroHorarioService;
-use App\DDD\RegistroHorario\Domain\RegistroHorarioRepositoryInterface;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\ValueObjects\UserId;
+use App\DDD\User\Domain\ValueObjects\Uuid;
+use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\RegistroHorario\Domain\RegistroHorario;
+use App\DDD\RegistroHorario\Domain\ValueObjects\RegistroHorarioId;
 use PHPUnit\Framework\TestCase;
 use Mockery;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Support\Str; // Import Str facade for UUID generation
 
 class RegistroHorarioServiceTest extends TestCase
 {
-    private RegistroHorarioRepositoryInterface $repository;
+    private UserRepositoryInterface $userRepository;
     private RegistroHorarioService $service;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = Mockery::mock(RegistroHorarioRepositoryInterface::class);
-        $this->service = new RegistroHorarioService($this->repository);
+        $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $this->service = new RegistroHorarioService($this->userRepository);
     }
 
     protected function tearDown(): void
@@ -26,181 +34,292 @@ class RegistroHorarioServiceTest extends TestCase
         parent::tearDown();
     }
 
+    private function createUserAggregate(string $uuidValue, array $registros = []): User
+    {
+        return User::fromPrimitives(
+            1, // id
+            $uuidValue,
+            'test@example.com',
+            'Test User',
+            true,
+            $registros
+        );
+    }
+
     public function test_it_fichas_entrada_successfully(): void
     {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-        $now = now();
-        
-        $registro = new RegistroHorario(1, $userUuid, $now, null);
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
+        $user = $this->createUserAggregate($userUuidValue);
 
-        $this->repository
-            ->shouldReceive('crearEntrada')
+        $this->userRepository
+            ->shouldReceive('findByUuid')
             ->once()
-            ->with($userUuid, Mockery::type(\Illuminate\Support\Carbon::class))
-            ->andReturn($registro);
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
 
-        $result = $this->service->ficharEntrada($userUuid);
+        // Capture the user passed to save
+        $savedUser = null;
+        $this->userRepository
+            ->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(function (User $arg) use (&$savedUser) {
+                $savedUser = $arg; // Capture the argument
+                return count($arg->registrosHorarios()) === 1 && $arg->registrosHorarios()[0]->isAbierto();
+            }))
+            ->andReturn($user); 
 
-        $this->assertInstanceOf(RegistroHorario::class, $result);
-        $this->assertEquals($userUuid, $result->userId);
-        $this->assertEquals($now, $result->entrada);
-        $this->assertNull($result->salida);
+        $this->service->ficharEntrada($userUuidValue);
+
+        // Assertions after the service call
+        $this->assertNotNull($savedUser, "User should have been saved.");
+        $this->assertCount(1, $savedUser->registrosHorarios());
+        $this->assertTrue($savedUser->registrosHorarios()[0]->isAbierto());
+    }
+
+    public function test_it_throws_exception_on_fichar_entrada_if_user_not_found(): void
+    {
+        $userUuidValue = Str::uuid()->toString(); // Use a valid UUID format
+        $userUuid = new Uuid($userUuidValue);
+
+        $this->userRepository
+            ->shouldReceive('findByUuid')
+            ->once()
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn(null);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Usuario no encontrado.');
+
+        $this->service->ficharEntrada($userUuidValue);
     }
 
     public function test_it_fichas_salida_successfully(): void
     {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-        $entrada = now()->subHours(8);
-        $salida = now();
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
+        $openRegistro = [
+            'id' => 1,
+            'user_id' => 1,
+            'entrada' => Carbon::now()->subHour()->toDateTimeString(),
+            'salida' => null
+        ];
+        $user = $this->createUserAggregate($userUuidValue, [$openRegistro]);
+
+        $this->userRepository
+            ->shouldReceive('findByUuid')
+            ->once()
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
+
+        // Capture the user passed to save
+        $savedUser = null;
+        $this->userRepository
+            ->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(function (User $arg) use (&$savedUser) {
+                $savedUser = $arg; // Capture the argument
+                return count($arg->registrosHorarios()) === 1 && !$arg->registrosHorarios()[0]->isAbierto();
+            }))
+            ->andReturn($user);
+
+        $this->service->ficharSalida($userUuidValue);
+
+        // Assertions after the service call
+        $this->assertNotNull($savedUser, "User should have been saved.");
+        $this->assertCount(1, $savedUser->registrosHorarios());
+        $this->assertFalse($savedUser->registrosHorarios()[0]->isAbierto());
+        $this->assertNotNull($savedUser->registrosHorarios()[0]->salida());
+    }
+
+    public function test_it_throws_exception_on_fichar_salida_if_no_open_registro(): void
+    {
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
+        $user = $this->createUserAggregate($userUuidValue, [
+            [
+                'id' => 1,
+                'user_id' => 1,
+                'entrada' => Carbon::now()->subHours(2)->toDateTimeString(),
+                'salida' => Carbon::now()->subHour()->toDateTimeString()
+            ]
+        ]);
+
+        $this->userRepository
+            ->shouldReceive('findByUuid')
+            ->once()
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
         
-        $registroAbierto = new RegistroHorario(1, $userUuid, $entrada, null);
-        $registroCerrado = new RegistroHorario(1, $userUuid, $entrada, $salida);
+        // Expect the exception from the User entity's ficharSalida method
+        $this->expectException(Exception::class); 
+        $this->expectExceptionMessage('No existe un registro de entrada abierto para cerrar.');
 
-        $this->repository
-            ->shouldReceive('obtenerUltimoAbierto')
-            ->once()
-            ->with($userUuid)
-            ->andReturn($registroAbierto);
-
-        $this->repository
-            ->shouldReceive('cerrarRegistro')
-            ->once()
-            ->with($registroAbierto->id, Mockery::type(\Illuminate\Support\Carbon::class))
-            ->andReturn($registroCerrado);
-
-        $result = $this->service->ficharSalida($userUuid);
-
-        $this->assertInstanceOf(RegistroHorario::class, $result);
-        $this->assertEquals($registroAbierto->id, $result->id);
-        $this->assertEquals($entrada, $result->entrada);
-        $this->assertEquals($salida, $result->salida);
-    }
-
-    public function test_it_throws_exception_when_fichar_salida_without_entrada(): void
-    {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-
-        $this->repository
-            ->shouldReceive('obtenerUltimoAbierto')
-            ->once()
-            ->with($userUuid)
-            ->andReturn(null);
-
-        $this->repository
-            ->shouldNotReceive('cerrarRegistro');
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('No hay registro de entrada abierto para cerrar');
-
-        $this->service->ficharSalida($userUuid);
-    }
-
-    public function test_it_obtiene_ultimo_registro_successfully(): void
-    {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-        $entrada = now()->subHours(4);
-        
-        $registro = new RegistroHorario(1, $userUuid, $entrada, null);
-
-        $this->repository
-            ->shouldReceive('obtenerUltimoAbierto')
-            ->once()
-            ->with($userUuid)
-            ->andReturn($registro);
-
-        $result = $this->service->obtenerUltimoRegistro($userUuid);
-
-        $this->assertInstanceOf(RegistroHorario::class, $result);
-        $this->assertEquals($registro->id, $result->id);
-        $this->assertEquals($userUuid, $result->userId);
-        $this->assertEquals($entrada, $result->entrada);
-    }
-
-    public function test_it_obtiene_ultimo_registro_returns_null_when_no_registros(): void
-    {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-
-        $this->repository
-            ->shouldReceive('obtenerUltimoAbierto')
-            ->once()
-            ->with($userUuid)
-            ->andReturn(null);
-
-        $result = $this->service->obtenerUltimoRegistro($userUuid);
-
-        $this->assertNull($result);
+        $this->service->ficharSalida($userUuidValue);
     }
 
     public function test_it_calculates_segundos_acumulados_successfully(): void
     {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-        $today = now()->toDateString();
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
         
-        $entrada1 = now()->setTime(9, 0, 0);
-        $salida1 = now()->setTime(13, 0, 0);
-        $registro1 = new RegistroHorario(1, $userUuid, $entrada1->toDateTimeString(), $salida1->toDateTimeString());
+        $entrada1 = Carbon::now()->startOfDay()->addHours(9);
+        $salida1 = Carbon::now()->startOfDay()->addHours(13);
+        $registro1 = [
+            'id' => 1,
+            'user_id' => 1,
+            'entrada' => $entrada1->toDateTimeString(),
+            'salida' => $salida1->toDateTimeString()
+        ];
 
-        $entrada2 = now()->setTime(14, 0, 0);
-        $salida2 = now()->setTime(18, 0, 0);
-        $registro2 = new RegistroHorario(2, $userUuid, $entrada2->toDateTimeString(), $salida2->toDateTimeString());
+        $entrada2 = Carbon::now()->startOfDay()->addHours(14);
+        $salida2 = Carbon::now()->startOfDay()->addHours(18);
+        $registro2 = [
+            'id' => 2,
+            'user_id' => 1,
+            'entrada' => $entrada2->toDateTimeString(),
+            'salida' => $salida2->toDateTimeString()
+        ];
+        
+        $user = $this->createUserAggregate($userUuidValue, [$registro1, $registro2]);
 
-        $registros = [$registro1, $registro2];
-
-        $this->repository
-            ->shouldReceive('obtenerRegistros')
+        $this->userRepository
+            ->shouldReceive('findByUuid')
             ->once()
-            ->with($userUuid, $today)
-            ->andReturn($registros);
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
 
-        $result = $this->service->segundosAcumulados($userUuid);
+        $result = $this->service->segundosAcumulados($userUuidValue);
 
-        $this->assertIsInt($result);
-        // 4 horas + 4 horas = 8 horas = 28800 segundos
-        $expected = (4 * 3600) + (4 * 3600);
+        $expected = (4 * 3600) + (4 * 3600); // 8 hours
         $this->assertEquals($expected, $result);
     }
 
-    public function test_it_calculates_segundos_acumulados_returns_zero_when_no_registros(): void
+    public function test_it_calculates_segundos_acumulados_returns_zero_when_no_registros_for_today(): void
     {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-        $today = now()->toDateString();
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
+        
+        // Registros de ayer
+        $entrada1 = Carbon::yesterday()->startOfDay()->addHours(9);
+        $salida1 = Carbon::yesterday()->startOfDay()->addHours(13);
+        $registro1 = [
+            'id' => 1,
+            'user_id' => 1,
+            'entrada' => $entrada1->toDateTimeString(),
+            'salida' => $salida1->toDateTimeString()
+        ];
+        
+        $user = $this->createUserAggregate($userUuidValue, [$registro1]);
 
-        $this->repository
-            ->shouldReceive('obtenerRegistros')
+        $this->userRepository
+            ->shouldReceive('findByUuid')
             ->once()
-            ->with($userUuid, $today)
-            ->andReturn([]);
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
 
-        $result = $this->service->segundosAcumulados($userUuid);
+        $result = $this->service->segundosAcumulados($userUuidValue);
 
         $this->assertEquals(0, $result);
     }
 
     public function test_it_calculates_segundos_acumulados_ignores_registros_sin_salida(): void
     {
-        $userUuid = '123e4567-e89b-12d3-a456-426614174000';
-        $today = now()->toDateString();
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
         
-        $entrada1 = now()->setTime(9, 0, 0);
-        $salida1 = now()->setTime(13, 0, 0);
-        $registro1 = new RegistroHorario(1, $userUuid, $entrada1->toDateTimeString(), $salida1->toDateTimeString());
+        $entrada1 = Carbon::now()->startOfDay()->addHours(9);
+        $salida1 = Carbon::now()->startOfDay()->addHours(13);
+        $registro1 = [
+            'id' => 1,
+            'user_id' => 1,
+            'entrada' => $entrada1->toDateTimeString(),
+            'salida' => $salida1->toDateTimeString()
+        ];
 
-        $entrada2 = now()->setTime(14, 0, 0);
-        $registro2 = new RegistroHorario(2, $userUuid, $entrada2->toDateTimeString(), null);
+        $entrada2 = Carbon::now()->startOfDay()->addHours(14);
+        $registro2 = [ // Registro sin salida
+            'id' => 2,
+            'user_id' => 1,
+            'entrada' => $entrada2->toDateTimeString(),
+            'salida' => null
+        ];
 
-        $registros = [$registro1, $registro2];
+        $user = $this->createUserAggregate($userUuidValue, [$registro1, $registro2]);
 
-        $this->repository
-            ->shouldReceive('obtenerRegistros')
+        $this->userRepository
+            ->shouldReceive('findByUuid')
             ->once()
-            ->with($userUuid, $today)
-            ->andReturn($registros);
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
 
-        $result = $this->service->segundosAcumulados($userUuid);
+        $result = $this->service->segundosAcumulados($userUuidValue);
 
-        // Solo cuenta el registro1 (4 horas = 14400 segundos)
-        // El registro2 sin salida debería retornar 0 en segundosTrabajados()
-        $this->assertEquals(4 * 3600, $result);
+        $expected = (4 * 3600); // Only registro1 counts
+        $this->assertEquals($expected, $result);
+    }
+
+    public function test_has_open_registro_returns_true_if_open_exists(): void
+    {
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
+        
+        $openRegistro = [
+            'id' => 1,
+            'user_id' => 1,
+            'entrada' => Carbon::now()->subHour()->toDateTimeString(),
+            'salida' => null
+        ];
+        $user = $this->createUserAggregate($userUuidValue, [$openRegistro]);
+
+        $this->userRepository
+            ->shouldReceive('findByUuid')
+            ->once()
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
+
+        $result = $this->service->hasOpenRegistro($userUuidValue);
+        $this->assertTrue($result);
+    }
+
+    public function test_has_open_registro_returns_false_if_no_open_exists(): void
+    {
+        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
+        $userUuid = new Uuid($userUuidValue);
+        
+        $closedRegistro = [
+            'id' => 1,
+            'user_id' => 1,
+            'entrada' => Carbon::now()->subHours(2)->toDateTimeString(),
+            'salida' => Carbon::now()->subHour()->toDateTimeString()
+        ];
+        $user = $this->createUserAggregate($userUuidValue, [$closedRegistro]);
+
+        $this->userRepository
+            ->shouldReceive('findByUuid')
+            ->once()
+            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+                return $arg->getValue() === $userUuid->getValue();
+            }))
+            ->andReturn($user);
+
+        $result = $this->service->hasOpenRegistro($userUuidValue);
+        $this->assertFalse($result);
     }
 }
-

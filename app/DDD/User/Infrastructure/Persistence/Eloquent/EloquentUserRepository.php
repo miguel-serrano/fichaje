@@ -2,90 +2,152 @@
 
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
+use App\DDD\RegistroHorario\Domain\ValueObjects\RegistroHorarioId; // Import this
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\UserId;
+use App\DDD\User\Domain\ValueObjects\Uuid;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
 
 class EloquentUserRepository implements UserRepositoryInterface {
-    private function getTableName(): string {
+    private function getUsersTable(): string
+    {
         return 'users';
     }
-    
-    public function save(User $user): User {
-        $tableName = $this->getTableName();
-        $now = now();
-        
-        // Busca por uuid, NO por id.
-        $existing = DB::table($tableName)->where('uuid', $user->uuid()->getValue())->first();
-        
-        if ($existing) {
-            DB::table($tableName)->where('uuid', $user->uuid()->getValue())->update([
-                'email' => $user->email()->getValue(),
-                'name' => $user->name(),
-                'is_active' => $user->isActive(),
-                'updated_at' => $now
-            ]);
-        } else {
-            DB::table($tableName)->insert([
+
+    private function getRegistrosTable(): string
+    {
+        return 'registro_horarios';
+    }
+
+    public function save(User $user): User
+    {
+        $user_id = $user->id() ? $user->id()->getValue() : null;
+
+        DB::transaction(function () use ($user, &$user_id) {
+            $usersTable = $this->getUsersTable();
+            $registrosTable = $this->getRegistrosTable();
+            $now = now();
+
+            $userData = [
                 'uuid' => $user->uuid()->getValue(),
                 'email' => $user->email()->getValue(),
                 'name' => $user->name(),
                 'is_active' => $user->isActive(),
-                'created_at' => $now,
-                'updated_at' => $now
-            ]);
-        }
-        
-        $savedUser = DB::table($tableName)->where('uuid', $user->uuid()->getValue())->first();
-        return User::fromPrimitives(
-            $savedUser->id,
-            $savedUser->uuid,
-            $savedUser->email,
-            $savedUser->name,
-            $savedUser->is_active ?? true
-        );
+                'updated_at' => $now,
+            ];
+
+            if ($user_id) {
+                DB::table($usersTable)->where('id', $user_id)->update($userData);
+            } else {
+                $userData['created_at'] = $now;
+                // Insert the user and get the new ID
+                $user_id = DB::table($usersTable)->insertGetId($userData);
+            }
+
+            foreach ($user->registrosHorarios() as $registro) {
+                $registroData = [
+                    'user_id' => $user_id,
+                    'entrada' => $registro->entrada()->format('Y-m-d H:i:s'),
+                    'salida' => $registro->salida() ? $registro->salida()->format('Y-m-d H:i:s') : null,
+                ];
+
+                if ($registro->id()) {
+                    DB::table($registrosTable)->where('id', $registro->id()->getValue())->update($registroData);
+                } else {
+                    $newId = DB::table($registrosTable)->insertGetId($registroData);
+                    $registro->setId(new RegistroHorarioId($newId)); // Set the generated ID
+                }
+            }
+        });
+
+        // Re-fetch the user to get a clean state with all associations
+        return $this->findById(new UserId($user_id));
     }
 
 
-    public function findById(UserId $id): ?User {
-        $tableName = $this->getTableName();
-        $eloquentUser = DB::table($tableName)->where('id', $id->getValue())->first();
-        if (!$eloquentUser) return null;
+    public function findById(UserId $id): ?User
+    {
+        $eloquentUser = DB::table($this->getUsersTable())->where('id', $id->getValue())->first();
+
+        if (!$eloquentUser) {
+            return null;
+        }
+
+        $registrosHorarios = DB::table($this->getRegistrosTable())
+            ->where('user_id', $eloquentUser->id)
+            ->get()
+            ->map(fn ($r) => (array)$r)
+            ->toArray();
+
         return User::fromPrimitives(
             $eloquentUser->id,
             $eloquentUser->uuid,
             $eloquentUser->email,
             $eloquentUser->name,
-            $eloquentUser->is_active ?? true
+            $eloquentUser->is_active ?? true,
+            $registrosHorarios
         );
     }
 
-    public function existsByEmail(Email $email): bool {
-        $tableName = $this->getTableName();
-        return DB::table($tableName)->where('email', $email->getValue())->exists();
+    public function findByUuid(Uuid $uuid): ?User
+    {
+        $eloquentUser = DB::table($this->getUsersTable())->where('uuid', $uuid->getValue())->first();
+
+        if (!$eloquentUser) {
+            return null;
+        }
+
+        $registrosHorarios = DB::table($this->getRegistrosTable())
+            ->where('user_id', $eloquentUser->id)
+            ->get()
+            ->map(fn ($r) => (array)$r)
+            ->toArray();
+
+        return User::fromPrimitives(
+            $eloquentUser->id,
+            $eloquentUser->uuid,
+            $eloquentUser->email,
+            $eloquentUser->name,
+            $eloquentUser->is_active ?? true,
+            $registrosHorarios
+        );
+    }
+
+    public function existsByEmail(Email $email): bool
+    {
+        return DB::table($this->getUsersTable())->where('email', $email->getValue())->exists();
     }
 
     /** @return User[] */
-    public function findAll(): array {
-        $tableName = $this->getTableName();
-        $users = DB::table($tableName)->select('id', 'uuid', 'email', 'name', 'is_active')->get();
-        
-        return $users->map(function ($user) {
+    public function findAll(): array
+    {
+        $users = DB::table($this->getUsersTable())->get();
+        $allRegistros = DB::table($this->getRegistrosTable())->get()->groupBy('user_id');
+
+        return $users->map(function ($user) use ($allRegistros) {
+            $registros = $allRegistros->get($user->id, collect())
+                ->map(fn ($r) => (array)$r)
+                ->toArray();
+
             return User::fromPrimitives(
                 $user->id,
                 $user->uuid,
                 $user->email,
                 $user->name,
-                $user->is_active ?? true
+                $user->is_active ?? true,
+                $registros
             );
         })->toArray();
     }
 
-    public function delete(UserId $id): bool {
-        $tableName = $this->getTableName();
-        return DB::table($tableName)->where('id', $id->getValue())->delete() > 0;
+    public function delete(UserId $id): bool
+    {
+        return DB::transaction(function () use ($id) {
+            DB::table($this->getRegistrosTable())->where('user_id', $id->getValue())->delete();
+            return DB::table($this->getUsersTable())->where('id', $id->getValue())->delete() > 0;
+        });
     }
 }

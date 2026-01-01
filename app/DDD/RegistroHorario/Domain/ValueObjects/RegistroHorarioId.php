@@ -2,16 +2,17 @@
 
 namespace App\DDD\RegistroHorario\Domain\ValueObjects;
 
-class RegistroHorarioId
+final class RegistroHorarioId
 {
-    private $value;
-    public function __construct($value)
+    private int $value;
+
+    public function __construct(int $value)
     {
         $this->value = $value;
     }
-    public function value()
+
+    public function getValue(): int
     {
         return $this->value;
     }
 }
-

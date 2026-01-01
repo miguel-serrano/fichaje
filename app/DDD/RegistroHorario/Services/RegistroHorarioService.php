@@ -2,46 +2,79 @@
 
 namespace App\DDD\RegistroHorario\Services;
 
-use App\DDD\RegistroHorario\Domain\RegistroHorarioRepositoryInterface;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\Uuid;
+use Carbon\Carbon;
 
 class RegistroHorarioService
 {
-    protected $repository;
+    protected UserRepositoryInterface $repository;
 
-    public function __construct(RegistroHorarioRepositoryInterface $repository)
+    public function __construct(UserRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function ficharEntrada($userUuid)
+    public function ficharEntrada(string $userUuid): void
     {
-        return $this->repository->crearEntrada($userUuid, now());
-    }
+        $user = $this->repository->findByUuid(new Uuid($userUuid));
 
-    public function ficharSalida($userUuid)
-    {
-        $registroAbierto = $this->repository->obtenerUltimoAbierto($userUuid);
-        
-        if (!$registroAbierto) {
-            throw new \InvalidArgumentException('No hay registro de entrada abierto para cerrar');
+        if (!$user) {
+            throw new \InvalidArgumentException('Usuario no encontrado.');
         }
-        
-        return $this->repository->cerrarRegistro($registroAbierto->id, now());
+
+        $user->ficharEntrada();
+
+        $this->repository->save($user);
     }
 
-    public function obtenerUltimoRegistro($userUuid)
+    public function ficharSalida(string $userUuid): void
     {
-        return $this->repository->obtenerUltimoAbierto($userUuid);
+        $user = $this->repository->findByUuid(new Uuid($userUuid));
+
+        if (!$user) {
+            throw new \InvalidArgumentException('Usuario no encontrado.');
+        }
+
+        $user->ficharSalida();
+
+        $this->repository->save($user);
     }
 
-    public function segundosAcumulados($userUuid)
+    public function segundosAcumulados(string $userUuid): int
     {
-        $registros = $this->repository->obtenerRegistros($userUuid, now()->toDateString());
+        $user = $this->repository->findByUuid(new Uuid($userUuid));
+
+        if (!$user) {
+            throw new \InvalidArgumentException('Usuario no encontrado.');
+        }
+
+        $today = Carbon::now()->startOfDay();
         $suma = 0;
-        foreach ($registros as $registro) {
-            $suma += $registro->segundosTrabajados();
+
+        foreach ($user->registrosHorarios() as $registro) {
+            if (Carbon::instance($registro->entrada())->isSameDay($today)) {
+                $suma += $registro->segundosTrabajados();
+            }
         }
+        
         return $suma;
+    }
+
+    public function hasOpenRegistro(string $userUuid): bool
+    {
+        $user = $this->repository->findByUuid(new Uuid($userUuid));
+
+        if (!$user) {
+            throw new \InvalidArgumentException('Usuario no encontrado.');
+        }
+
+        foreach ($user->registrosHorarios() as $registro) {
+            if ($registro->isAbierto()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -7,60 +7,18 @@ The core logic is organized into bounded contexts (`User`, `RegistroHorario`), w
 A notable characteristic of this architecture is the strict separation between the rich **Domain Entities** (pure PHP objects that contain business logic) and the persistence layer. The infrastructure layer uses a repository pattern with Laravel's `DB` facade to manually map data to and from the domain entities, deliberately avoiding the use of active record-style Eloquent models for core domain operations.
 
 ## Building and Running
+docs: https://laravel.com/docs/12.x/sail
 
-### Environment Setup
+alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
 
-1.  **Install PHP Dependencies:**
-    ```bash
-    composer install
-    ```
-2.  **Install Frontend Dependencies:**
-    ```bash
-    npm install
-    ```
-3.  **Setup Environment File:**
-    *   Copy the example environment file. The project scripts do this automatically on `composer install`, but you can do it manually if needed.
-    ```bash
-    cp .env.example .env
-    ```
-    *   Generate the application key:
-    ```bash
-    php artisan key:generate
-    ```
-4.  **Configure `.env`:**
-    *   Set up your database connection details (e.g., `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`).
-5.  **Run Database Migrations:**
-    ```bash
-    php artisan migrate
-    ```
-
-### Running the Application
-
-*   **Development Server:**
-    *   Use `php artisan serve` to run the backend server.
-    *   Use `npm run dev` to start the Vite server for frontend assets.
-*   **Docker (Recommended):**
-    *   The repository contains a `compose.yaml` file. You can run the application using Docker:
-    ```bash
-    docker-compose up -d
-    ```
+sail install
+sail up
+sail down
 
 ### Running Tests
-
-The project uses PHPUnit for testing. Tests are separated into `Unit` and `Feature` suites.
-
-*   **Run all tests:**
-    ```bash
-    php artisan test
-    ```
-*   Or execute PHPUnit directly:
-    ```bash
-    ./vendor/bin/phpunit
-    ```
-*   The tests are configured to run against an in-memory SQLite database for speed and isolation, as defined in `phpunit.xml`.
+sail artisan test
 
 ## Development Conventions
-
 *   **Domain-Driven Design:** All core business logic should reside within the `app/DDD` directory, organized by bounded context.
     *   **Domain Layer:** Contains pure, persistence-ignorant entities, value objects, and repository interfaces. Business rules and invariants are enforced here.
     *   **Application Layer:** Contains command/query objects and their handlers. This layer orchestrates the execution of use cases by interacting with the domain layer.
@@ -85,7 +43,7 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
 - php - 8.2.29
-- laravel/framework (LARAVEL) - v10
+- laravel/framework (LARAVEL) - v11
 - laravel/prompts (PROMPTS) - v0
 - laravel/sanctum (SANCTUM) - v3
 - laravel/mcp (MCP) - v0
@@ -245,18 +203,18 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `vendor/bin/sail npm run build` or ask the user to run `vendor/bin/sail npm run dev` or `vendor/bin/sail composer run dev`.
 
 
-=== laravel/v10 rules ===
+=== laravel/v11 rules ===
 
-## Laravel 10
+## Laravel 11
 
 - Use the `search-docs` tool to get version specific documentation.
 - Middleware typically live in `app/Http/Middleware/` and service providers in `app/Providers/`.
-- Laravel 10 has a `bootstrap/app.php` file that creates the application instance and binds kernel contracts, but does not use it for application configuration like Laravel 11:
-    - Middleware registration is in `app/Http/Kernel.php`
-    - Exception handling is in `app/Exceptions/Handler.php`
-    - Console commands and schedule registration is in `app/Console/Kernel.php`
-    - Rate limits likely exist in `RouteServiceProvider` or `app/Http/Kernel.php`
-- When using Eloquent model casts, you must use `protected $casts = [];` and not the `casts()` method. The `casts()` method isn't available on models in Laravel 10.
+- Laravel 11 centralizes much of its application configuration within the `bootstrap/app.php` file. This file is responsible for creating the application instance, binding kernel contracts, and directly registering:
+    - Middleware
+    - Exception handling
+    - Console commands and schedule
+    - Routes, including rate limits
+
 
 
 === pint/core rules ===

@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
-use App\DDD\RegistroHorario\Domain\RegistroHorarioRepositoryInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Console\Command;
 
@@ -20,10 +19,6 @@ class TestDependencyInjection extends Command
             // Test User Repository
             $userRepo = app(UserRepositoryInterface::class);
             $this->info('✅ UserRepositoryInterface resolved: ' . get_class($userRepo));
-            
-            // Test RegistroHorario Repository
-            $registroRepo = app(RegistroHorarioRepositoryInterface::class);
-            $this->info('✅ RegistroHorarioRepositoryInterface resolved: ' . get_class($registroRepo));
             
             // Test Handler with dependencies
             $handler = app(GetAllUsersWithTimeQueryHandler::class);
