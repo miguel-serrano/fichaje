@@ -4,7 +4,7 @@ namespace App\DDD\User\Application\Handler;
 
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\exceptions\UserNotFoundException;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\exceptions\UserHasNotPermissionsException;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
 use App\DDD\User\Domain\Entity\User; // Import User entity

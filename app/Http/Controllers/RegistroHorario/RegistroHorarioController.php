@@ -13,7 +13,7 @@ use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use App\DDD\User\Domain\exceptions\UserNotFoundException;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 
 class RegistroHorarioController extends Controller
 {

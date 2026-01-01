@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\DDD\User\Domain\exceptions\UserNotFoundException;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Entity\User;
 
 class UserController extends Controller

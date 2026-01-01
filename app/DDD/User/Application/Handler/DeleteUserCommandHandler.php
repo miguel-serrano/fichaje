@@ -5,7 +5,7 @@ namespace App\DDD\User\Application\Handler;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\exceptions\UserNotFoundException;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 
 class DeleteUserCommandHandler
 {

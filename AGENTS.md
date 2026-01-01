@@ -92,7 +92,7 @@ app/
 │   │   │   ├── Entity/           # Domain entities
 │   │   │   ├── ValueObjects/     # Value objects (Email, UserId, etc.)
 │   │   │   ├── Interface/        # Repository interfaces
-│   │   │   └── exceptions/       # Domain exceptions
+│   │   │   └── Exceptions/       # Domain exceptions
 │   │   └── Infrastructure/
 │   │       ├── Persistence/      # Repository implementations
 │   │       └── Response/         # API response objects
@@ -596,3 +596,15 @@ vendor/bin/sail php artisan clear-compiled && vendor/bin/sail composer dump-auto
 
 **Remember**: This application follows strict architectural patterns. When in doubt, examine existing implementations in the same bounded context before creating new code.
 
+// Cargar usuario con todas sus entradas
+$user = User::with('timeEntries')->find(1);
+
+// Verificar si tiene entrada abierta
+$openEntry = $user->openTimeEntry;
+
+// Obtener todas las entradas del usuario
+$allEntries = $user->timeEntries;
+
+// Desde una entrada, obtener el usuario
+$timeEntry = TimeEntry::with('user')->first();
+$userName = $timeEntry->user->name;
