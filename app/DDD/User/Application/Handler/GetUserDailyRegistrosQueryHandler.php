@@ -4,14 +4,14 @@ namespace App\DDD\User\Application\Handler;
 
 use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\RegistroHorario\Services\RegistroHorarioService;
+use App\DDD\TimeTracking\Services\TimeTrackingService;
 use Illuminate\Support\Facades\DB;
 
 class GetUserDailyRegistrosQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private RegistroHorarioService $registroHorarioService, // Injected directly
+        private TimeTrackingService $timeTrackingService, // Injected directly
     ) {}
 
     public function handle(GetUserDailyRegistrosQuery $query): array
@@ -19,7 +19,7 @@ class GetUserDailyRegistrosQueryHandler
         $userId = $query->getUserId();
         
         // Obtener todos los registros del usuario agrupados por día
-        $registros = DB::table('registro_horarios')
+        $registros = DB::table('time_entries')
             ->where('user_id', $userId)
             ->whereNotNull('salida') // Solo registros completos
             ->orderBy('entrada', 'desc')

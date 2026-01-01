@@ -1,21 +1,18 @@
 <?php
 
-namespace App\DDD\RegistroHorario\Services;
+namespace App\DDD\TimeTracking\Services;
 
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Carbon\Carbon;
 
-class RegistroHorarioService
+class TimeTrackingService
 {
-    protected UserRepositoryInterface $repository;
+    public function __construct(
+        protected UserRepositoryInterface $repository
+    ) {}
 
-    public function __construct(UserRepositoryInterface $repository)
-    {
-        $this->repository = $repository;
-    }
-
-    public function ficharEntrada(string $userUuid): void
+    public function clockIn(string $userUuid): void
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
@@ -28,7 +25,7 @@ class RegistroHorarioService
         $this->repository->save($user);
     }
 
-    public function ficharSalida(string $userUuid, ?int $registroHorarioId = null): void
+    public function clockOut(string $userUuid, ?int $timeEntryId = null): void
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
@@ -37,10 +34,10 @@ class RegistroHorarioService
         }
 
         // Si se proporciona un ID específico, cerrar ese registro
-        if ($registroHorarioId !== null) {
+        if ($timeEntryId !== null) {
             $registroToClose = null;
             foreach ($user->registrosHorarios() as $registro) {
-                if ($registro->id() && $registro->id()->getValue() === $registroHorarioId) {
+                if ($registro->id() && $registro->id()->getValue() === $timeEntryId) {
                     $registroToClose = $registro;
                     break;
                 }
@@ -63,7 +60,7 @@ class RegistroHorarioService
         $this->repository->save($user);
     }
 
-    public function segundosAcumulados(string $userUuid): int
+    public function getAccumulatedSeconds(string $userUuid): int
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
@@ -83,7 +80,7 @@ class RegistroHorarioService
         return $suma;
     }
 
-    public function hasOpenRegistro(string $userUuid): bool
+    public function hasOpenTimeEntry(string $userUuid): bool
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
@@ -98,6 +95,4 @@ class RegistroHorarioService
         }
         return false;
     }
-
 }
-

@@ -7,7 +7,7 @@ use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\exceptions\UserNotFoundException;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use PHPUnit\Framework\TestCase;
 use Mockery;
 

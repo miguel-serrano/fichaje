@@ -1,21 +1,21 @@
 <?php
 
-namespace App\DDD\RegistroHorario\Domain;
+namespace App\DDD\TimeTracking\Domain;
 
-use App\DDD\RegistroHorario\Domain\ValueObjects\RegistroHorarioId;
+use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use Carbon\Carbon;
 use DateTime;
 
-final class RegistroHorario
+final class TimeEntry
 {
-    private ?RegistroHorarioId $id;
+    private ?TimeEntryId $id;
     private UserId $userId;
     private DateTime $entrada;
     private ?DateTime $salida;
 
     private function __construct(
-        ?RegistroHorarioId $id,
+        ?TimeEntryId $id,
         UserId $userId,
         DateTime $entrada,
         ?DateTime $salida
@@ -43,19 +43,19 @@ final class RegistroHorario
         ?string $salida
     ): self {
         return new self(
-            $id ? new RegistroHorarioId($id) : null,
+            $id ? new TimeEntryId($id) : null,
             new UserId($userId),
             new DateTime($entrada),
             $salida ? new DateTime($salida) : null
         );
     }
 
-    public function id(): ?RegistroHorarioId
+    public function id(): ?TimeEntryId
     {
         return $this->id;
     }
 
-    public function setId(RegistroHorarioId $id): void
+    public function setId(TimeEntryId $id): void
     {
         $this->id = $id;
     }
@@ -103,4 +103,3 @@ final class RegistroHorario
         ];
     }
 }
-

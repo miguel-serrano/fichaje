@@ -49,7 +49,7 @@ class RegistroHorarioTest extends TestCase
         $response->assertSessionHas('success', 'Entrada registrada correctamente');
         
         // Verificar que se creó el registro
-        $this->assertDatabaseHas('registro_horarios', [
+        $this->assertDatabaseHas('time_entries', [
             'user_id' => $savedUser->id()->getValue(), // Use the actual integer ID
             'salida' => null
         ]);
@@ -92,11 +92,11 @@ class RegistroHorarioTest extends TestCase
         $response->assertSessionHas('success', 'Salida registrada correctamente');
         
         // Verificar que se actualizó el registro con salida
-        $this->assertDatabaseMissing('registro_horarios', [
+        $this->assertDatabaseMissing('time_entries', [
             'user_id' => $savedUser->id()->getValue(),
             'salida' => null
         ]);
-        $this->assertDatabaseHas('registro_horarios', [
+        $this->assertDatabaseHas('time_entries', [
             'user_id' => $savedUser->id()->getValue(),
             ['salida', '!=', null] // Assert that salida is not null
         ]);
@@ -238,7 +238,7 @@ class RegistroHorarioTest extends TestCase
         $response->assertSessionHas('success', 'Fichaje cerrado correctamente');
 
         // Verificar que el registro está cerrado en la BD
-        $this->assertDatabaseHas('registro_horarios', [
+        $this->assertDatabaseHas('time_entries', [
             'id' => $openRegistro->id()->getValue(),
             'user_id' => $savedUser->id()->getValue(),
             ['salida', '!=', null]

@@ -3,14 +3,14 @@
 namespace App\DDD\User\Application\Handler;
 
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\RegistroHorario\Services\RegistroHorarioService;
+use App\DDD\TimeTracking\Services\TimeTrackingService;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 
 class GetAllUsersWithTimeQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private RegistroHorarioService $registroHorarioService, // Injected directly
+        private TimeTrackingService $timeTrackingService, // Injected directly
     ) {}
 
     public function handle(GetAllUsersWithTimeQuery $query): array
@@ -20,7 +20,7 @@ class GetAllUsersWithTimeQueryHandler
 
         foreach ($users as $user) {
             try {
-                $segundos = $this->registroHorarioService->segundosAcumulados($user->uuid()->getValue());
+                $segundos = $this->timeTrackingService->getAccumulatedSeconds($user->uuid()->getValue());
                 $tiempoFormateado = $this->formatearTiempo($segundos);
                 
                 $userData = $user->toArray();
