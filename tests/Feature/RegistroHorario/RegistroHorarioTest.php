@@ -3,15 +3,12 @@
 namespace Tests\Feature\RegistroHorario;
 
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
-use Carbon\Carbon;
-use Exception;
 
 class RegistroHorarioTest extends TestCase
 {
@@ -22,6 +19,7 @@ class RegistroHorarioTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
         // Resolve the UserRepositoryInterface from the service container
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
     }
@@ -29,7 +27,7 @@ class RegistroHorarioTest extends TestCase
     public function test_can_view_registro_horario_index(): void
     {
         $response = $this->get('/registro-horario');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('registro_horario');
         $response->assertViewHas(['users', 'segundos', 'selectedUserUuid', 'tieneRegistroAbierto']);
@@ -42,16 +40,16 @@ class RegistroHorarioTest extends TestCase
         $savedUser = $this->userRepository->save($user); // Save first to get ID
 
         $response = $this->post('/registro-horario/entrada', [
-            'userUuid' => $savedUser->uuid()->getValue()
+            'userUuid' => $savedUser->uuid()->getValue(),
         ]);
-        
+
         $response->assertRedirect();
         $response->assertSessionHas('success', 'Entrada registrada correctamente');
-        
+
         // Verificar que se creó el registro
         $this->assertDatabaseHas('time_entries', [
             'user_id' => $savedUser->id()->getValue(), // Use the actual integer ID
-            'salida' => null
+            'salida' => null,
         ]);
     }
 
@@ -66,13 +64,12 @@ class RegistroHorarioTest extends TestCase
 
         // Intentar fichar entrada de nuevo
         $response = $this->post('/registro-horario/entrada', [
-            'userUuid' => $savedUser->uuid()->getValue()
+            'userUuid' => $savedUser->uuid()->getValue(),
         ]);
-        
+
         $response->assertRedirect();
         $response->assertSessionHas('error', 'Ya existe un registro de entrada abierto.');
     }
-
 
     public function test_can_fichar_salida(): void
     {
@@ -85,20 +82,20 @@ class RegistroHorarioTest extends TestCase
 
         // Fichar salida
         $response = $this->post('/registro-horario/salida', [
-            'userUuid' => $savedUser->uuid()->getValue()
+            'userUuid' => $savedUser->uuid()->getValue(),
         ]);
-        
+
         $response->assertRedirect();
         $response->assertSessionHas('success', 'Salida registrada correctamente');
-        
+
         // Verificar que se actualizó el registro con salida
         $this->assertDatabaseMissing('time_entries', [
             'user_id' => $savedUser->id()->getValue(),
-            'salida' => null
+            'salida' => null,
         ]);
         $this->assertDatabaseHas('time_entries', [
             'user_id' => $savedUser->id()->getValue(),
-            ['salida', '!=', null] // Assert that salida is not null
+            ['salida', '!=', null], // Assert that salida is not null
         ]);
     }
 
@@ -109,9 +106,9 @@ class RegistroHorarioTest extends TestCase
         $savedUser = $this->userRepository->save($user);
 
         $response = $this->post('/registro-horario/salida', [
-            'userUuid' => $savedUser->uuid()->getValue()
+            'userUuid' => $savedUser->uuid()->getValue(),
         ]);
-        
+
         $response->assertRedirect();
         $response->assertSessionHas('error', 'No existe un registro de entrada abierto para cerrar.');
     }
@@ -124,7 +121,7 @@ class RegistroHorarioTest extends TestCase
 
         // Test UUID inválido para entrada
         $response = $this->post('/registro-horario/entrada', [
-            'userUuid' => 'invalid-uuid'
+            'userUuid' => 'invalid-uuid',
         ]);
         $response->assertSessionHasErrors(['userUuid']);
 
@@ -134,7 +131,7 @@ class RegistroHorarioTest extends TestCase
 
         // Test UUID inválido para salida
         $response = $this->post('/registro-horario/salida', [
-            'userUuid' => 'invalid-uuid'
+            'userUuid' => 'invalid-uuid',
         ]);
         $response->assertSessionHasErrors(['userUuid']);
     }
@@ -166,11 +163,11 @@ class RegistroHorarioTest extends TestCase
         $this->assertFalse($fetchedUser->registrosHorarios()[0]->isAbierto());
         $this->assertFalse($fetchedUser->registrosHorarios()[1]->isAbierto());
 
-        $response = $this->get('/registro-horario?userUuid=' . $fetchedUser->uuid()->getValue());
-        
+        $response = $this->get('/registro-horario?userUuid='.$fetchedUser->uuid()->getValue());
+
         $response->assertStatus(200);
         $response->assertViewIs('registro_horario');
-        
+
         // Verificar que se calcularon los segundos
         $viewData = $response->viewData('segundos');
         $this->assertGreaterThan(0, $viewData); // Should be > 0
@@ -187,10 +184,10 @@ class RegistroHorarioTest extends TestCase
         $userWithOpenEntry->ficharEntrada(); // Fichar entrada
         $this->userRepository->save($userWithOpenEntry); // Guardar con registro abierto
 
-        $response = $this->get('/registro-horario?userUuid=' . $savedUser->uuid()->getValue());
-        
+        $response = $this->get('/registro-horario?userUuid='.$savedUser->uuid()->getValue());
+
         $response->assertStatus(200);
-        
+
         // Verificar que detecta registro abierto
         $tieneRegistroAbierto = $response->viewData('tieneRegistroAbierto');
         $this->assertTrue($tieneRegistroAbierto);
@@ -208,10 +205,10 @@ class RegistroHorarioTest extends TestCase
         $userWithClosedEntry->ficharSalida(); // Fichar salida
         $this->userRepository->save($userWithClosedEntry); // Guardar con registro cerrado
 
-        $response = $this->get('/registro-horario?userUuid=' . $savedUser->uuid()->getValue());
-        
+        $response = $this->get('/registro-horario?userUuid='.$savedUser->uuid()->getValue());
+
         $response->assertStatus(200);
-        
+
         // Verificar que no detecta registro abierto
         $tieneRegistroAbierto = $response->viewData('tieneRegistroAbierto');
         $this->assertFalse($tieneRegistroAbierto);
@@ -226,12 +223,12 @@ class RegistroHorarioTest extends TestCase
         $userWithOpenEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
         $userWithOpenEntry->ficharEntrada();
         $savedUser = $this->userRepository->save($userWithOpenEntry);
-        
-        $openRegistro = collect($savedUser->registrosHorarios())->first(fn($reg) => $reg->isAbierto());
+
+        $openRegistro = collect($savedUser->registrosHorarios())->first(fn ($reg) => $reg->isAbierto());
         $this->assertNotNull($openRegistro);
 
         $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $openRegistro->id()->getValue()]), [
-            'userUuid' => $savedUser->uuid()->getValue()
+            'userUuid' => $savedUser->uuid()->getValue(),
         ]);
 
         $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
@@ -241,7 +238,7 @@ class RegistroHorarioTest extends TestCase
         $this->assertDatabaseHas('time_entries', [
             'id' => $openRegistro->id()->getValue(),
             'user_id' => $savedUser->id()->getValue(),
-            ['salida', '!=', null]
+            ['salida', '!=', null],
         ]);
     }
 
@@ -251,7 +248,7 @@ class RegistroHorarioTest extends TestCase
         $nonExistentUuid = '123e4567-e89b-12d3-a456-426614174000'; // Valid format, non-existent
 
         $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]), [
-            'userUuid' => $nonExistentUuid
+            'userUuid' => $nonExistentUuid,
         ]);
 
         $response->assertRedirect(route('users.index')); // Redirects to index on error
@@ -266,7 +263,7 @@ class RegistroHorarioTest extends TestCase
         $registroId = 999; // Non-existent RegistroHorario ID
 
         $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]), [
-            'userUuid' => $savedUser->uuid()->getValue()
+            'userUuid' => $savedUser->uuid()->getValue(),
         ]);
 
         $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
@@ -283,11 +280,11 @@ class RegistroHorarioTest extends TestCase
         $userWithClosedEntry->ficharSalida();
         $savedUser = $this->userRepository->save($userWithClosedEntry);
 
-        $closedRegistro = collect($savedUser->registrosHorarios())->first(fn($reg) => !$reg->isAbierto());
+        $closedRegistro = collect($savedUser->registrosHorarios())->first(fn ($reg) => ! $reg->isAbierto());
         $this->assertNotNull($closedRegistro);
 
         $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $closedRegistro->id()->getValue()]), [
-            'userUuid' => $savedUser->uuid()->getValue()
+            'userUuid' => $savedUser->uuid()->getValue(),
         ]);
 
         $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
