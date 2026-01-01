@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class TimeEntry extends Model
 {
     use HasFactory;
-    protected $table = 'time_entries';
+    protected $table = 'registro_horarios';
     protected $fillable = ['user_id', 'entrada', 'salida'];
     protected $casts = [
         'user_id' => 'string',
     ];
 
-    public $timestamps = true;
+    public $timestamps = false;
 }
 
