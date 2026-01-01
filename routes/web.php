@@ -19,5 +19,4 @@ Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.de
 
 Route::get('/registro-horario', [RegistroHorarioController::class, 'index'])->name('registro_horario.index');
 Route::post('/registro-horario/entrada', [RegistroHorarioController::class, 'ficharEntrada'])->name('registro_horario.entrada');
-Route::post('/registro-horario/salida', [RegistroHorarioController::class, 'ficharSalida'])->name('registro_horario.salida');
-Route::post('/registro-horario/cerrar/{registroHorarioId}', [RegistroHorarioController::class, 'cerrarRegistro'])->name('registro_horario.cerrar');
+Route::post('/registro-horario/salida/{registroHorarioId?}', [RegistroHorarioController::class, 'ficharSalida'])->name('registro_horario.salida');

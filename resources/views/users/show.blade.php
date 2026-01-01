@@ -136,7 +136,7 @@
                                             </td>
                                             <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                                 @if($registro->isAbierto())
-                                                    <form action="{{ route('registro_horario.cerrar', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST">
+                                                    <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="userUuid" value="{{ $user->uuid()->getValue() }}">
                                                         <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">

@@ -230,7 +230,7 @@ class RegistroHorarioTest extends TestCase
         $openRegistro = collect($savedUser->registrosHorarios())->first(fn($reg) => $reg->isAbierto());
         $this->assertNotNull($openRegistro);
 
-        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $openRegistro->id()->getValue()]), [
+        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $openRegistro->id()->getValue()]), [
             'userUuid' => $savedUser->uuid()->getValue()
         ]);
 
@@ -250,7 +250,7 @@ class RegistroHorarioTest extends TestCase
         $registroId = 1; // Dummy ID
         $nonExistentUuid = '123e4567-e89b-12d3-a456-426614174000'; // Valid format, non-existent
 
-        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $registroId]), [
+        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]), [
             'userUuid' => $nonExistentUuid
         ]);
 
@@ -265,7 +265,7 @@ class RegistroHorarioTest extends TestCase
 
         $registroId = 999; // Non-existent RegistroHorario ID
 
-        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $registroId]), [
+        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]), [
             'userUuid' => $savedUser->uuid()->getValue()
         ]);
 
@@ -286,7 +286,7 @@ class RegistroHorarioTest extends TestCase
         $closedRegistro = collect($savedUser->registrosHorarios())->first(fn($reg) => !$reg->isAbierto());
         $this->assertNotNull($closedRegistro);
 
-        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $closedRegistro->id()->getValue()]), [
+        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $closedRegistro->id()->getValue()]), [
             'userUuid' => $savedUser->uuid()->getValue()
         ]);
 

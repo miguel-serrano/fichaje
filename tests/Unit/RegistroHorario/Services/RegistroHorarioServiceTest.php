@@ -323,7 +323,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_it_cerrar_registro_successfully(): void
+    public function test_it_fichar_salida_with_registro_id_successfully(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $registroId = 1;
@@ -358,7 +358,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $this->service->cerrarRegistro($userUuidValue, $registroId);
+        $this->service->ficharSalida($userUuidValue, $registroId);
 
         $this->assertNotNull($savedUser, "User should have been saved.");
         $closedEntry = collect($savedUser->registrosHorarios())->first(function ($reg) use ($registroId) {
@@ -369,7 +369,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->assertNotNull($closedEntry->salida());
     }
 
-    public function test_it_throws_exception_on_cerrar_registro_if_user_not_found(): void
+    public function test_it_throws_exception_on_fichar_salida_with_registro_id_if_user_not_found(): void
     {
         $userUuidValue = Str::uuid()->toString();
         $registroId = 1;
@@ -386,10 +386,10 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Usuario no encontrado.');
 
-        $this->service->cerrarRegistro($userUuidValue, $registroId);
+        $this->service->ficharSalida($userUuidValue, $registroId);
     }
 
-    public function test_it_throws_exception_on_cerrar_registro_if_entry_not_found(): void
+    public function test_it_throws_exception_on_fichar_salida_with_registro_id_if_entry_not_found(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $registroId = 999; // Non-existent ID
@@ -416,10 +416,10 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Registro horario no encontrado.');
 
-        $this->service->cerrarRegistro($userUuidValue, $registroId);
+        $this->service->ficharSalida($userUuidValue, $registroId);
     }
 
-    public function test_it_throws_exception_on_cerrar_registro_if_entry_already_closed(): void
+    public function test_it_throws_exception_on_fichar_salida_with_registro_id_if_entry_already_closed(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $registroId = 1;
@@ -445,6 +445,6 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('El registro horario ya está cerrado.');
 
-        $this->service->cerrarRegistro($userUuidValue, $registroId);
+        $this->service->ficharSalida($userUuidValue, $registroId);
     }
 }
