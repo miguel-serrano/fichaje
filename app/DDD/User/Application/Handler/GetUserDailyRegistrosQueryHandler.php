@@ -19,7 +19,7 @@ class GetUserDailyRegistrosQueryHandler
         $userId = $query->getUserId();
         
         // Obtener todos los registros del usuario agrupados por día
-        $registros = DB::table('registro_horarios')
+        $registros = DB::table('time_entries')
             ->where('user_id', $userId)
             ->whereNotNull('salida') // Solo registros completos
             ->orderBy('entrada', 'desc')

@@ -19,7 +19,7 @@ class EloquentUserRepository implements UserRepositoryInterface {
 
     private function getRegistrosTable(): string
     {
-        return 'registro_horarios';
+        return 'time_entries';
     }
 
     public function save(User $user): User
