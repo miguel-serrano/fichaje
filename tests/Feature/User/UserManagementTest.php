@@ -6,7 +6,6 @@ use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -16,7 +15,7 @@ class UserManagementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
         // Crear tabla de usuarios para tests
         // RefreshDatabase se encarga de las migraciones automáticamente
     }
@@ -24,7 +23,7 @@ class UserManagementTest extends TestCase
     public function test_can_view_users_index_page(): void
     {
         $response = $this->get('/users');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('users.index');
         $response->assertViewHas('users');
@@ -33,7 +32,7 @@ class UserManagementTest extends TestCase
     public function test_can_view_users_create_page(): void
     {
         $response = $this->get('/users/create');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('users.create');
     }
@@ -42,19 +41,19 @@ class UserManagementTest extends TestCase
     {
         $userData = [
             'email' => 'test@example.com',
-            'name' => 'Test User'
+            'name' => 'Test User',
         ];
 
         $response = $this->post('/users', $userData);
-        
+
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'User created successfully!');
-        
+
         // Verificar que el usuario fue creado en la base de datos
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
             'name' => 'Test User',
-            'is_active' => true
+            'is_active' => true,
         ]);
     }
 
@@ -63,13 +62,13 @@ class UserManagementTest extends TestCase
         // Crear usuario inicial
         $this->post('/users', [
             'email' => 'test@example.com',
-            'name' => 'First User'
+            'name' => 'First User',
         ]);
 
         // Intentar crear otro usuario con el mismo email
         $response = $this->post('/users', [
             'email' => 'test@example.com',
-            'name' => 'Second User'
+            'name' => 'Second User',
         ]);
 
         $response->assertRedirect();
@@ -79,12 +78,12 @@ class UserManagementTest extends TestCase
     public function test_can_view_specific_user(): void
     {
         // Crear un usuario primero
-        $repository = new EloquentUserRepository();
+        $repository = new EloquentUserRepository;
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $repository->save($user);
 
         $response = $this->get("/users/{$savedUser->id()->getValue()}");
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('users.show');
         $response->assertViewHas('user');
@@ -93,32 +92,32 @@ class UserManagementTest extends TestCase
     public function test_can_delete_user(): void
     {
         // Crear un usuario primero
-        $repository = new EloquentUserRepository();
+        $repository = new EloquentUserRepository;
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $repository->save($user);
 
         $response = $this->delete("/users/{$savedUser->id()->getValue()}");
-        
+
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'User deleted successfully!');
-        
+
         // Verificar que el usuario fue eliminado
         $this->assertDatabaseMissing('users', [
-            'id' => $savedUser->id()->getValue()
+            'id' => $savedUser->id()->getValue(),
         ]);
     }
 
     public function test_can_get_users_as_json(): void
     {
         // Crear algunos usuarios
-        $repository = new EloquentUserRepository();
+        $repository = new EloquentUserRepository;
         $user1 = User::create(new Email('user1@example.com'), 'User One');
         $user2 = User::create(new Email('user2@example.com'), 'User Two');
         $repository->save($user1);
         $repository->save($user2);
 
         $response = $this->getJson('/users');
-        
+
         $response->assertStatus(200);
         $response->assertJsonStructure([
             '*' => [
@@ -127,8 +126,8 @@ class UserManagementTest extends TestCase
                 'email',
                 'name',
                 'is_active',
-                'tiempo_acumulado'
-            ]
+                'tiempo_acumulado',
+            ],
         ]);
     }
 
@@ -136,20 +135,20 @@ class UserManagementTest extends TestCase
     {
         // Test email requerido
         $response = $this->post('/users', [
-            'name' => 'Test User'
+            'name' => 'Test User',
         ]);
         $response->assertSessionHasErrors(['email']);
 
         // Test nombre requerido
         $response = $this->post('/users', [
-            'email' => 'test@example.com'
+            'email' => 'test@example.com',
         ]);
         $response->assertSessionHasErrors(['name']);
 
         // Test email inválido
         $response = $this->post('/users', [
             'email' => 'invalid-email',
-            'name' => 'Test User'
+            'name' => 'Test User',
         ]);
         $response->assertSessionHasErrors(['email']);
     }

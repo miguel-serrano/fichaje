@@ -3,15 +3,11 @@
 namespace Tests\Feature\Integration;
 
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\ValueObjects\Uuid;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
-use Carbon\Carbon;
-use Exception;
 
 class UserRegistroHorarioIntegrationTest extends TestCase
 {
@@ -22,6 +18,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
         // Resolve the UserRepositoryInterface from the service container
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
     }
@@ -36,26 +33,26 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
         $userWithTimeEntries->ficharEntrada(); // 1st entry (open)
         $this->userRepository->save($userWithTimeEntries);
-        sleep(1); 
+        sleep(1);
         $userWithTimeEntries->ficharSalida(); // Close 1st entry
         $this->userRepository->save($userWithTimeEntries);
 
-        sleep(1); 
+        sleep(1);
         $userWithTimeEntries->ficharEntrada(); // 2nd entry (open)
         $this->userRepository->save($userWithTimeEntries);
-        sleep(1); 
+        sleep(1);
         $userWithTimeEntries->ficharSalida(); // Close 2nd entry
         $this->userRepository->save($userWithTimeEntries); // Save final state
 
         $response = $this->get('/users');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('users.index');
-        
+
         // Verificar que la vista contiene usuarios con tiempo acumulado
         $users = $response->viewData('users');
         $this->assertNotEmpty($users);
-        
+
         $testUser = collect($users)->firstWhere('email', 'test@example.com');
         $this->assertNotNull($testUser);
         $this->assertNotEquals('00:00:00', $testUser['tiempo_acumulado']); // Should be > 0
@@ -71,12 +68,12 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
         $userWithTimeEntries->ficharEntrada(); // Open
         $this->userRepository->save($userWithTimeEntries);
-        sleep(1); 
+        sleep(1);
         $userWithTimeEntries->ficharSalida(); // Close
         $this->userRepository->save($userWithTimeEntries);
 
         $response = $this->getJson('/users');
-        
+
         $response->assertStatus(200);
         $response->assertJsonStructure([
             '*' => [
@@ -85,13 +82,13 @@ class UserRegistroHorarioIntegrationTest extends TestCase
                 'email',
                 'name',
                 'is_active',
-                'tiempo_acumulado'
-            ]
+                'tiempo_acumulado',
+            ],
         ]);
 
         $users = $response->json();
         $apiUser = collect($users)->firstWhere('email', 'api@example.com');
-        
+
         $this->assertNotNull($apiUser);
         $this->assertNotEquals('00:00:00', $apiUser['tiempo_acumulado']);
     }
@@ -101,7 +98,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         // 1. Crear usuario via web
         $userData = [
             'email' => 'workflow@example.com',
-            'name' => 'Workflow User'
+            'name' => 'Workflow User',
         ];
 
         $createResponse = $this->post('/users', $userData);
@@ -117,32 +114,32 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
         // 3. Fichar entrada
         $entradaResponse = $this->post('/registro-horario/entrada', [
-            'userUuid' => $createdUser->uuid()->getValue()
+            'userUuid' => $createdUser->uuid()->getValue(),
         ]);
         $entradaResponse->assertRedirect();
         $entradaResponse->assertSessionHas('success');
 
         // 4. Verificar que aparece en registro horario
-        $registroResponse = $this->get('/registro-horario?userUuid=' . $createdUser->uuid()->getValue());
+        $registroResponse = $this->get('/registro-horario?userUuid='.$createdUser->uuid()->getValue());
         $registroResponse->assertStatus(200);
-        
+
         $tieneRegistroAbierto = $registroResponse->viewData('tieneRegistroAbierto');
         $this->assertTrue($tieneRegistroAbierto);
 
         // 5. Esperar un segundo para simular tiempo trabajado
         sleep(1);
-        
+
         // 5. Fichar salida
         $salidaResponse = $this->post('/registro-horario/salida', [
-            'userUuid' => $createdUser->uuid()->getValue()
+            'userUuid' => $createdUser->uuid()->getValue(),
         ]);
         $salidaResponse->assertRedirect();
         $salidaResponse->assertSessionHas('success');
 
         // 6. Verificar que el registro se cerró
-        $finalResponse = $this->get('/registro-horario?userUuid=' . $createdUser->uuid()->getValue());
+        $finalResponse = $this->get('/registro-horario?userUuid='.$createdUser->uuid()->getValue());
         $finalResponse->assertStatus(200);
-        
+
         $tieneRegistroAbiertoFinal = $finalResponse->viewData('tieneRegistroAbierto');
         $this->assertFalse($tieneRegistroAbiertoFinal);
 
@@ -150,7 +147,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $usersResponse = $this->get('/users');
         $users = $usersResponse->viewData('users');
         $workflowUser = collect($users)->firstWhere('email', 'workflow@example.com');
-        
+
         $this->assertNotNull($workflowUser);
         $this->assertNotEquals('00:00:00', $workflowUser['tiempo_acumulado']);
     }
@@ -175,14 +172,14 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
         // Verificar que el usuario fue eliminado
         $this->assertDatabaseMissing('users', [
-            'id' => $savedUser->id()->getValue()
+            'id' => $savedUser->id()->getValue(),
         ]);
 
         // Verificar que los registros horarios asociados también fueron eliminados
         $this->assertDatabaseMissing('registro_horarios', [
-            'user_id' => $savedUser->id()->getValue()
+            'user_id' => $savedUser->id()->getValue(),
         ]);
-        
+
         $usersResponse = $this->get('/users');
         $usersResponse->assertStatus(200);
     }
