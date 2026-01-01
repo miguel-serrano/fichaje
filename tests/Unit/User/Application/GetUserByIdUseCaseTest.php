@@ -52,12 +52,12 @@ class GetUserByIdUseCaseTest extends TestCase
         $query = new GetUserByIdQuery($userId);
         $result = $this->handler->handle($query);
 
-        $this->assertInstanceOf(\App\DDD\User\Infrastructure\Response\UserResponse::class, $result);
-        $this->assertEquals(123, $result->id);
-        $this->assertEquals('123e4567-e89b-12d3-a456-426614174000', $result->uuid);
-        $this->assertEquals('test@example.com', $result->email);
-        $this->assertEquals('Test User', $result->name);
-        $this->assertTrue($result->isActive);
+        $this->assertInstanceOf(\App\DDD\User\Domain\Entity\User::class, $result);
+        $this->assertEquals(123, $result->id()->getValue());
+        $this->assertEquals('123e4567-e89b-12d3-a456-426614174000', $result->uuid()->getValue());
+        $this->assertEquals('test@example.com', $result->email()->getValue());
+        $this->assertEquals('Test User', $result->name());
+        $this->assertTrue($result->isActive());
     }
 
     public function test_it_throws_exception_when_user_not_found(): void
@@ -103,17 +103,17 @@ class GetUserByIdUseCaseTest extends TestCase
         $query = new GetUserByIdQuery($userId);
         $result = $this->handler->handle($query);
 
-        $this->assertInstanceOf(\App\DDD\User\Infrastructure\Response\UserResponse::class, $result);
-        $this->assertNotNull($result->id);
-        $this->assertNotNull($result->uuid);
-        $this->assertNotNull($result->email);
-        $this->assertNotNull($result->name);
-        $this->assertIsBool($result->isActive);
-        $this->assertEquals(456, $result->id);
-        $this->assertEquals('223e4567-e89b-12d3-a456-426614174001', $result->uuid);
-        $this->assertEquals('another@example.com', $result->email);
-        $this->assertEquals('Another User', $result->name);
-        $this->assertFalse($result->isActive);
+        $this->assertInstanceOf(\App\DDD\User\Domain\Entity\User::class, $result);
+        $this->assertNotNull($result->id());
+        $this->assertNotNull($result->uuid());
+        $this->assertNotNull($result->email());
+        $this->assertNotNull($result->name());
+        $this->assertIsBool($result->isActive());
+        $this->assertEquals(456, $result->id()->getValue());
+        $this->assertEquals('223e4567-e89b-12d3-a456-426614174001', $result->uuid()->getValue());
+        $this->assertEquals('another@example.com', $result->email()->getValue());
+        $this->assertEquals('Another User', $result->name());
+        $this->assertFalse($result->isActive());
     }
 }
 
