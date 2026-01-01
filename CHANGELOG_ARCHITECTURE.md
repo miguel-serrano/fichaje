@@ -57,6 +57,25 @@ public function user(): BelongsTo
 - `DDDServiceProvider` para registro de handlers
 - Refactorización de controladores para usar buses
 
+### 4. **Optimización de Índices de Base de Datos**
+- **Fecha**: Enero 2026
+- **Objetivo**: Optimizar rendimiento de consultas frecuentes
+- **Estado**: ✅ Completado
+
+#### Índices Implementados:
+- `idx_user_open_entries` (user_id, salida): Para buscar entradas abiertas por usuario
+- `idx_entrada_date` (entrada): Para consultas por fecha de entrada
+- `idx_salida_date` (salida): Para consultas por fecha de salida
+- `idx_user_entrada` (user_id, entrada): Para consultas de usuario por fecha
+- `idx_date_range` (entrada, salida): Para reportes de rangos de fecha
+- `idx_user_time_range` (user_id, entrada, salida): Para tiempo trabajado por usuario
+
+#### Beneficios de Rendimiento:
+- ✅ Consultas de "entrada abierta" optimizadas (1 row examined)
+- ✅ Reportes diarios/mensuales más rápidos
+- ✅ Consultas de tiempo trabajado eficientes
+- ✅ Prevención de full table scans
+
 ---
 
 ## 🧪 Comandos de Pruebas y Verificación
@@ -96,6 +115,26 @@ foreach(\$tables as \$table) {
     if(strpos(\$tableName, 'entries') !== false || strpos(\$tableName, 'registro') !== false) {
         echo \$tableName . ' - Registros: ' . DB::table(\$tableName)->count() . PHP_EOL;
     }
+}
+"
+
+# Verificar índices optimizados
+vendor/bin/sail artisan tinker --execute="
+use Illuminate\Support\Facades\DB;
+echo 'Índices en time_entries:' . PHP_EOL;
+\$indexes = DB::select('SHOW INDEX FROM time_entries');
+foreach(\$indexes as \$index) {
+    echo '- ' . \$index->Key_name . ' (' . \$index->Column_name . ')' . PHP_EOL;
+}
+"
+
+# Verificar rendimiento de consultas críticas
+vendor/bin/sail artisan tinker --execute="
+use Illuminate\Support\Facades\DB;
+echo 'EXPLAIN consulta entrada abierta:' . PHP_EOL;
+\$explain = DB::select('EXPLAIN SELECT * FROM time_entries WHERE user_id = 1 AND salida IS NULL');
+foreach(\$explain as \$row) {
+    echo 'Key: ' . (\$row->key ?: 'NINGUNO') . ' | Rows: ' . \$row->rows . PHP_EOL;
 }
 "
 
