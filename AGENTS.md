@@ -4,11 +4,11 @@ This document provides comprehensive guidelines for AI agents (Claude, Gemini, C
 
 ## Project Overview
 
-**Control de fichaje** (Time Tracking Control) is a Laravel 10 web application built with advanced software architecture principles:
+**Control de fichaje** (Time Tracking Control) is a Laravel 11 web application built with advanced software architecture principles:
 
 - **Architecture**: Domain-Driven Design (DDD) + Command and Query Responsibility Segregation (CQRS)
 - **Command Bus**: `laravel-tactician` for handling application commands
-- **Bounded Contexts**: `User`, `RegistroHorario` (Time Registration)
+- **Bounded Contexts**: `User`, `TimeTracking` (formerly RegistroHorario)
 - **Layered Architecture**: Domain, Application, and Infrastructure layers
 
 ### Key Architectural Characteristics
@@ -21,11 +21,11 @@ The application maintains strict separation between:
 ## Technology Stack
 
 - **PHP**: 8.2.29
-- **Laravel Framework**: v10
+- **Laravel Framework**: v11
 - **Laravel Sail**: v1 (Docker-based development)
-- **Laravel Sanctum**: v3 (API authentication)
+- **Laravel Sanctum**: v4 (API authentication)
 - **Laravel Pint**: v1 (code formatting)
-- **PHPUnit**: v10 (testing)
+- **PHPUnit**: v11 (testing)
 - **Laravel Tactician**: Command bus implementation
 
 ## Development Environment
@@ -75,27 +75,38 @@ alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
 ```
 app/
 ├── DDD/                          # Domain-Driven Design contexts
-│   ├── RegistroHorario/          # Time registration bounded context
+│   ├── TimeTracking/             # Time tracking bounded context (renamed from RegistroHorario)
 │   │   ├── Application/          # Use cases (commands/queries)
+│   │   │   ├── Command/          # ClockInCommand, ClockOutCommand
+│   │   │   ├── Query/            # GetAccumulatedSecondsQuery, HasOpenTimeEntryQuery
+│   │   │   └── Handler/          # Command/query handlers
 │   │   ├── Domain/               # Entities, value objects, interfaces
-│   │   └── Services/             # Domain services
-│   └── User/                     # User bounded context
-│       ├── Application/
-│       │   ├── Command/          # Commands (write operations)
-│       │   └── Handler/          # Command/query handlers
+│   │   │   ├── TimeEntry.php     # Main aggregate root
+│   │   │   └── ValueObjects/     # TimeEntryId
+│   │   └── Services/             # TimeTrackingService
+│   ├── User/                     # User bounded context
+│   │   ├── Application/
+│   │   │   ├── Command/          # Commands (write operations)
+│   │   │   └── Handler/          # Command/query handlers
+│   │   ├── Domain/
+│   │   │   ├── Entity/           # Domain entities
+│   │   │   ├── ValueObjects/     # Value objects (Email, UserId, etc.)
+│   │   │   ├── Interface/        # Repository interfaces
+│   │   │   └── exceptions/       # Domain exceptions
+│   │   └── Infrastructure/
+│   │       ├── Persistence/      # Repository implementations
+│   │       └── Response/         # API response objects
+│   └── Shared/                   # Shared components
 │       ├── Domain/
-│       │   ├── Entity/           # Domain entities
-│       │   ├── ValueObjects/     # Value objects (Email, UserId, etc.)
-│       │   ├── Interface/        # Repository interfaces
-│       │   └── exceptions/       # Domain exceptions
+│       │   ├── Bus/              # CommandBusInterface, QueryBusInterface
+│       │   └── ValueObject/      # Base value objects
 │       └── Infrastructure/
-│           ├── Persistence/      # Repository implementations
-│           └── Response/         # API response objects
+│           └── Bus/              # Laravel Tactician implementations
 ├── Http/
 │   ├── Controllers/              # Thin HTTP controllers
 │   └── Middleware/
-├── Models/                       # Laravel Eloquent models
-└── Providers/                    # Service providers
+├── Models/                       # Laravel Eloquent models (User, TimeEntry)
+└── Providers/                    # Service providers (including DDDServiceProvider)
 ```
 
 ### Development Principles
@@ -118,12 +129,12 @@ app/
 
 #### 2. Command and Query Responsibility Segregation (CQRS)
 - **Commands**: Modify state, return void or simple acknowledgment
-  - Example: `CreateUserCommand`, `FicharEntrada`
+  - Example: `CreateUserCommand`, `ClockInCommand`, `ClockOutCommand`
   - Each command has a dedicated handler
   - Dispatched through command bus
 
 - **Queries**: Read data, never modify state
-  - Example: `GetUserByIdQuery`, `ObtenerSegundosAcumulados`
+  - Example: `GetUserByIdQuery`, `GetAccumulatedSecondsQuery`, `HasOpenTimeEntryQuery`
   - Return DTOs or response objects
   - Separate from commands
 
@@ -259,33 +270,38 @@ public function user(): BelongsTo
 
 // ✅ Eager loading to prevent N+1
 $users = User::query()
-    ->with('registroHorarios')
+    ->with('timeEntries')
     ->get();
+
+// ✅ Get user with open time entry
+$user = User::with('openTimeEntry')->find(1);
 ```
 
 ### Form Requests for Validation
 Always create Form Request classes instead of inline validation:
 
 ```bash
-vendor/bin/sail artisan make:request StoreRegistroHorarioRequest --no-interaction
+vendor/bin/sail artisan make:request StoreTimeEntryRequest --no-interaction
 ```
 
 ```php
-class StoreRegistroHorarioRequest extends FormRequest
+class StoreTimeEntryRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'user_id' => 'required|exists:users,id',
-            'fecha' => 'required|date',
+            'userUuid' => 'required|string|exists:users,uuid',
+            'entrada' => 'sometimes|date',
+            'salida' => 'sometimes|date|after:entrada',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'user_id.required' => 'El usuario es obligatorio.',
-            'fecha.required' => 'La fecha es obligatoria.',
+            'userUuid.required' => 'El UUID del usuario es obligatorio.',
+            'userUuid.exists' => 'El usuario no existe.',
+            'salida.after' => 'La salida debe ser posterior a la entrada.',
         ];
     }
 }
@@ -450,13 +466,14 @@ vendor/bin/sail composer run dev
 
 ## Version Information
 
-This is a **Laravel 10** application with specific considerations:
+This is a **Laravel 11** application with specific considerations:
 
-- Middleware registration in `app/Http/Kernel.php`
-- Exception handling in `app/Exceptions/Handler.php`
-- Console commands in `app/Console/Kernel.php`
-- Use `protected $casts = []` in models (not `casts()` method)
-- Rate limits in `RouteServiceProvider` or `app/Http/Kernel.php`
+- Application configuration in `bootstrap/app.php`
+- Middleware registration via `->withMiddleware()` in bootstrap
+- Exception handling via `->withExceptions()` in bootstrap
+- Console commands via `->withCommands()` in bootstrap
+- Use `protected $casts = []` in models (Laravel 11 compatible)
+- Rate limits configured in bootstrap or service providers
 
 ## Agent Communication
 
@@ -522,9 +539,60 @@ vendor/bin/sail artisan make:class Path/To/ClassName --no-interaction
 
 ---
 
+## Current Architecture Status (Updated January 2026)
+
+### Recent Major Changes
+- **✅ Laravel 11 Upgrade**: Upgraded from Laravel 9 → 10 → 11
+- **✅ TimeTracking Bounded Context**: Renamed from `RegistroHorario` to `TimeTracking`
+- **✅ Database Optimization**: New `time_entries` table with optimized indexes
+- **✅ Eloquent Relationships**: User ↔ TimeEntry relationships implemented
+- **✅ CQRS Implementation**: Command/Query Bus with Laravel Tactician
+- **✅ Timezone Configuration**: Europe/Madrid timezone properly configured
+
+### Database Schema
+```sql
+-- Main tables
+users (id, uuid, name, email, is_active, created_at, updated_at)
+time_entries (id, user_id, entrada, salida, created_at, updated_at)
+
+-- Optimized indexes on time_entries
+idx_user_open_entries (user_id, salida)     -- Most critical for open entries
+idx_entrada_date (entrada)                  -- Date range queries
+idx_salida_date (salida)                    -- Exit date queries
+idx_user_entrada (user_id, entrada)         -- User history queries
+idx_date_range (entrada, salida)            -- Reports
+idx_user_time_range (user_id, entrada, salida) -- Time calculations
+```
+
+### Key Architectural Decisions
+1. **TimeEntry as User Aggregate**: TimeEntry is managed as part of User aggregate (not independent)
+2. **Dual Model Approach**: Domain entities (DDD) + Eloquent models (ORM) coexist
+3. **Manual Repository Mapping**: Domain repositories use `DB` facade with manual mapping
+4. **Command Bus Pattern**: All state changes go through command bus
+5. **Timezone Awareness**: All timestamps use Europe/Madrid timezone
+
+### Current Bounded Contexts
+- **User**: User management, authentication, user-related queries
+- **TimeTracking**: Clock-in/out operations, time calculations, reporting
+- **Shared**: Common interfaces, value objects, bus implementations
+
+### Performance Optimizations
+- **Database Indexes**: Optimized for common query patterns
+- **Eloquent Relationships**: Proper hasMany/belongsTo for efficient queries
+- **Eager Loading**: Prevent N+1 queries with `with()` clauses
+- **Query Optimization**: Most frequent queries use dedicated indexes
+
+## Container Commands
+
+When making changes to entities, repositories, or domain logic, run:
+```bash
+vendor/bin/sail php artisan clear-compiled && vendor/bin/sail composer dump-autoload && vendor/bin/sail php artisan optimize
+```
+
+## Architecture Reference Documents
+- `CHANGELOG_ARCHITECTURE.md`: Complete history of architectural changes
+- `migrate_data.sql`: Data migration script (if needed)
+- `plan.md`: Original architectural planning document
+
 **Remember**: This application follows strict architectural patterns. When in doubt, examine existing implementations in the same bounded context before creating new code.
-
-
-Comandos dentro del contendor de Laravel, usar cuando haya cambios de entidades, repositorios
-php artisan clear-compiled && composer dump-autoload && php artisan optimize
 
