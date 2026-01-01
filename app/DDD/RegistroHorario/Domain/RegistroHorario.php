@@ -4,6 +4,7 @@ namespace App\DDD\RegistroHorario\Domain;
 
 use App\DDD\RegistroHorario\Domain\ValueObjects\RegistroHorarioId;
 use App\DDD\User\Domain\ValueObjects\UserId;
+use Carbon\Carbon;
 use DateTime;
 
 final class RegistroHorario
@@ -30,7 +31,7 @@ final class RegistroHorario
         return new self(
             null,
             $userId,
-            new DateTime(),
+            Carbon::now()->toDateTime(),
             null
         );
     }
@@ -76,7 +77,7 @@ final class RegistroHorario
 
     public function cerrar(): void
     {
-        $this->salida = new DateTime();
+        $this->salida = Carbon::now()->toDateTime();
     }
 
     public function isAbierto(): bool
