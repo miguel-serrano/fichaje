@@ -5,34 +5,28 @@ namespace App\Http\Controllers\User;
 use App\DDD\User\Application\Command\CreateUserCommand;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
-use App\DDD\User\Application\Handler\CreateUserCommandHandler;
-use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
-use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
 use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
-use App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler;
+use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Joselfonseca\LaravelTactician\CommandBusInterface;
-use App\DDD\User\Domain\exceptions\UserNotFoundException; // Import UserNotFoundException
-use App\DDD\User\Domain\Entity\User; // Import User entity
+use App\DDD\User\Domain\exceptions\UserNotFoundException;
+use App\DDD\User\Domain\Entity\User;
 
 class UserController extends Controller
 {
     public function __construct(
-        private CreateUserCommandHandler $createUserHandler,
-        private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler,
-        private DeleteUserCommandHandler $deleteUserHandler,
-        private GetUserDailyRegistrosQueryHandler $getUserDailyRegistrosHandler,
-        private CommandBusInterface $querybus
+        private CommandBusInterface $commandBus,
+        private QueryBusInterface $queryBus
     ) {}
 
     public function index(Request $request): View|JsonResponse
     {
-        $users = $this->getAllUsersWithTimeHandler->handle(new GetAllUsersWithTimeQuery());
+        $users = $this->queryBus->dispatch(new GetAllUsersWithTimeQuery());
 
         if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json($users);
@@ -66,7 +60,7 @@ class UserController extends Controller
                     ->withErrors(['name' => $errorMsg]);
             }
             $command = new CreateUserCommand($validated['email'], $validated['name']);
-            $user = $this->createUserHandler->handle($command);
+            $user = $this->commandBus->dispatch($command);
 
             return redirect()->route('users.index')
                 ->with('success', 'User created successfully!');
@@ -88,13 +82,13 @@ class UserController extends Controller
             // Catch UserNotFoundException specifically
             try {
                 /** @var User $user */
-                $user = $this->querybus->dispatch($query);
+                $user = $this->queryBus->dispatch($query);
             } catch (UserNotFoundException $e) {
                 return redirect()->route('users.index')->with('error', $e->getMessage());
             }
 
             $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->getValue()); // Use integer ID
-            $registrosData = $this->getUserDailyRegistrosHandler->handle($dailyRegistrosQuery);
+            $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
 
             return view('users.show', [
                 'user' => $user, // Pass the User entity object
@@ -112,7 +106,7 @@ class UserController extends Controller
     {
         try {
             $command = new DeleteUserCommand($id);
-            $this->deleteUserHandler->handle($command);
+            $this->commandBus->dispatch($command);
 
             return redirect()->route('users.index')
                 ->with('success', 'User deleted successfully!');

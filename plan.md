@@ -44,3 +44,86 @@
 6.  [completed] Adaptar los Command Handlers para que usen UserRepository.
 7.  [completed] Revisar los controladores y el paso de parámetros a los comandos.
 8.  [completed] Actualizar las pruebas unitarias y de integración.
+9.  [completed] Implementar Command/Query Bus completo con Laravel Tactician.
+10. [completed] Refactorizar RegistroHorario a TimeTracking con CQRS puro.
+11. [completed] Crear capa de dominio compartido con interfaces y value objects.
+12. [completed] Actualizar controladores para usar buses en lugar de handlers directos.
+13. [completed] Renombrar bounded contexts para mejor lenguaje de dominio.
+14. [completed] Verificar que todos los tests funcionen con la nueva arquitectura.
+
+## Mejoras Arquitectónicas Implementadas (2026-01-01)
+
+### 9. **Implementación de Command/Query Bus Completo:**
+   * Creación de `CommandBusInterface` y `QueryBusInterface` en la capa de dominio compartido.
+   * Implementación de adaptadores para Laravel Tactician (`LaravelTacticianCommandBus`, `LaravelTacticianQueryBus`).
+   * Registro centralizado de commands/queries en `DDDServiceProvider`.
+   * Eliminación de inyección directa de handlers en controladores.
+
+### 10. **Refactorización a CQRS Puro:**
+   * Conversión de `RegistroHorario` a `TimeTracking` con mejor lenguaje de dominio.
+   * Creación de Commands: `ClockInCommand`, `ClockOutCommand`.
+   * Creación de Queries: `GetAccumulatedSecondsQuery`, `HasOpenTimeEntryQuery`.
+   * Implementación de handlers dedicados para cada command/query.
+   * Eliminación de wrappers simples (`FicharEntrada`, `FicharSalida`, `ObtenerSegundosAcumulados`).
+
+### 11. **Capa de Dominio Compartido:**
+   * Creación de `Shared` bounded context con interfaces comunes.
+   * Implementación de Value Objects base (`StringValueObject`, `IntValueObject`).
+   * Separación clara entre puertos (interfaces) y adaptadores (implementaciones).
+
+### 12. **Mejora en Naming y Consistencia:**
+   * Renombrado de `RegistroHorario` a `TimeEntry` para mejor expresividad.
+   * Renombrado de `RegistroHorarioId` a `TimeEntryId`.
+   * Métodos con nombres más expresivos: `clockIn`, `clockOut`, `getAccumulatedSeconds`, `hasOpenTimeEntry`.
+   * Consistencia en el uso de `UserRepositoryInterface` en toda la aplicación.
+
+### 13. **Arquitectura Hexagonal:**
+   * Separación clara entre dominio, aplicación e infraestructura.
+   * Interfaces de dominio implementadas en la capa de infraestructura.
+   * Controladores que solo manejan concerns HTTP, delegando lógica a buses.
+
+### 14. **Beneficios Obtenidos:**
+   * **Consistencia**: Todos los casos de uso siguen el patrón Command/Query Bus.
+   * **Testabilidad**: Separación clara de responsabilidades facilita testing.
+   * **Escalabilidad**: Fácil agregar nuevos bounded contexts siguiendo los mismos patrones.
+   * **Mantenibilidad**: Código más organizado y predecible.
+   * **Expresividad**: Mejor lenguaje de dominio con `TimeTracking` vs `RegistroHorario`.
+
+### 15. **Estructura Final de Bounded Contexts:**
+```
+app/DDD/
+├── Shared/
+│   ├── Domain/
+│   │   ├── Bus/
+│   │   │   ├── CommandBusInterface.php
+│   │   │   └── QueryBusInterface.php
+│   │   └── ValueObject/
+│   │       ├── StringValueObject.php
+│   │       └── IntValueObject.php
+│   └── Infrastructure/
+│       └── Bus/
+│           ├── LaravelTacticianCommandBus.php
+│           └── LaravelTacticianQueryBus.php
+├── User/
+│   ├── Application/
+│   │   ├── Command/
+│   │   ├── Query/
+│   │   └── Handler/
+│   ├── Domain/
+│   └── Infrastructure/
+└── TimeTracking/
+    ├── Application/
+    │   ├── Command/
+    │   │   ├── ClockInCommand.php
+    │   │   └── ClockOutCommand.php
+    │   ├── Query/
+    │   │   ├── GetAccumulatedSecondsQuery.php
+    │   │   └── HasOpenTimeEntryQuery.php
+    │   └── Handler/
+    ├── Domain/
+    │   ├── TimeEntry.php
+    │   └── ValueObjects/
+    │       └── TimeEntryId.php
+    └── Services/
+        └── TimeTrackingService.php
+```

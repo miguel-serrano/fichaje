@@ -3,26 +3,24 @@
 namespace App\Http\Controllers\RegistroHorario;
 
 use Illuminate\Http\Request;
-use App\DDD\RegistroHorario\Application\FicharEntrada;
-use App\DDD\RegistroHorario\Application\FicharSalida;
-use App\DDD\RegistroHorario\Application\ObtenerSegundosAcumulados;
+use App\DDD\TimeTracking\Application\Command\ClockInCommand;
+use App\DDD\TimeTracking\Application\Command\ClockOutCommand;
+use App\DDD\TimeTracking\Application\Query\GetAccumulatedSecondsQuery;
+use App\DDD\TimeTracking\Application\Query\HasOpenTimeEntryQuery;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
-use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
+use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
-use App\DDD\RegistroHorario\Services\RegistroHorarioService;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface; // Import UserRepositoryInterface
-use App\DDD\User\Domain\ValueObjects\Uuid; // Import Uuid Value Object
-use App\DDD\User\Domain\exceptions\UserNotFoundException; // Import UserNotFoundException
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\Uuid;
+use App\DDD\User\Domain\exceptions\UserNotFoundException;
 
 class RegistroHorarioController extends Controller
 {
     public function __construct(
-        private FicharEntrada $entradaUC,
-        private FicharSalida $salidaUC,
-        private ObtenerSegundosAcumulados $segundosUC,
-        private GetAllUsersWithTimeQueryHandler $getAllUsersWithTimeHandler,
-        private RegistroHorarioService $registroHorarioService,
-        private UserRepositoryInterface $userRepository // Inject UserRepositoryInterface
+        private CommandBusInterface $commandBus,
+        private QueryBusInterface $queryBus,
+        private UserRepositoryInterface $userRepository
     ) {}
 
     public function ficharEntrada(Request $request)
@@ -32,7 +30,8 @@ class RegistroHorarioController extends Controller
         ]);
 
         try {
-            $this->entradaUC->handle($validated['userUuid']);
+            $command = new ClockInCommand($validated['userUuid']);
+            $this->commandBus->dispatch($command);
             
             // Get User ID for redirection
             $user = $this->userRepository->findByUuid(new Uuid($validated['userUuid']));
@@ -57,15 +56,12 @@ class RegistroHorarioController extends Controller
         ]);
 
         try {
-            // Si se proporciona registroHorarioId, usar el servicio directamente
-            // Si no, usar el caso de uso original
-            if ($registroHorarioId !== null) {
-                $this->registroHorarioService->ficharSalida($validated['userUuid'], $registroHorarioId);
-                $successMessage = 'Fichaje cerrado correctamente';
-            } else {
-                $this->salidaUC->handle($validated['userUuid']);
-                $successMessage = 'Salida registrada correctamente';
-            }
+            $command = new ClockOutCommand($validated['userUuid'], $registroHorarioId);
+            $this->commandBus->dispatch($command);
+            
+            $successMessage = $registroHorarioId !== null 
+                ? 'Fichaje cerrado correctamente' 
+                : 'Salida registrada correctamente';
 
             // Get User ID for redirection
             $user = $this->userRepository->findByUuid(new Uuid($validated['userUuid']));
@@ -96,14 +92,14 @@ class RegistroHorarioController extends Controller
 
     public function index(Request $request)
     {
-        $users = $this->getAllUsersWithTimeHandler->handle(new GetAllUsersWithTimeQuery());
+        $users = $this->queryBus->dispatch(new GetAllUsersWithTimeQuery());
         $userUuid = $request->input('userUuid');
         $segundos = 0;
         $tieneRegistroAbierto = false;
 
         if ($userUuid) {
-            $segundos = $this->segundosUC->handle($userUuid);
-            $tieneRegistroAbierto = $this->registroHorarioService->hasOpenRegistro($userUuid);
+            $segundos = $this->queryBus->dispatch(new GetAccumulatedSecondsQuery($userUuid));
+            $tieneRegistroAbierto = $this->queryBus->dispatch(new HasOpenTimeEntryQuery($userUuid));
         }
 
         return view('registro_horario', [
