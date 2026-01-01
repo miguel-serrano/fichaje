@@ -2,14 +2,14 @@
 
 namespace Tests\Unit\RegistroHorario\Services;
 
-use App\DDD\RegistroHorario\Services\RegistroHorarioService;
+use App\DDD\TimeTracking\Services\TimeTrackingService;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\RegistroHorario\Domain\RegistroHorario;
-use App\DDD\RegistroHorario\Domain\ValueObjects\RegistroHorarioId;
+use App\DDD\TimeTracking\Domain\TimeEntry;
+use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use PHPUnit\Framework\TestCase;
 use Mockery;
 use Carbon\Carbon;
@@ -19,13 +19,13 @@ use Illuminate\Support\Str; // Import Str facade for UUID generation
 class RegistroHorarioServiceTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
-    private RegistroHorarioService $service;
+    private TimeTrackingService $service;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->service = new RegistroHorarioService($this->userRepository);
+        $this->service = new TimeTrackingService($this->userRepository);
     }
 
     protected function tearDown(): void
@@ -71,7 +71,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user); 
 
-        $this->service->ficharEntrada($userUuidValue);
+        $this->service->clockIn($userUuidValue);
 
         // Assertions after the service call
         $this->assertNotNull($savedUser, "User should have been saved.");
@@ -95,7 +95,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Usuario no encontrado.');
 
-        $this->service->ficharEntrada($userUuidValue);
+        $this->service->clockIn($userUuidValue);
     }
 
     public function test_it_fichas_salida_successfully(): void
@@ -129,7 +129,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $this->service->ficharSalida($userUuidValue);
+        $this->service->clockOut($userUuidValue);
 
         // Assertions after the service call
         $this->assertNotNull($savedUser, "User should have been saved.");
@@ -163,7 +163,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(Exception::class); 
         $this->expectExceptionMessage('No existe un registro de entrada abierto para cerrar.');
 
-        $this->service->ficharSalida($userUuidValue);
+        $this->service->clockOut($userUuidValue);
     }
 
     public function test_it_calculates_segundos_acumulados_successfully(): void
@@ -199,7 +199,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $result = $this->service->segundosAcumulados($userUuidValue);
+        $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
         $expected = (4 * 3600) + (4 * 3600); // 8 hours
         $this->assertEquals($expected, $result);
@@ -230,7 +230,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $result = $this->service->segundosAcumulados($userUuidValue);
+        $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
         $this->assertEquals(0, $result);
     }
@@ -267,7 +267,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $result = $this->service->segundosAcumulados($userUuidValue);
+        $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
         $expected = (4 * 3600); // Only registro1 counts
         $this->assertEquals($expected, $result);
@@ -294,7 +294,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $result = $this->service->hasOpenRegistro($userUuidValue);
+        $result = $this->service->hasOpenTimeEntry($userUuidValue);
         $this->assertTrue($result);
     }
 
@@ -319,7 +319,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $result = $this->service->hasOpenRegistro($userUuidValue);
+        $result = $this->service->hasOpenTimeEntry($userUuidValue);
         $this->assertFalse($result);
     }
 
@@ -358,7 +358,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $this->service->ficharSalida($userUuidValue, $registroId);
+        $this->service->clockOut($userUuidValue, $registroId);
 
         $this->assertNotNull($savedUser, "User should have been saved.");
         $closedEntry = collect($savedUser->registrosHorarios())->first(function ($reg) use ($registroId) {
@@ -386,7 +386,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Usuario no encontrado.');
 
-        $this->service->ficharSalida($userUuidValue, $registroId);
+        $this->service->clockOut($userUuidValue, $registroId);
     }
 
     public function test_it_throws_exception_on_fichar_salida_with_registro_id_if_entry_not_found(): void
@@ -416,7 +416,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Registro horario no encontrado.');
 
-        $this->service->ficharSalida($userUuidValue, $registroId);
+        $this->service->clockOut($userUuidValue, $registroId);
     }
 
     public function test_it_throws_exception_on_fichar_salida_with_registro_id_if_entry_already_closed(): void
@@ -445,6 +445,6 @@ class RegistroHorarioServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('El registro horario ya está cerrado.');
 
-        $this->service->ficharSalida($userUuidValue, $registroId);
+        $this->service->clockOut($userUuidValue, $registroId);
     }
 }

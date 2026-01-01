@@ -2,7 +2,7 @@
 
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
-use App\DDD\RegistroHorario\Domain\ValueObjects\RegistroHorarioId; // Import this
+use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -58,7 +58,7 @@ class EloquentUserRepository implements UserRepositoryInterface {
                     DB::table($registrosTable)->where('id', $registro->id()->getValue())->update($registroData);
                 } else {
                     $newId = DB::table($registrosTable)->insertGetId($registroData);
-                    $registro->setId(new RegistroHorarioId($newId)); // Set the generated ID
+                    $registro->setId(new TimeEntryId($newId)); // Set the generated ID
                 }
             }
         });

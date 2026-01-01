@@ -523,3 +523,8 @@ vendor/bin/sail artisan make:class Path/To/ClassName --no-interaction
 ---
 
 **Remember**: This application follows strict architectural patterns. When in doubt, examine existing implementations in the same bounded context before creating new code.
+
+
+Comandos dentro del contendor de Laravel
+php artisan clear-compiled && composer dump-autoload && php artisan optimize
+

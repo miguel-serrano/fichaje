@@ -1,7 +1,7 @@
 <?php
 namespace App\DDD\User\Domain\Entity;
 
-use App\DDD\RegistroHorario\Domain\RegistroHorario;
+use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
@@ -13,7 +13,7 @@ final class User {
     private Email $email;
     private string $name;
     private bool $isActive;
-    /** @var RegistroHorario[] */
+    /** @var TimeEntry[] */
     private array $registrosHorarios;
 
     private function __construct(
@@ -54,7 +54,7 @@ final class User {
         );
 
         foreach ($registrosHorarios as $registro) {
-            $user->addRegistroHorario(RegistroHorario::fromPrimitives(
+            $user->addRegistroHorario(TimeEntry::fromPrimitives(
                 $registro['id'],
                 $registro['user_id'],
                 $registro['entrada'],
@@ -101,7 +101,7 @@ final class User {
         return $this->registrosHorarios;
     }
 
-    public function addRegistroHorario(RegistroHorario $registroHorario): void
+    public function addRegistroHorario(TimeEntry $registroHorario): void
     {
         $this->registrosHorarios[] = $registroHorario;
     }
@@ -117,7 +117,7 @@ final class User {
         }
 
         $this->addRegistroHorario(
-            RegistroHorario::create($this->id())
+            TimeEntry::create($this->id())
         );
     }
 
@@ -131,7 +131,7 @@ final class User {
         $registroAbierto->cerrar();
     }
 
-    private function getRegistroAbierto(): ?RegistroHorario
+    private function getRegistroAbierto(): ?TimeEntry
     {
         foreach ($this->registrosHorarios as $registro) {
             if ($registro->isAbierto()) {
@@ -149,7 +149,7 @@ final class User {
             'email' => $this->email->getValue(),
             'name' => $this->name(),
             'is_active' => $this->isActive(),
-            'registros_horarios' => array_map(function (RegistroHorario $registro) {
+            'registros_horarios' => array_map(function (TimeEntry $registro) {
                 return $registro->toArray();
             }, $this->registrosHorarios)
         ];
