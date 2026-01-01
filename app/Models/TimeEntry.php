@@ -12,8 +12,18 @@ class TimeEntry extends Model
     protected $fillable = ['user_id', 'entrada', 'salida'];
     protected $casts = [
         'user_id' => 'string',
+        'entrada' => 'datetime',
+        'salida' => 'datetime',
     ];
 
     public $timestamps = true;
+
+    /**
+     * Get the user that owns the time entry.
+     */
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }
 

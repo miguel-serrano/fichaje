@@ -47,4 +47,20 @@ class User extends Authenticatable
         'is_active' => 'boolean',
         'uuid' => 'string',
     ];
+
+    /**
+     * Get the time entries for the user.
+     */
+    public function timeEntries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TimeEntry::class);
+    }
+
+    /**
+     * Get the open time entry for the user.
+     */
+    public function openTimeEntry(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(TimeEntry::class)->whereNull('salida');
+    }
 }
