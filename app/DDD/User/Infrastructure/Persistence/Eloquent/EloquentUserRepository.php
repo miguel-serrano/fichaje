@@ -3,15 +3,15 @@
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
-use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
-
-class EloquentUserRepository implements UserRepositoryInterface {
+class EloquentUserRepository implements UserRepositoryInterface
+{
     private function getUsersTable(): string
     {
         return 'users';
@@ -67,19 +67,18 @@ class EloquentUserRepository implements UserRepositoryInterface {
         return $this->findById(new UserId($user_id));
     }
 
-
     public function findById(UserId $id): ?User
     {
         $eloquentUser = DB::table($this->getUsersTable())->where('id', $id->getValue())->first();
 
-        if (!$eloquentUser) {
+        if (! $eloquentUser) {
             return null;
         }
 
         $registrosHorarios = DB::table($this->getRegistrosTable())
             ->where('user_id', $eloquentUser->id)
             ->get()
-            ->map(fn ($r) => (array)$r)
+            ->map(fn ($r) => (array) $r)
             ->toArray();
 
         return User::fromPrimitives(
@@ -96,14 +95,14 @@ class EloquentUserRepository implements UserRepositoryInterface {
     {
         $eloquentUser = DB::table($this->getUsersTable())->where('uuid', $uuid->getValue())->first();
 
-        if (!$eloquentUser) {
+        if (! $eloquentUser) {
             return null;
         }
 
         $registrosHorarios = DB::table($this->getRegistrosTable())
             ->where('user_id', $eloquentUser->id)
             ->get()
-            ->map(fn ($r) => (array)$r)
+            ->map(fn ($r) => (array) $r)
             ->toArray();
 
         return User::fromPrimitives(
@@ -129,7 +128,7 @@ class EloquentUserRepository implements UserRepositoryInterface {
 
         return $users->map(function ($user) use ($allRegistros) {
             $registros = $allRegistros->get($user->id, collect())
-                ->map(fn ($r) => (array)$r)
+                ->map(fn ($r) => (array) $r)
                 ->toArray();
 
             return User::fromPrimitives(
@@ -147,7 +146,13 @@ class EloquentUserRepository implements UserRepositoryInterface {
     {
         return DB::transaction(function () use ($id) {
             DB::table($this->getRegistrosTable())->where('user_id', $id->getValue())->delete();
+
             return DB::table($this->getUsersTable())->where('id', $id->getValue())->delete() > 0;
         });
+    }
+
+    public function count(): int
+    {
+        return DB::table($this->getUsersTable())->count();
     }
 }

@@ -4,23 +4,35 @@ namespace Tests\Unit\User\Application;
 
 use App\DDD\User\Application\Command\CreateUserCommand;
 use App\DDD\User\Application\Handler\CreateUserCommandHandler;
-use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\Entity\User;
-use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use PHPUnit\Framework\TestCase;
+use App\DDD\User\Domain\Services\UserCreationValidator;
+use App\DDD\User\Domain\Services\UserExistValidator;
+use App\DDD\User\Domain\ValueObjects\Email;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class CreateUserUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
+
+    private UserCreationValidator $userCreationValidator;
+
+    private UserExistValidator $userExistValidator;
+
     private CreateUserCommandHandler $handler;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->handler = new CreateUserCommandHandler($this->userRepository);
+        $this->userCreationValidator = Mockery::mock(UserCreationValidator::class);
+        $this->userExistValidator = Mockery::mock(UserExistValidator::class);
+        $this->handler = new CreateUserCommandHandler(
+            $this->userRepository,
+            $this->userCreationValidator,
+            $this->userExistValidator
+        );
     }
 
     protected function tearDown(): void
@@ -34,7 +46,7 @@ class CreateUserUseCaseTest extends TestCase
         $email = 'test@example.com';
         $name = 'Test User';
         $emailVO = new Email($email);
-        
+
         $savedUser = User::fromPrimitives(
             1,
             '123e4567-e89b-12d3-a456-426614174000',
@@ -43,19 +55,24 @@ class CreateUserUseCaseTest extends TestCase
             true
         );
 
-        $this->userRepository
-            ->shouldReceive('existsByEmail')
+        $this->userExistValidator
+            ->shouldReceive('validate')
             ->once()
             ->with(Mockery::on(function ($arg) use ($emailVO) {
                 return $arg->getValue() === $emailVO->getValue();
             }))
-            ->andReturn(false);
+            ->andReturnNull();
+
+        $this->userCreationValidator
+            ->shouldReceive('validate')
+            ->once()
+            ->andReturnNull();
 
         $this->userRepository
             ->shouldReceive('save')
             ->once()
             ->with(Mockery::on(function ($arg) use ($email, $name) {
-                return $arg->email()->getValue() === $email 
+                return $arg->email()->getValue() === $email
                     && $arg->name() === $name;
             }))
             ->andReturn($savedUser);
@@ -75,22 +92,24 @@ class CreateUserUseCaseTest extends TestCase
         $name = 'Test User';
         $emailVO = new Email($email);
 
-        $this->userRepository
-            ->shouldReceive('existsByEmail')
+        $this->userExistValidator
+            ->shouldReceive('validate')
             ->once()
             ->with(Mockery::on(function ($arg) use ($emailVO) {
                 return $arg->getValue() === $emailVO->getValue();
             }))
-            ->andReturn(true);
+            ->andThrow(new \App\DDD\User\Domain\Exceptions\UserAlreadyExistsException($emailVO->getValue()));
+
+        $this->userCreationValidator
+            ->shouldNotReceive('validate');
 
         $this->userRepository
             ->shouldNotReceive('save');
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Email already exists');
+        $this->expectException(\App\DDD\User\Domain\Exceptions\UserAlreadyExistsException::class);
+        $this->expectExceptionMessage("User with email 'existing@example.com' already exists.");
 
         $command = new CreateUserCommand($email, $name);
         $this->handler->handle($command);
     }
 }
-
