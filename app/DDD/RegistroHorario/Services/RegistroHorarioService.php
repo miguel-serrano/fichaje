@@ -76,5 +76,34 @@ class RegistroHorarioService
         }
         return false;
     }
+
+    public function cerrarRegistro(string $userUuid, int $registroHorarioId): void
+    {
+        $user = $this->repository->findByUuid(new Uuid($userUuid));
+
+        if (!$user) {
+            throw new \InvalidArgumentException('Usuario no encontrado.');
+        }
+
+        $registroToClose = null;
+        foreach ($user->registrosHorarios() as $registro) {
+            if ($registro->id() && $registro->id()->getValue() === $registroHorarioId) {
+                $registroToClose = $registro;
+                break;
+            }
+        }
+
+        if (!$registroToClose) {
+            throw new \InvalidArgumentException('Registro horario no encontrado.');
+        }
+
+        if (!$registroToClose->isAbierto()) {
+            throw new \InvalidArgumentException('El registro horario ya está cerrado.');
+        }
+
+        $registroToClose->cerrar();
+
+        $this->repository->save($user);
+    }
 }
 

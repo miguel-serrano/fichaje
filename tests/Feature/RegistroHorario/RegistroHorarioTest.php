@@ -216,4 +216,81 @@ class RegistroHorarioTest extends TestCase
         $tieneRegistroAbierto = $response->viewData('tieneRegistroAbierto');
         $this->assertFalse($tieneRegistroAbierto);
     }
+
+    // New tests for cerrarRegistro
+    public function test_can_cerrar_registro_successfully(): void
+    {
+        // Crear un usuario y un registro abierto
+        $user = User::create(new Email('cerrar@example.com'), 'Cerrar User');
+        $savedUser = $this->userRepository->save($user);
+        $userWithOpenEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
+        $userWithOpenEntry->ficharEntrada();
+        $savedUser = $this->userRepository->save($userWithOpenEntry);
+        
+        $openRegistro = collect($savedUser->registrosHorarios())->first(fn($reg) => $reg->isAbierto());
+        $this->assertNotNull($openRegistro);
+
+        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $openRegistro->id()->getValue()]), [
+            'userUuid' => $savedUser->uuid()->getValue()
+        ]);
+
+        $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
+        $response->assertSessionHas('success', 'Fichaje cerrado correctamente');
+
+        // Verificar que el registro está cerrado en la BD
+        $this->assertDatabaseHas('registro_horarios', [
+            'id' => $openRegistro->id()->getValue(),
+            'user_id' => $savedUser->id()->getValue(),
+            ['salida', '!=', null]
+        ]);
+    }
+
+    public function test_cannot_cerrar_registro_if_user_not_found(): void
+    {
+        $registroId = 1; // Dummy ID
+        $nonExistentUuid = '123e4567-e89b-12d3-a456-426614174000'; // Valid format, non-existent
+
+        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $registroId]), [
+            'userUuid' => $nonExistentUuid
+        ]);
+
+        $response->assertRedirect(route('users.index')); // Redirects to index on error
+        $response->assertSessionHas('error', 'Usuario no encontrado.');
+    }
+
+    public function test_cannot_cerrar_registro_if_entry_not_found(): void
+    {
+        $user = User::create(new Email('cerrar_nf@example.com'), 'Cerrar NF User');
+        $savedUser = $this->userRepository->save($user);
+
+        $registroId = 999; // Non-existent RegistroHorario ID
+
+        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $registroId]), [
+            'userUuid' => $savedUser->uuid()->getValue()
+        ]);
+
+        $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
+        $response->assertSessionHas('error', 'Registro horario no encontrado.');
+    }
+
+    public function test_cannot_cerrar_registro_if_entry_already_closed(): void
+    {
+        // Crear un usuario y un registro cerrado
+        $user = User::create(new Email('cerrar_closed@example.com'), 'Cerrar Closed User');
+        $savedUser = $this->userRepository->save($user);
+        $userWithClosedEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
+        $userWithClosedEntry->ficharEntrada();
+        $userWithClosedEntry->ficharSalida();
+        $savedUser = $this->userRepository->save($userWithClosedEntry);
+
+        $closedRegistro = collect($savedUser->registrosHorarios())->first(fn($reg) => !$reg->isAbierto());
+        $this->assertNotNull($closedRegistro);
+
+        $response = $this->post(route('registro_horario.cerrar', ['registroHorarioId' => $closedRegistro->id()->getValue()]), [
+            'userUuid' => $savedUser->uuid()->getValue()
+        ]);
+
+        $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
+        $response->assertSessionHas('error', 'El registro horario ya está cerrado.');
+    }
 }

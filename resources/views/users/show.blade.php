@@ -94,6 +94,9 @@
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Salida</th>
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Duración</th>
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Estado</th>
+                                            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                                <span class="sr-only">Actions</span>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -129,6 +132,17 @@
                                                     <span class="inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800">Abierto</span>
                                                 @else
                                                     <span class="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800">Cerrado</span>
+                                                @endif
+                                            </td>
+                                            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                                @if($registro->isAbierto())
+                                                    <form action="{{ route('registro_horario.cerrar', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="userUuid" value="{{ $user->uuid()->getValue() }}">
+                                                        <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                                                            Cerrar Fichaje
+                                                        </button>
+                                                    </form>
                                                 @endif
                                             </td>
                                         </tr>
