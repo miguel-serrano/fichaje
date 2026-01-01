@@ -15,26 +15,38 @@
         <div class="bg-white shadow sm:rounded-lg">
             <form id="tokenUserForm" action="{{ route('registro_horario.index') }}" method="GET" class="p-6 border-b border-gray-200">
                 <div class="space-y-6">
+                    @if(!App::environment('local'))
                     <div>
                         <label for="remember_token_code" class="block text-sm font-medium leading-6 text-gray-900">Código personal</label>
                         <div class="mt-2">
                             <input type="text" id="remember_token_code" name="remember_token_code" minlength="8" maxlength="255" autocomplete="off" placeholder="Introduce tu código" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                         </div>
                     </div>
-                        <label for="userUuid" class="block text-sm font-medium leading-6 text-gray-900">Usuario</label>
-                        <div class="mt-2">
-                            <select 
-                                name="userUuid" 
-                                id="userUuid" 
-                                onchange="this.form.submit()"
-                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            >
-                                <option value="">Selecciona un usuario</option>
-                            </select>
-                        </div>
+                    @endif
+
+                    <label for="userUuid" class="block text-sm font-medium leading-6 text-gray-900">Usuario</label>
+                    <div class="mt-2">
+                        <select 
+                            name="userUuid" 
+                            id="userUuid" 
+                            onchange="this.form.submit()"
+                            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        >
+                            <option value="">Selecciona un usuario</option>
+                            @if(App::environment('local'))
+                                @foreach($users as $user)
+                                    <option value="{{ $user['uuid'] }}" @if(isset($selectedUserUuid) && $selectedUserUuid == $user['uuid']) selected @endif>
+                                        {{ $user['name'] }} ({{ $user['email'] }})
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
                     </div>
                 </div>
             </form>
+            <script>
+                window.isLocalEnv = {{ App::environment('local') ? 'true' : 'false' }};
+            </script>
             <script src="/js/registro_horario_token.js"></script>
 
             @if($selectedUserUuid)
