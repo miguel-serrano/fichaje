@@ -16,19 +16,29 @@ class DDDServiceProvider extends ServiceProvider
         // Register our domain buses
         $this->app->bind(CommandBusInterface::class, LaravelTacticianCommandBus::class);
         $this->app->bind(QueryBusInterface::class, LaravelTacticianQueryBus::class);
+
+        // Register Authentication services
+        $this->app->bind(
+            \App\DDD\Authentication\Domain\Services\AuthenticationService::class,
+            \App\DDD\Authentication\Infrastructure\LaravelAuthenticationService::class
+        );
+        $this->app->bind(
+            \App\DDD\Authentication\Domain\Services\PasswordHashingService::class,
+            \App\DDD\Authentication\Infrastructure\LaravelPasswordHashingService::class
+        );
     }
 
     public function boot(): void
     {
-        // Map commands and queries to handlers
-        $this->mapCommandsAndQueries();
-    }
-
-    private function mapCommandsAndQueries(): void
-    {
         $tacticianBus = $this->app->make(TacticianCommandBusInterface::class);
 
-        // User Commands and Queries
+        $this->mapCommands($tacticianBus);
+        $this->mapQueries($tacticianBus);
+    }
+
+    private function mapCommands(TacticianCommandBusInterface $tacticianBus): void
+    {
+        // User Commands
         $tacticianBus->addHandler(
             \App\DDD\User\Application\Command\CreateUserCommand::class,
             \App\DDD\User\Application\Handler\CreateUserCommandHandler::class
@@ -39,6 +49,37 @@ class DDDServiceProvider extends ServiceProvider
             \App\DDD\User\Application\Handler\DeleteUserCommandHandler::class
         );
 
+        // TimeTracking Commands
+        $tacticianBus->addHandler(
+            \App\DDD\TimeTracking\Application\Command\ClockInCommand::class,
+            \App\DDD\TimeTracking\Application\Handler\ClockInCommandHandler::class
+        );
+
+        $tacticianBus->addHandler(
+            \App\DDD\TimeTracking\Application\Command\ClockOutCommand::class,
+            \App\DDD\TimeTracking\Application\Handler\ClockOutCommandHandler::class
+        );
+
+        // Authentication Commands
+        $tacticianBus->addHandler(
+            \App\DDD\Authentication\Application\Command\LoginCommand::class,
+            \App\DDD\Authentication\Application\Handler\LoginCommandHandler::class
+        );
+
+        $tacticianBus->addHandler(
+            \App\DDD\Authentication\Application\Command\RegisterCommand::class,
+            \App\DDD\Authentication\Application\Handler\RegisterCommandHandler::class
+        );
+
+        $tacticianBus->addHandler(
+            \App\DDD\Authentication\Application\Command\LogoutCommand::class,
+            \App\DDD\Authentication\Application\Handler\LogoutCommandHandler::class
+        );
+    }
+
+    private function mapQueries(TacticianCommandBusInterface $tacticianBus): void
+    {
+        // User Queries
         $tacticianBus->addHandler(
             \App\DDD\User\Application\Command\GetUserByIdQuery::class,
             \App\DDD\User\Application\Handler\GetUserByIdQueryHandler::class
@@ -54,17 +95,7 @@ class DDDServiceProvider extends ServiceProvider
             \App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler::class
         );
 
-        // TimeTracking Commands and Queries
-        $tacticianBus->addHandler(
-            \App\DDD\TimeTracking\Application\Command\ClockInCommand::class,
-            \App\DDD\TimeTracking\Application\Handler\ClockInCommandHandler::class
-        );
-
-        $tacticianBus->addHandler(
-            \App\DDD\TimeTracking\Application\Command\ClockOutCommand::class,
-            \App\DDD\TimeTracking\Application\Handler\ClockOutCommandHandler::class
-        );
-
+        // TimeTracking Queries
         $tacticianBus->addHandler(
             \App\DDD\TimeTracking\Application\Query\GetAccumulatedSecondsQuery::class,
             \App\DDD\TimeTracking\Application\Handler\GetAccumulatedSecondsQueryHandler::class
@@ -73,6 +104,12 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(
             \App\DDD\TimeTracking\Application\Query\HasOpenTimeEntryQuery::class,
             \App\DDD\TimeTracking\Application\Handler\HasOpenTimeEntryQueryHandler::class
+        );
+
+        // Authentication Queries
+        $tacticianBus->addHandler(
+            \App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery::class,
+            \App\DDD\Authentication\Application\Handler\GetAuthenticatedUserQueryHandler::class
         );
     }
 }

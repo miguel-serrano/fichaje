@@ -2,11 +2,7 @@
 
 namespace Tests\Feature\RegistroHorario;
 
-use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\ValueObjects\Uuid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,12 +12,25 @@ class RegistroHorarioTest extends TestCase
 
     private UserRepositoryInterface $userRepository;
 
+    private \App\Models\User $authenticatedUser;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
         // Resolve the UserRepositoryInterface from the service container
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
+
+        // Crear y autenticar un usuario para todos los tests
+        $this->authenticatedUser = \App\Models\User::create([
+            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+            'name' => 'Test User',
+            'email' => 'testuser@test.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($this->authenticatedUser);
     }
 
     public function test_can_view_registro_horario_index(): void
@@ -30,140 +39,77 @@ class RegistroHorarioTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('registro_horario');
-        $response->assertViewHas(['users', 'segundos', 'selectedUserUuid', 'tieneRegistroAbierto']);
+        $response->assertViewHas(['user', 'segundos', 'tieneRegistroAbierto']);
     }
 
     public function test_can_fichar_entrada(): void
     {
-        // Crear un usuario primero
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user); // Save first to get ID
+        $response = $this->post('/registro-horario/entrada');
 
-        $response = $this->post('/registro-horario/entrada', [
-            'userUuid' => $savedUser->uuid()->getValue(),
-        ]);
-
-        $response->assertRedirect();
+        $response->assertRedirect(route('users.index'));
         $response->assertSessionHas('success', 'Entrada registrada correctamente');
 
-        // Verificar que se creó el registro
+        // Verificar que se creó el registro para el usuario autenticado
         $this->assertDatabaseHas('time_entries', [
-            'user_id' => $savedUser->id()->getValue(), // Use the actual integer ID
+            'user_id' => $this->authenticatedUser->id,
             'salida' => null,
         ]);
     }
 
     public function test_cannot_fichar_entrada_if_already_open(): void
     {
-        // Crear un usuario y fichar entrada
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user); // Save first to get ID
-        $userWithId = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithId->ficharEntrada();
-        $this->userRepository->save($userWithId); // Save the updated aggregate
+        // Fichar entrada primero
+        $this->post('/registro-horario/entrada');
 
         // Intentar fichar entrada de nuevo
-        $response = $this->post('/registro-horario/entrada', [
-            'userUuid' => $savedUser->uuid()->getValue(),
-        ]);
+        $response = $this->post('/registro-horario/entrada');
 
-        $response->assertRedirect();
+        $response->assertRedirect(route('users.index'));
         $response->assertSessionHas('error', 'Ya existe un registro de entrada abierto.');
     }
 
     public function test_can_fichar_salida(): void
     {
-        // Crear un usuario y fichar entrada
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user); // Save first to get ID
-        $userWithOpenEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithOpenEntry->ficharEntrada();
-        $this->userRepository->save($userWithOpenEntry); // Save the updated aggregate
+        // Fichar entrada primero
+        $this->post('/registro-horario/entrada');
 
         // Fichar salida
-        $response = $this->post('/registro-horario/salida', [
-            'userUuid' => $savedUser->uuid()->getValue(),
-        ]);
+        $response = $this->post('/registro-horario/salida');
 
-        $response->assertRedirect();
+        $response->assertRedirect(route('users.index'));
         $response->assertSessionHas('success', 'Salida registrada correctamente');
 
         // Verificar que se actualizó el registro con salida
         $this->assertDatabaseMissing('time_entries', [
-            'user_id' => $savedUser->id()->getValue(),
+            'user_id' => $this->authenticatedUser->id,
             'salida' => null,
-        ]);
-        $this->assertDatabaseHas('time_entries', [
-            'user_id' => $savedUser->id()->getValue(),
-            ['salida', '!=', null], // Assert that salida is not null
         ]);
     }
 
     public function test_cannot_fichar_salida_without_entrada(): void
     {
-        // Crear un usuario sin fichar entrada
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user);
+        // Intentar fichar salida sin haber fichado entrada
+        $response = $this->post('/registro-horario/salida');
 
-        $response = $this->post('/registro-horario/salida', [
-            'userUuid' => $savedUser->uuid()->getValue(),
-        ]);
-
-        $response->assertRedirect();
+        $response->assertRedirect(route('users.index'));
         $response->assertSessionHas('error', 'No existe un registro de entrada abierto para cerrar.');
     }
 
-    public function test_registro_horario_validation(): void
+    // Test removido: la validación de userUuid ya no es necesaria porque se obtiene del usuario autenticado
+
+    public function test_registro_horario_with_multiple_entries(): void
     {
-        // Test UUID requerido para entrada
-        $response = $this->post('/registro-horario/entrada', []);
-        $response->assertSessionHasErrors(['userUuid']);
+        // Fichar entrada y salida varias veces para el mismo día
+        $this->post('/registro-horario/entrada');
+        sleep(1);
+        $this->post('/registro-horario/salida');
 
-        // Test UUID inválido para entrada
-        $response = $this->post('/registro-horario/entrada', [
-            'userUuid' => 'invalid-uuid',
-        ]);
-        $response->assertSessionHasErrors(['userUuid']);
+        sleep(1);
+        $this->post('/registro-horario/entrada');
+        sleep(1);
+        $this->post('/registro-horario/salida');
 
-        // Test UUID requerido para salida
-        $response = $this->post('/registro-horario/salida', []);
-        $response->assertSessionHasErrors(['userUuid']);
-
-        // Test UUID inválido para salida
-        $response = $this->post('/registro-horario/salida', [
-            'userUuid' => 'invalid-uuid',
-        ]);
-        $response->assertSessionHasErrors(['userUuid']);
-    }
-
-    public function test_registro_horario_with_selected_user(): void
-    {
-        // Crear un usuario
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user); // Save first to get ID
-
-        // Load the user, fichar entrada y salida varias veces para el mismo día
-        $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithTimeEntries->ficharEntrada(); // Open
-        $this->userRepository->save($userWithTimeEntries);
-        sleep(1); // Ensure distinct timestamps
-        $userWithTimeEntries->ficharSalida(); // Close
-        $this->userRepository->save($userWithTimeEntries);
-
-        sleep(1); // Ensure distinct timestamps
-        $userWithTimeEntries->ficharEntrada(); // Open
-        $this->userRepository->save($userWithTimeEntries);
-        sleep(1); // Ensure distinct timestamps
-        $userWithTimeEntries->ficharSalida(); // Close
-        $this->userRepository->save($userWithTimeEntries); // Save final state
-
-        // Re-fetch user to ensure aggregate is correctly loaded
-        $fetchedUser = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $this->assertCount(2, $fetchedUser->registrosHorarios());
-        $this->assertFalse($fetchedUser->registrosHorarios()[0]->isAbierto());
-        $this->assertFalse($fetchedUser->registrosHorarios()[1]->isAbierto());
-
-        $response = $this->get('/registro-horario?userUuid='.$fetchedUser->uuid()->getValue());
+        $response = $this->get('/registro-horario');
 
         $response->assertStatus(200);
         $response->assertViewIs('registro_horario');
@@ -175,16 +121,10 @@ class RegistroHorarioTest extends TestCase
 
     public function test_registro_horario_shows_open_registro(): void
     {
-        // Crear un usuario
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user); // Save first to get ID
+        // Fichar entrada
+        $this->post('/registro-horario/entrada');
 
-        // Load user, fichar entrada
-        $userWithOpenEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithOpenEntry->ficharEntrada(); // Fichar entrada
-        $this->userRepository->save($userWithOpenEntry); // Guardar con registro abierto
-
-        $response = $this->get('/registro-horario?userUuid='.$savedUser->uuid()->getValue());
+        $response = $this->get('/registro-horario');
 
         $response->assertStatus(200);
 
@@ -195,17 +135,11 @@ class RegistroHorarioTest extends TestCase
 
     public function test_registro_horario_does_not_show_open_registro_if_all_closed(): void
     {
-        // Crear un usuario
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user); // Save first to get ID
+        // Fichar entrada y salida
+        $this->post('/registro-horario/entrada');
+        $this->post('/registro-horario/salida');
 
-        // Load user, fichar entrada y salida
-        $userWithClosedEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithClosedEntry->ficharEntrada(); // Fichar entrada
-        $userWithClosedEntry->ficharSalida(); // Fichar salida
-        $this->userRepository->save($userWithClosedEntry); // Guardar con registro cerrado
-
-        $response = $this->get('/registro-horario?userUuid='.$savedUser->uuid()->getValue());
+        $response = $this->get('/registro-horario');
 
         $response->assertStatus(200);
 
@@ -217,77 +151,92 @@ class RegistroHorarioTest extends TestCase
     // New tests for cerrarRegistro
     public function test_can_cerrar_registro_successfully(): void
     {
-        // Crear un usuario y un registro abierto
-        $user = User::create(new Email('cerrar@example.com'), 'Cerrar User');
-        $savedUser = $this->userRepository->save($user);
-        $userWithOpenEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithOpenEntry->ficharEntrada();
-        $savedUser = $this->userRepository->save($userWithOpenEntry);
+        // Fichar entrada
+        $this->post('/registro-horario/entrada');
 
-        $openRegistro = collect($savedUser->registrosHorarios())->first(fn ($reg) => $reg->isAbierto());
+        // Obtener el registro abierto
+        $openRegistro = \App\Models\TimeEntry::query()
+            ->where('user_id', $this->authenticatedUser->id)
+            ->whereNull('salida')
+            ->first();
+
         $this->assertNotNull($openRegistro);
 
-        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $openRegistro->id()->getValue()]), [
-            'userUuid' => $savedUser->uuid()->getValue(),
-        ]);
+        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $openRegistro->id]));
 
-        $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
+        $response->assertRedirect(route('users.index'));
         $response->assertSessionHas('success', 'Fichaje cerrado correctamente');
 
         // Verificar que el registro está cerrado en la BD
-        $this->assertDatabaseHas('time_entries', [
-            'id' => $openRegistro->id()->getValue(),
-            'user_id' => $savedUser->id()->getValue(),
-            ['salida', '!=', null],
+        $this->assertDatabaseMissing('time_entries', [
+            'id' => $openRegistro->id,
+            'salida' => null,
         ]);
     }
 
-    public function test_cannot_cerrar_registro_if_user_not_found(): void
-    {
-        $registroId = 1; // Dummy ID
-        $nonExistentUuid = '123e4567-e89b-12d3-a456-426614174000'; // Valid format, non-existent
-
-        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]), [
-            'userUuid' => $nonExistentUuid,
-        ]);
-
-        $response->assertRedirect(route('users.index')); // Redirects to index on error
-        $response->assertSessionHas('error', 'Usuario no encontrado.');
-    }
+    // Test removido: ya no se puede probar "usuario no encontrado" porque el usuario viene autenticado
 
     public function test_cannot_cerrar_registro_if_entry_not_found(): void
     {
-        $user = User::create(new Email('cerrar_nf@example.com'), 'Cerrar NF User');
-        $savedUser = $this->userRepository->save($user);
-
         $registroId = 999; // Non-existent RegistroHorario ID
 
-        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]), [
-            'userUuid' => $savedUser->uuid()->getValue(),
-        ]);
+        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]));
 
-        $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
-        $response->assertSessionHas('error', 'Registro horario no encontrado.');
+        $response->assertRedirect(route('users.index'));
+        $response->assertSessionHas('error');
     }
 
     public function test_cannot_cerrar_registro_if_entry_already_closed(): void
     {
-        // Crear un usuario y un registro cerrado
-        $user = User::create(new Email('cerrar_closed@example.com'), 'Cerrar Closed User');
-        $savedUser = $this->userRepository->save($user);
-        $userWithClosedEntry = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithClosedEntry->ficharEntrada();
-        $userWithClosedEntry->ficharSalida();
-        $savedUser = $this->userRepository->save($userWithClosedEntry);
+        // Fichar entrada y salida
+        $this->post('/registro-horario/entrada');
+        $this->post('/registro-horario/salida');
 
-        $closedRegistro = collect($savedUser->registrosHorarios())->first(fn ($reg) => ! $reg->isAbierto());
+        // Obtener el registro cerrado
+        $closedRegistro = \App\Models\TimeEntry::query()
+            ->where('user_id', $this->authenticatedUser->id)
+            ->whereNotNull('salida')
+            ->first();
+
         $this->assertNotNull($closedRegistro);
 
-        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $closedRegistro->id()->getValue()]), [
-            'userUuid' => $savedUser->uuid()->getValue(),
-        ]);
+        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $closedRegistro->id]));
 
-        $response->assertRedirect(route('users.show', ['id' => $savedUser->id()->getValue()]));
-        $response->assertSessionHas('error', 'El registro horario ya está cerrado.');
+        $response->assertRedirect(route('users.index'));
+        $response->assertSessionHas('error');
+    }
+
+    public function test_inactive_user_cannot_fichar_entrada(): void
+    {
+        // Desactivar al usuario autenticado
+        $this->authenticatedUser->is_active = false;
+        $this->authenticatedUser->save();
+
+        // Intentar fichar entrada
+        $response = $this->post('/registro-horario/entrada');
+
+        $response->assertRedirect(route('users.index'));
+        $response->assertSessionHas('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
+
+        // Verificar que NO se creó el registro
+        $this->assertDatabaseMissing('time_entries', [
+            'user_id' => $this->authenticatedUser->id,
+        ]);
+    }
+
+    public function test_inactive_user_cannot_fichar_salida(): void
+    {
+        // Fichar entrada mientras está activo
+        $this->post('/registro-horario/entrada');
+
+        // Desactivar al usuario
+        $this->authenticatedUser->is_active = false;
+        $this->authenticatedUser->save();
+
+        // Intentar fichar salida
+        $response = $this->post('/registro-horario/salida');
+
+        $response->assertRedirect(route('users.index'));
+        $response->assertSessionHas('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
     }
 }

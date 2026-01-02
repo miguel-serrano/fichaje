@@ -15,12 +15,27 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
     private UserRepositoryInterface $userRepository;
 
+    private \App\Models\User $authenticatedUser;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
         // Resolve the UserRepositoryInterface from the service container
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
+
+        // Crear usuario autenticado según el test
+        // Los tests de integración verifican comportamiento de admin
+        $this->authenticatedUser = \App\Models\User::create([
+            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+            'name' => 'Test User',
+            'email' => 'user@test.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'is_active' => true,
+            'remember_token' => 'soyAdm1n', // Hacer admin para tests de integración
+        ]);
+
+        $this->actingAs($this->authenticatedUser);
     }
 
     public function test_users_index_shows_accumulated_time(): void
@@ -104,23 +119,19 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $createResponse = $this->post('/users', $userData);
         $createResponse->assertRedirect('/users');
 
-        // 2. Obtener el usuario creado desde el repositorio para obtener su ID
-        $allUsers = $this->userRepository->findAll();
-        $createdUser = collect($allUsers)->first(function ($user) {
-            return $user->email()->getValue() === 'workflow@example.com';
-        });
-
-        $this->assertNotNull($createdUser);
-
-        // 3. Fichar entrada
-        $entradaResponse = $this->post('/registro-horario/entrada', [
-            'userUuid' => $createdUser->uuid()->getValue(),
+        // 2. Verificar que el usuario fue creado
+        $this->assertDatabaseHas('users', [
+            'email' => 'workflow@example.com',
+            'name' => 'Workflow User',
         ]);
-        $entradaResponse->assertRedirect();
+
+        // 3. Fichar entrada (con el usuario autenticado admin)
+        $entradaResponse = $this->post('/registro-horario/entrada');
+        $entradaResponse->assertRedirect(route('users.index'));
         $entradaResponse->assertSessionHas('success');
 
         // 4. Verificar que aparece en registro horario
-        $registroResponse = $this->get('/registro-horario?userUuid='.$createdUser->uuid()->getValue());
+        $registroResponse = $this->get('/registro-horario');
         $registroResponse->assertStatus(200);
 
         $tieneRegistroAbierto = $registroResponse->viewData('tieneRegistroAbierto');
@@ -129,27 +140,25 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         // 5. Esperar un segundo para simular tiempo trabajado
         sleep(1);
 
-        // 5. Fichar salida
-        $salidaResponse = $this->post('/registro-horario/salida', [
-            'userUuid' => $createdUser->uuid()->getValue(),
-        ]);
-        $salidaResponse->assertRedirect();
+        // 6. Fichar salida
+        $salidaResponse = $this->post('/registro-horario/salida');
+        $salidaResponse->assertRedirect(route('users.index'));
         $salidaResponse->assertSessionHas('success');
 
-        // 6. Verificar que el registro se cerró
-        $finalResponse = $this->get('/registro-horario?userUuid='.$createdUser->uuid()->getValue());
+        // 7. Verificar que el registro se cerró
+        $finalResponse = $this->get('/registro-horario');
         $finalResponse->assertStatus(200);
 
         $tieneRegistroAbiertoFinal = $finalResponse->viewData('tieneRegistroAbierto');
         $this->assertFalse($tieneRegistroAbiertoFinal);
 
-        // 7. Verificar que aparece tiempo en users index
+        // 8. Verificar que el usuario admin aparece con tiempo en users index
         $usersResponse = $this->get('/users');
         $users = $usersResponse->viewData('users');
-        $workflowUser = collect($users)->firstWhere('email', 'workflow@example.com');
+        $adminUser = collect($users)->firstWhere('email', $this->authenticatedUser->email);
 
-        $this->assertNotNull($workflowUser);
-        $this->assertNotEquals('00:00:00', $workflowUser['tiempo_acumulado']);
+        $this->assertNotNull($adminUser);
+        $this->assertNotEquals('00:00:00', $adminUser['tiempo_acumulado']);
     }
 
     public function test_user_deletion_handles_registro_horario_gracefully(): void

@@ -22,7 +22,9 @@ class User extends Authenticatable
         'uuid',
         'name',
         'email',
+        'password',
         'is_active',
+        'remember_token',
     ];
 
     /**
