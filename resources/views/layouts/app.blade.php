@@ -14,25 +14,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="antialiased bg-gray-50">
-    <nav class="bg-white shadow-sm border-b border-gray-200">
+    <nav class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-lg">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
                         <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="flex items-center space-x-2">
-                            <svg class="w-8 h-8 text-indigo-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                                 <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
-                            <span class="text-xl font-bold text-gray-900">TimeTrack</span>
+                            <span class="text-xl font-bold text-white">TimeTrack</span>
                         </a>
                     </div>
                     @auth
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'border-white text-white' : 'border-transparent text-white/80 hover:border-white/50 hover:text-white' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Información
                         </a>
-                        <a href="{{ route('registro_horario.index') }}" class="{{ request()->routeIs('registro_horario.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('registro_horario.index') }}" class="{{ request()->routeIs('registro_horario.*') ? 'border-white text-white' : 'border-transparent text-white/80 hover:border-white/50 hover:text-white' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Fichaje
                         </a>
                     </div>
@@ -40,10 +40,10 @@
                 </div>
                 @auth
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-700">{{ auth()->user()->name }}</span>
+                    <span class="text-sm text-white font-medium">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                        <button type="submit" class="text-sm text-white/80 hover:text-white font-medium">
                             Cerrar Sesión
                         </button>
                     </form>
