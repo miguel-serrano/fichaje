@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\User\Application\Command;
+namespace App\DDD\User\Application\Query;
 
 class GetUserDailyRegistrosQuery
 {

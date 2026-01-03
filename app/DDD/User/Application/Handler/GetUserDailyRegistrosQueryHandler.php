@@ -3,7 +3,7 @@
 namespace App\DDD\User\Application\Handler;
 
 use App\DDD\TimeTracking\Services\TimeTrackingService;
-use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
+use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 

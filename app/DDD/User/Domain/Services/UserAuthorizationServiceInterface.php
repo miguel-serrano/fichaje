@@ -15,4 +15,6 @@ interface UserAuthorizationServiceInterface
     public function ensureCanUpdate(EloquentUser $authenticatedUser, EloquentUser $targetUser): void;
 
     public function ensureCanDelete(EloquentUser $authenticatedUser, EloquentUser $targetUser): void;
+
+    public function ensureCanList(EloquentUser $authenticatedUser): void;
 }

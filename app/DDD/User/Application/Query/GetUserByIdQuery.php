@@ -1,10 +1,10 @@
 <?php
 
-namespace App\DDD\User\Application\Command;
+namespace App\DDD\User\Application\Query;
 
 use App\Models\User as EloquentUser;
 
-final class DeleteUserCommand
+final class GetUserByIdQuery
 {
     public function __construct(
         public EloquentUser $authenticatedUser,

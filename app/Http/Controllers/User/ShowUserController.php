@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\User;
 
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
-use App\DDD\User\Application\Command\GetUserByIdQuery;
-use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
+use App\DDD\User\Application\Query\GetUserByIdQuery;
+use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ShowUserController extends Controller
@@ -20,7 +22,7 @@ class ShowUserController extends Controller
     public function __invoke(string $id): View|RedirectResponse
     {
         try {
-            $query = new GetUserByIdQuery($id);
+            $query = new GetUserByIdQuery(Auth::user(), (int) $id);
             /** @var User $user */
             $user = $this->queryBus->dispatch($query);
 
@@ -34,9 +36,16 @@ class ShowUserController extends Controller
                 'totalMes' => $registrosData['total_mes_actual'],
             ]);
         } catch (UserNotFoundException $e) {
-            return redirect()->route('users.index')->with('error', $e->getMessage());
+            return redirect()->route('users.index')
+                ->with('error', $e->getMessage());
+        } catch (UnauthorizedException $e) {
+            return redirect()->route('users.index')
+                ->with('error', $e->getMessage());
         } catch (\Exception $e) {
-            return redirect()->route('users.index')->with('error', $e->getMessage());
+            report($e);
+
+            return redirect()->route('users.index')
+                ->with('error', 'Error al cargar el usuario');
         }
     }
 }

@@ -4,8 +4,9 @@ namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
-use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
+use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class GetMyTimeEntriesController extends Controller
@@ -14,19 +15,26 @@ class GetMyTimeEntriesController extends Controller
         private QueryBusInterface $queryBus
     ) {}
 
-    public function __invoke(): View
+    public function __invoke(): View|RedirectResponse
     {
-        $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
+        try {
+            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
 
-        $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($authenticatedUser->id()->getValue());
-        $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
+            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($authenticatedUser->id()->getValue());
+            $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
 
-        return view('users.detail', [
-            'user' => $authenticatedUser,
-            'allRegistros' => $authenticatedUser->registrosHorarios(),
-            'dailyRegistros' => $registrosData['registros'],
-            'totalMes' => $registrosData['total_mes_actual'],
-            'isAdmin' => false,
-        ]);
+            return view('users.detail', [
+                'user' => $authenticatedUser,
+                'allRegistros' => $authenticatedUser->registrosHorarios(),
+                'dailyRegistros' => $registrosData['registros'],
+                'totalMes' => $registrosData['total_mes_actual'],
+                'isAdmin' => false,
+            ]);
+        } catch (\Exception $e) {
+            report($e);
+
+            return redirect()->route('dashboard')
+                ->with('error', 'Error al cargar tus registros de tiempo');
+        }
     }
 }

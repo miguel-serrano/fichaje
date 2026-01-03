@@ -35,4 +35,9 @@ class UnauthorizedException extends Exception
     {
         return new self('No tienes permisos para eliminar este usuario');
     }
+
+    public static function forList(): self
+    {
+        return new self('No tienes permisos para listar usuarios');
+    }
 }

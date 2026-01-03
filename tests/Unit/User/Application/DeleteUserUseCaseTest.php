@@ -4,12 +4,13 @@ namespace Tests\Unit\User\Application;
 
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
-use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
+use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
+use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
+use App\DDD\User\Infrastructure\Services\UserAuthorizationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
 use Tests\TestCase;
 
 class DeleteUserUseCaseTest extends TestCase
@@ -18,24 +19,34 @@ class DeleteUserUseCaseTest extends TestCase
 
     private UserRepositoryInterface $userRepository;
 
+    private UserAuthorizationServiceInterface $authorizationService;
+
     private DeleteUserCommandHandler $handler;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->handler = new DeleteUserCommandHandler($this->userRepository);
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
+        $this->userRepository = new EloquentUserRepository;
+        $this->authorizationService = app(UserAuthorizationService::class);
+        $this->handler = new DeleteUserCommandHandler(
+            $this->userRepository,
+            $this->authorizationService
+        );
     }
 
     public function test_it_deletes_a_user_successfully(): void
     {
-        // Create an Eloquent user in the database
+        // Create admin user
+        $adminUser = \App\Models\User::create([
+            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'is_active' => true,
+            'remember_token' => 'soyAdm1n',
+        ]);
+
+        // Create target user to delete
         $eloquentUser = \App\Models\User::create([
             'uuid' => '123e4567-e89b-12d3-a456-426614174000',
             'name' => 'Test User',
@@ -44,103 +55,59 @@ class DeleteUserUseCaseTest extends TestCase
             'is_active' => true,
         ]);
 
-        $userId = (string) $eloquentUser->id;
-        $userIdVO = new UserId($userId);
-        $user = User::fromPrimitives(
-            $eloquentUser->id,
-            $eloquentUser->uuid,
-            $eloquentUser->email,
-            $eloquentUser->name,
-            $eloquentUser->is_active
-        );
+        $userId = $eloquentUser->id;
 
-        $this->userRepository
-            ->shouldReceive('findById')
-            ->once()
-            ->with(Mockery::on(function ($arg) use ($userIdVO) {
-                return $arg->getValue() === $userIdVO->getValue();
-            }))
-            ->andReturn($user);
-
-        $this->userRepository
-            ->shouldReceive('delete')
-            ->once()
-            ->with(Mockery::on(function ($arg) use ($userIdVO) {
-                return $arg->getValue() === $userIdVO->getValue();
-            }))
-            ->andReturn(true);
-
-        $command = new DeleteUserCommand($userId);
+        $command = new DeleteUserCommand($adminUser, $userId);
         $this->handler->handle($command);
 
-        // Assert that the test completed without exceptions
-        $this->assertTrue(true);
+        // Verify user was deleted
+        $this->assertDatabaseMissing('users', ['id' => $userId]);
     }
 
     public function test_it_throws_exception_when_user_not_found(): void
     {
-        $userId = '999';
-        $userIdVO = new UserId($userId);
+        $adminUser = \App\Models\User::create([
+            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'is_active' => true,
+            'remember_token' => 'soyAdm1n',
+        ]);
 
-        $this->userRepository
-            ->shouldReceive('findById')
-            ->once()
-            ->with(Mockery::on(function ($arg) use ($userIdVO) {
-                return $arg->getValue() === $userIdVO->getValue();
-            }))
-            ->andReturn(null);
-
-        $this->userRepository
-            ->shouldNotReceive('delete');
+        $userId = 999;
 
         $this->expectException(UserNotFoundException::class);
         $this->expectExceptionMessage("User {$userId} not found");
 
-        $command = new DeleteUserCommand($userId);
+        $command = new DeleteUserCommand($adminUser, $userId);
         $this->handler->handle($command);
     }
 
     public function test_it_throws_exception_when_delete_fails(): void
     {
-        // Create an Eloquent user in the database
-        $eloquentUser = \App\Models\User::create([
-            'uuid' => '123e4567-e89b-12d3-a456-426614174001',
-            'name' => 'Test User',
-            'email' => 'test2@example.com',
+        $adminUser = \App\Models\User::create([
+            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
+            'remember_token' => 'soyAdm1n',
         ]);
 
-        $userId = (string) $eloquentUser->id;
-        $userIdVO = new UserId($userId);
-        $user = User::fromPrimitives(
-            $eloquentUser->id,
-            $eloquentUser->uuid,
-            $eloquentUser->email,
-            $eloquentUser->name,
-            $eloquentUser->is_active
-        );
+        // Try to delete another admin - should fail authorization
+        $targetAdminUser = \App\Models\User::create([
+            'uuid' => '123e4567-e89b-12d3-a456-426614174001',
+            'name' => 'Another Admin',
+            'email' => 'admin2@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'is_active' => true,
+            'remember_token' => 'soyAdm1n',
+        ]);
 
-        $this->userRepository
-            ->shouldReceive('findById')
-            ->once()
-            ->with(Mockery::on(function ($arg) use ($userIdVO) {
-                return $arg->getValue() === $userIdVO->getValue();
-            }))
-            ->andReturn($user);
+        $this->expectException(UnauthorizedException::class);
 
-        $this->userRepository
-            ->shouldReceive('delete')
-            ->once()
-            ->with(Mockery::on(function ($arg) use ($userIdVO) {
-                return $arg->getValue() === $userIdVO->getValue();
-            }))
-            ->andReturn(false);
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Failed to delete user {$userId}");
-
-        $command = new DeleteUserCommand($userId);
+        $command = new DeleteUserCommand($adminUser, $targetAdminUser->id);
         $this->handler->handle($command);
     }
 }

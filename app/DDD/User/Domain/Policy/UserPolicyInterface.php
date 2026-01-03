@@ -15,4 +15,6 @@ interface UserPolicyInterface
     public function canUpdate(User $authenticatedUser, User $targetUser): bool;
 
     public function canDelete(User $authenticatedUser, User $targetUser): bool;
+
+    public function canList(User $authenticatedUser): bool;
 }

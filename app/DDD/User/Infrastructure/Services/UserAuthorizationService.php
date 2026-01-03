@@ -44,6 +44,12 @@ final class UserAuthorizationService implements UserAuthorizationServiceInterfac
         $this->userPolicy->ensureCanDelete($domainAuthUser, $domainTargetUser);
     }
 
+    public function ensureCanList(EloquentUser $authenticatedUser): void
+    {
+        $domainUser = $this->toDomainUser($authenticatedUser);
+        $this->userPolicy->ensureCanList($domainUser);
+    }
+
     private function toDomainUser(EloquentUser $eloquentUser): DomainUser
     {
         return DomainUser::fromPrimitives(

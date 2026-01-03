@@ -32,6 +32,11 @@ final class UserPolicy implements UserPolicyInterface
         return $authenticatedUser->isAdmin() && ! $targetUser->isAdmin();
     }
 
+    public function canList(User $authenticatedUser): bool
+    {
+        return $authenticatedUser->isAdmin();
+    }
+
     public function ensureCanToggleActive(User $authenticatedUser): void
     {
         if (! $this->canToggleActive($authenticatedUser)) {
@@ -64,6 +69,13 @@ final class UserPolicy implements UserPolicyInterface
     {
         if (! $this->canDelete($authenticatedUser, $targetUser)) {
             throw UnauthorizedException::forDelete();
+        }
+    }
+
+    public function ensureCanList(User $authenticatedUser): void
+    {
+        if (! $this->canList($authenticatedUser)) {
+            throw UnauthorizedException::forList();
         }
     }
 }

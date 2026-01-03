@@ -3,18 +3,22 @@
 namespace App\DDD\User\Application\Handler;
 
 use App\DDD\TimeTracking\Services\TimeTrackingService;
-use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
+use App\DDD\User\Application\Query\GetAllUsersWithTimeQuery;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 
 class GetAllUsersWithTimeQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private TimeTrackingService $timeTrackingService, // Injected directly
+        private TimeTrackingService $timeTrackingService,
+        private UserAuthorizationServiceInterface $authorizationService
     ) {}
 
     public function handle(GetAllUsersWithTimeQuery $query): array
     {
+        $this->authorizationService->ensureCanList($query->authenticatedUser);
+
         $users = $this->userRepository->findAll();
         $usersWithTime = [];
 
