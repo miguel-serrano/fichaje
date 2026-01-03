@@ -4,6 +4,7 @@ namespace App\DDD\User\Domain\Entity;
 
 use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\User\Domain\ValueObjects\Email;
+use App\DDD\User\Domain\ValueObjects\RememberToken;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Exception;
@@ -20,6 +21,8 @@ final class User
 
     private bool $isActive;
 
+    private RememberToken $rememberToken;
+
     /** @var TimeEntry[] */
     private array $registrosHorarios;
 
@@ -29,6 +32,7 @@ final class User
         Email $email,
         string $name,
         bool $isActive = true,
+        ?RememberToken $rememberToken = null,
         array $registrosHorarios = []
     ) {
         $this->id = $id;
@@ -36,6 +40,7 @@ final class User
         $this->email = $email;
         $this->name = $name;
         $this->isActive = $isActive;
+        $this->rememberToken = $rememberToken ?? new RememberToken(null);
         $this->registrosHorarios = $registrosHorarios;
     }
 
@@ -50,6 +55,7 @@ final class User
         string $email,
         string $name,
         bool $isActive,
+        ?string $rememberToken = null,
         array $registrosHorarios = []
     ): self {
         $user = new self(
@@ -57,7 +63,8 @@ final class User
             new Uuid($uuid),
             new Email($email),
             $name,
-            $isActive
+            $isActive,
+            new RememberToken($rememberToken)
         );
 
         foreach ($registrosHorarios as $registro) {
@@ -95,6 +102,16 @@ final class User
     public function isActive(): bool
     {
         return $this->isActive;
+    }
+
+    public function rememberToken(): RememberToken
+    {
+        return $this->rememberToken;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->rememberToken->isAdmin();
     }
 
     public function deactivate(): void

@@ -85,6 +85,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             $eloquentUser->email,
             $eloquentUser->name,
             $eloquentUser->is_active ?? true,
+            $eloquentUser->remember_token ?? null,
             $registrosHorarios
         );
     }
@@ -109,6 +110,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             $eloquentUser->email,
             $eloquentUser->name,
             $eloquentUser->is_active ?? true,
+            $eloquentUser->remember_token ?? null,
             $registrosHorarios
         );
     }
@@ -135,6 +137,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $user->email,
                 $user->name,
                 $user->is_active ?? true,
+                $user->remember_token ?? null,
                 $registros
             );
         })->toArray();
