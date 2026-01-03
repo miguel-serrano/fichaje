@@ -6,9 +6,9 @@ use App\Http\Controllers\User\UserController;
 use App\Models\User;
 
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
 
 Route::middleware('api')->group(function () {
@@ -23,12 +23,4 @@ Route::middleware('api')->group(function () {
             ->get();
         return response()->json($users);
     });
-
-    // Resto de las rutas API
-    // Route::prefix('users')->group(function () {
-    //     Route::get('/', [UserController::class, 'index']);
-    //     Route::post('/', [UserController::class, 'store']);
-    //     Route::get('{id}', [UserController::class, 'show']);
-    //     Route::delete('{id}', [UserController::class, 'destroy']);
-    // });
 });

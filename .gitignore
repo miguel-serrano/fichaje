@@ -18,3 +18,4 @@ yarn-error.log
 /.vscode
 .cursorignore
 backup.sql
+custom.txt
