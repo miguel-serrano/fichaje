@@ -25,8 +25,8 @@
                 </a>
                 @auth
                 <ul id="nav-mobile" class="right">
-                    <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
-                        <a href="{{ route('users.index') }}">
+                    <li class="{{ request()->routeIs('user.*') ? 'active' : '' }}">
+                        <a href="{{ route('user.index') }}">
                             <i class="material-icons left">info</i>Información
                         </a>
                     </li>

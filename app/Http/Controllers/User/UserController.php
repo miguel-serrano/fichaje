@@ -89,7 +89,7 @@ class UserController extends Controller
             $command = new CreateUserCommand($validated['email'], $validated['name']);
             $this->commandBus->dispatch($command);
 
-            return redirect()->route('users.index')
+            return redirect()->route('user.index')
                 ->with('success', 'User created successfully!');
         } catch (UserAlreadyExistsException $e) {
             return back()
@@ -113,7 +113,7 @@ class UserController extends Controller
                 /** @var User $user */
                 $user = $this->queryBus->dispatch($query);
             } catch (UserNotFoundException $e) {
-                return redirect()->route('users.index')->with('error', $e->getMessage());
+                return redirect()->route('user.index')->with('error', $e->getMessage());
             }
 
             $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->getValue()); // Use integer ID
@@ -126,7 +126,7 @@ class UserController extends Controller
                 'totalMes' => $registrosData['total_mes_actual'],
             ]);
         } catch (\Exception $e) { // Catch other potential exceptions
-            return redirect()->route('users.index')->with('error', $e->getMessage());
+            return redirect()->route('user.index')->with('error', $e->getMessage());
         }
     }
 
@@ -144,42 +144,42 @@ class UserController extends Controller
                 ? 'Usuario activado correctamente'
                 : 'Usuario desactivado correctamente';
 
-            return redirect()->route('users.index')
+            return redirect()->route('user.index')
                 ->with('success', $message);
         } catch (\Exception $e) {
-            return redirect()->route('users.index')
+            return redirect()->route('user.index')
                 ->with('error', 'Error al cambiar el estado del usuario: '.$e->getMessage());
         }
     }
 
-    public function destroy(Request $request, string $id): RedirectResponse|JsonResponse
+    public function delete(Request $request, string $id): RedirectResponse|JsonResponse
     {
         try {
             $command = new DeleteUserCommand($id);
             $this->commandBus->dispatch($command);
 
-            return redirect()->route('users.index')
+            return redirect()->route('user.index')
                 ->with('success', 'Usuario eliminado correctamente');
         } catch (CannotDeleteAdminUserException $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json(['error' => $e->getMessage()], 403);
             }
 
-            return redirect()->route('users.index')
+            return redirect()->route('user.index')
                 ->with('error', $e->getMessage());
         } catch (UserNotFoundException $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json(['error' => $e->getMessage()], 404);
             }
 
-            return redirect()->route('users.index')
+            return redirect()->route('user.index')
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json(['error' => $e->getMessage()], 500);
             }
 
-            return redirect()->route('users.index')
+            return redirect()->route('user.index')
                 ->with('error', $e->getMessage());
         }
     }

@@ -10,7 +10,7 @@
                 <span class="card-title">Create New User</span>
                 <p class="grey-text">Add a new user to the system.</p>
 
-                <form action="{{ route('users.store') }}" method="POST" style="margin-top: 30px;">
+                <form action="{{ route('user.store') }}" method="POST" style="margin-top: 30px;">
                     @csrf
 
                     <div class="row">
@@ -51,7 +51,7 @@
 
                     <div class="row">
                         <div class="col s12 right-align">
-                            <a href="{{ route('users.index') }}" class="btn-flat waves-effect">Cancel</a>
+                            <a href="{{ route('user.index') }}" class="btn-flat waves-effect">Cancel</a>
                             <button type="submit" class="btn waves-effect waves-light light-green">
                                 <i class="material-icons right">send</i>Create User
                             </button>
