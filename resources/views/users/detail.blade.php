@@ -3,60 +3,62 @@
 @section('title', 'Mi Información')
 
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8">
-    <!-- <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-            <h1 class="text-3xl font-semibold text-gray-900">Mi Información y Fichajes</h1>
-            <p class="mt-2 text-sm text-gray-700">Visualiza tu información personal y registros de fichaje.</p>
-        </div>
-    </div> -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    <i class="material-icons left">person</i>
+                    Información Personal
+                </span>
 
-    <!-- Información del Usuario -->
-    <div class="mt-8">
-        <div class="bg-white shadow sm:rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Información Personal</h3>
-                <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Nombre</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $user->name() }}</dd>
+                <div class="divider" style="margin: 20px 0;"></div>
+
+                <div class="row">
+                    <div class="col s12 m6">
+                        <h6 class="grey-text text-darken-1">Nombre</h6>
+                        <p>{{ $user->name() }}</p>
                     </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Email</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $user->email()->getValue() }}</dd>
+                    <div class="col s12 m6">
+                        <h6 class="grey-text text-darken-1">Email</h6>
+                        <p>{{ $user->email()->getValue() }}</p>
                     </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">UUID</dt>
-                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $user->uuid()->getValue() }}</dd>
+                    <div class="col s12 m6">
+                        <h6 class="grey-text text-darken-1">UUID</h6>
+                        <p><code class="grey-text">{{ $user->uuid()->getValue() }}</code></p>
                     </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Estado</dt>
-                        <dd class="mt-1 text-sm text-gray-900">
+                    <div class="col s12 m6">
+                        <h6 class="grey-text text-darken-1">Estado</h6>
+                        <p>
                             @if($user->isActive())
-                                <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">Activo</span>
+                                <span class="chip green lighten-4 green-text text-darken-2">
+                                    <i class="material-icons tiny">check_circle</i> Activo
+                                </span>
                             @else
-                                <span class="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">Inactivo</span>
+                                <span class="chip red lighten-4 red-text text-darken-2">
+                                    <i class="material-icons tiny">cancel</i> Inactivo
+                                </span>
                             @endif
-                        </dd>
+                        </p>
                     </div>
-                </dl>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Aviso de cuenta inactiva -->
-    @if(!$user->isActive())
-    <div class="mt-8">
-        <div class="rounded-md bg-yellow-50 border border-yellow-200 p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Cuenta Inactiva</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
+<!-- Aviso de cuenta inactiva -->
+@if(!$user->isActive())
+<div class="row">
+    <div class="col s12">
+        <div class="card amber lighten-4">
+            <div class="card-content amber-text text-darken-4">
+                <div class="row valign-wrapper" style="margin-bottom: 0;">
+                    <div class="col s12 m1 center-align">
+                        <i class="material-icons amber-text text-darken-2" style="font-size: 48px;">warning</i>
+                    </div>
+                    <div class="col s12 m11">
+                        <h5 class="amber-text text-darken-4" style="margin-top: 0;">Cuenta Inactiva</h5>
                         <p>
                             Tu cuenta está pendiente de activación. No podrás fichar entrada ni salida hasta que un administrador active tu cuenta.
                             Por favor, contacta con un administrador.
@@ -66,292 +68,217 @@
             </div>
         </div>
     </div>
-    @endif
+</div>
+@endif
 
-    <!-- Sección de Todos los Fichajes (All Time Entries) - Desplegable -->
-    <div class="mt-8">
-        <div class="bg-white shadow sm:rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="border border-gray-200 rounded-lg overflow-hidden">
-                    <!-- Header clickeable para Todos los Fichajes -->
-                    <button 
-                        type="button" 
-                        class="w-full px-4 py-4 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
-                        onclick="toggleAllFichajes()"
-                    >
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-3">
-                                <svg id="icon-all-fichajes" class="h-5 w-5 text-gray-400 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                                <h3 class="text-lg font-medium leading-6 text-gray-900">Todos los Fichajes</h3>
-                                @if(isset($allRegistros))
-                                    <span class="text-sm text-gray-500">({{ count($allRegistros) }} {{ count($allRegistros) == 1 ? 'registro' : 'registros' }})</span>
-                                @endif
+<!-- Resumen Mensual -->
+@if(isset($totalMes) && $totalMes['segundos'] > 0)
+<div class="row">
+    <div class="col s12">
+        <div class="card light-green lighten-5">
+            <div class="card-content">
+                <div class="row valign-wrapper" style="margin-bottom: 0;">
+                    <div class="col s12 m6">
+                        <i class="material-icons left light-green-text">event</i>
+                        <span class="card-title">Total {{ $totalMes['mes'] }}</span>
+                    </div>
+                    <div class="col s12 m6 right-align">
+                        <h4 class="light-green-text text-darken-2" style="margin: 0;">{{ $totalMes['formateado'] }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Todos los Fichajes -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    <i class="material-icons left">assignment</i>
+                    Todos los Fichajes
+                </span>
+
+                @if(isset($allRegistros) && count($allRegistros) > 0)
+                    <p class="grey-text">Total de {{ count($allRegistros) }} {{ count($allRegistros) == 1 ? 'registro' : 'registros' }}</p>
+
+                    <table class="striped responsive-table highlight">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Entrada</th>
+                                <th>Salida</th>
+                                <th>Duración</th>
+                                <th>Estado</th>
+                                <th class="right-align">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(collect($allRegistros)->sortByDesc(function($registro) { return $registro->entrada(); }) as $registro)
+                            <tr>
+                                <td>{{ $registro->entrada()->format('d/m/Y') }}</td>
+                                <td>{{ $registro->entrada()->format('H:i:s') }}</td>
+                                <td>
+                                    @if($registro->salida())
+                                        {{ $registro->salida()->format('H:i:s') }}
+                                    @else
+                                        <span class="amber-text text-darken-2">
+                                            <i class="material-icons tiny">schedule</i> Abierto
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($registro->salida())
+                                        <span class="chip blue lighten-4 blue-text text-darken-2">
+                                            {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                        </span>
+                                    @else
+                                        <span class="grey-text">--</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($registro->isAbierto())
+                                        <span class="chip amber lighten-4 amber-text text-darken-2">Abierto</span>
+                                    @else
+                                        <span class="chip green lighten-4 green-text text-darken-2">Cerrado</span>
+                                    @endif
+                                </td>
+                                <td class="right-align">
+                                    @if($registro->isAbierto())
+                                        <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            <input type="hidden" name="userUuid" value="{{ $user->uuid()->getValue() }}">
+                                            <button type="submit" class="btn-small waves-effect waves-light light-green">
+                                                <i class="material-icons left">check</i>Cerrar
+                                            </button>
+                                        </form>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <div class="center-align" style="padding: 60px 20px;">
+                        <i class="material-icons grey-text" style="font-size: 72px;">assignment_late</i>
+                        <h5 class="grey-text text-darken-1">Sin registros de fichaje</h5>
+                        <p class="grey-text">Aún no tienes ningún registro de fichaje.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen Diario -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row" style="margin-bottom: 10px;">
+                    <div class="col s12 m6">
+                        <span class="card-title">
+                            <i class="material-icons left">calendar_today</i>
+                            Resumen Diario
+                        </span>
+                        <p class="grey-text">Fichajes cerrados agrupados por día</p>
+                    </div>
+                    <div class="col s12 m6 right-align">
+                        <button onclick="expandAll()" class="btn-small waves-effect waves-light light-green">
+                            <i class="material-icons left">unfold_more</i>Expandir
+                        </button>
+                        <button onclick="collapseAll()" class="btn-small waves-effect waves-light grey">
+                            <i class="material-icons left">unfold_less</i>Colapsar
+                        </button>
+                    </div>
+                </div>
+
+                @if(count($dailyRegistros) > 0)
+                    <ul class="collapsible" id="daily-collapsible">
+                        @foreach($dailyRegistros as $index => $dia)
+                        <li>
+                            <div class="collapsible-header">
+                                <i class="material-icons">date_range</i>
+                                <span style="flex: 1;">{{ $dia['fecha_formateada'] }}</span>
+                                <span class="chip blue lighten-4 blue-text text-darken-2">
+                                    {{ $dia['total_formateado'] }}
+                                </span>
+                                <span class="badge grey lighten-2 grey-text text-darken-2">
+                                    {{ count($dia['registros']) }} {{ count($dia['registros']) == 1 ? 'fichaje' : 'fichajes' }}
+                                </span>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-sm text-gray-500">Click para ver detalles</span>
-                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-                    </button>
-                    
-                    <!-- Contenido colapsable de Todos los Fichajes -->
-                    <div id="content-all-fichajes" class="hidden">
-                        @if(isset($allRegistros) && count($allRegistros) > 0)
-                            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5">
-                                <table class="min-w-full divide-y divide-gray-300">
-                                    <thead class="bg-gray-50">
+                            <div class="collapsible-body">
+                                <table class="striped">
+                                    <thead>
                                         <tr>
-                                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">ID</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Fecha</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Entrada</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Salida</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Duración</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Estado</th>
-                                            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                                <span class="sr-only">Actions</span>
-                                            </th>
+                                            <th>Entrada</th>
+                                            <th>Salida</th>
+                                            <th>Duración</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-200 bg-white">
-                                        @foreach(collect($allRegistros)->sortByDesc(function($registro) { return $registro->entrada(); }) as $registro)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                                {{ $registro->id() ? $registro->id()->getValue() : 'N/A' }}
+                                    <tbody>
+                                        @foreach($dia['registros'] as $registro)
+                                        <tr>
+                                            <td>
+                                                <i class="material-icons tiny light-green-text">login</i>
+                                                {{ $registro['entrada'] }}
                                             </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {{ $registro->entrada()->format('Y-m-d') }}
+                                            <td>
+                                                <i class="material-icons tiny red-text text-lighten-1">logout</i>
+                                                {{ $registro['salida'] }}
                                             </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {{ $registro->entrada()->format('H:i:s') }}
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                @if($registro->salida())
-                                                    {{ $registro->salida()->format('H:i:s') }}
-                                                @else
-                                                    <span class="text-yellow-600 font-medium">Abierto</span>
-                                                @endif
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                @if($registro->salida())
-                                                    <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                        {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
-                                                    </span>
-                                                @else
-                                                    <span class="text-gray-400">--</span>
-                                                @endif
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                @if($registro->isAbierto())
-                                                    <span class="inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800">Abierto</span>
-                                                @else
-                                                    <span class="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800">Cerrado</span>
-                                                @endif
-                                            </td>
-                                            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                @if($registro->isAbierto())
-                                                    <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="userUuid" value="{{ $user->uuid()->getValue() }}">
-                                                        <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
-                                                            Cerrar Fichaje
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                            <td>
+                                                <span class="chip green lighten-4 green-text text-darken-2">
+                                                    <i class="material-icons tiny">timer</i>
+                                                    {{ $registro['duracion'] }}
+                                                </span>
                                             </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
                             </div>
-                        @else
-                            <div class="text-center py-8 bg-gray-50">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                                </svg>
-                                <h3 class="mt-2 text-sm font-medium text-gray-900">Sin registros de fichaje</h3>
-                                <p class="mt-1 text-sm text-gray-500">Aún no tienes ningún registro de fichaje.</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sección de Fichajes por Día (resumenes diarios de fichajes cerrados) -->
-    <div class="mt-8">
-        <div class="bg-white shadow sm:rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-3 sm:space-y-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900">Resumen Diario (Fichajes Cerrados)</h3>
-                        @if(isset($totalMes) && $totalMes['segundos'] > 0)
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-500">Total {{ $totalMes['mes'] }}:</span>
-                            <span class="inline-flex items-center rounded-md bg-green-50 px-3 py-1 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
-                                {{ $totalMes['formateado'] }}
-                            </span>
-                        </div>
-                        @endif
-                    </div>
-                    <div class="flex space-x-2">
-                        <button 
-                            type="button" 
-                            onclick="toggleAll(true)"
-                            class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                            Expandir Todo
-                        </button>
-                        <button 
-                            type="button" 
-                            onclick="toggleAll(false)"
-                            class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                            </svg>
-                            Colapsar Todo
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    @if(count($dailyRegistros) > 0)
-                        @foreach($dailyRegistros as $index => $dia)
-                        <div class="border border-gray-200 rounded-lg overflow-hidden">
-                            <!-- Header clickeable -->
-                            <button 
-                                type="button" 
-                                class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
-                                onclick="toggleDay('day-{{ $index }}')"
-                            >
-                                <div class="flex justify-between items-center">
-                                    <div class="flex items-center space-x-3">
-                                        <svg id="icon-day-{{ $index }}" class="h-5 w-5 text-gray-400 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                        <h4 class="text-md font-semibold text-gray-900">{{ $dia['fecha_formateada'] }}</h4>
-                                        <span class="text-sm text-gray-500">({{ count($dia['registros']) }} {{ count($dia['registros']) == 1 ? 'fichaje' : 'fichajes' }})</span>
-                                    </div>
-                                    <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                        Total: {{ $dia['total_formateado'] }}
-                                    </span>
-                                </div>
-                            </button>
-                            
-                            <!-- Contenido colapsable -->
-                            <div id="content-day-{{ $index }}" class="hidden">
-                                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5">
-                                    <table class="min-w-full divide-y divide-gray-300">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                                    Entrada
-                                                </th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                                    Salida
-                                                </th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                                    Duración
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($dia['registros'] as $registro)
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {{ $registro['entrada'] }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $registro['salida'] }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                        {{ $registro['duracion'] }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                        </li>
                         @endforeach
-                    @else
-                        <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">Sin fichajes cerrados</h3>
-                            <p class="mt-1 text-sm text-gray-500">Aún no tienes registros de fichajes completados para mostrar en el resumen diario.</p>
-                        </div>
-                    @endif
-                </div>
+                    </ul>
+                @else
+                    <div class="center-align" style="padding: 60px 20px;">
+                        <i class="material-icons grey-text" style="font-size: 72px;">event_busy</i>
+                        <h5 class="grey-text text-darken-1">Sin fichajes cerrados</h5>
+                        <p class="grey-text">Aún no tienes registros de fichajes completados para mostrar en el resumen diario.</p>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// Función para toggle del desplegable de Todos los Fichajes
-function toggleAllFichajes() {
-    const content = document.getElementById('content-all-fichajes');
-    const icon = document.getElementById('icon-all-fichajes');
-    
-    if (content.classList.contains('hidden')) {
-        // Expandir
-        content.classList.remove('hidden');
-        icon.classList.add('rotate-90');
-    } else {
-        // Colapsar
-        content.classList.add('hidden');
-        icon.classList.remove('rotate-90');
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize collapsibles
+    var elems = document.querySelectorAll('.collapsible');
+    M.Collapsible.init(elems);
+});
+
+function expandAll() {
+    var instance = M.Collapsible.getInstance(document.getElementById('daily-collapsible'));
+    if (instance) {
+        for (let i = 0; i < instance.$el[0].children.length; i++) {
+            instance.open(i);
+        }
     }
 }
 
-function toggleDay(dayId) {
-    const content = document.getElementById('content-' + dayId);
-    const icon = document.getElementById('icon-' + dayId);
-    
-    if (content.classList.contains('hidden')) {
-        // Expandir
-        content.classList.remove('hidden');
-        icon.classList.add('rotate-90');
-    } else {
-        // Colapsar
-        content.classList.add('hidden');
-        icon.classList.remove('rotate-90');
+function collapseAll() {
+    var instance = M.Collapsible.getInstance(document.getElementById('daily-collapsible'));
+    if (instance) {
+        for (let i = 0; i < instance.$el[0].children.length; i++) {
+            instance.close(i);
+        }
     }
-}
-
-// Función para expandir/colapsar todos los días
-function toggleAll(expand = true) {
-    const allContents = document.querySelectorAll('[id^="content-day-"]');
-    const allIcons = document.querySelectorAll('[id^="icon-day-"]');
-    
-    allContents.forEach(content => {
-        if (expand) {
-            content.classList.remove('hidden');
-        } else {
-            content.classList.add('hidden');
-        }
-    });
-    
-    allIcons.forEach(icon => {
-        if (expand) {
-            icon.classList.add('rotate-90');
-        } else {
-            icon.classList.remove('rotate-90');
-        }
-    });
 }
 </script>
 
