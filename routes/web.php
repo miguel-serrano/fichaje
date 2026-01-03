@@ -24,8 +24,6 @@ Route::middleware('auth')->group(function () {
 
     // Users
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
-    Route::get('/user/create', [UserController::class, 'create'])->name('user.create');
-    Route::post('/user', [UserController::class, 'store'])->name('user.store');
     Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
     Route::patch('/user/{id}/toggle-active', [UserController::class, 'toggleActive'])->name('user.toggle-active');
     Route::delete('/user/{id}', [UserController::class, 'delete'])->name('user.delete');

@@ -5,18 +5,14 @@ namespace App\Http\Controllers\User;
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
-use App\DDD\User\Application\Command\CreateUserCommand;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
 use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\CannotDeleteAdminUserException;
-use App\DDD\User\Domain\Exceptions\MaxUsersLimitExceededException;
-use App\DDD\User\Domain\Exceptions\UserAlreadyExistsException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreUserRequest;
 use App\Models\User as EloquentUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -73,32 +69,6 @@ class UserController extends Controller
                 'totalMes' => $registrosData['total_mes_actual'],
                 'isAdmin' => $isAdmin,
             ]);
-        }
-    }
-
-    public function create(): View
-    {
-        return view('users.create');
-    }
-
-    public function store(StoreUserRequest $request): RedirectResponse|JsonResponse
-    {
-        $validated = $request->validated();
-
-        try {
-            $command = new CreateUserCommand($validated['email'], $validated['name']);
-            $this->commandBus->dispatch($command);
-
-            return redirect()->route('user.index')
-                ->with('success', 'User created successfully!');
-        } catch (UserAlreadyExistsException $e) {
-            return back()
-                ->withInput()
-                ->withErrors(['email' => $e->getMessage()]);
-        } catch (MaxUsersLimitExceededException $e) {
-            return back()
-                ->withInput()
-                ->withErrors(['name' => $e->getMessage()]);
         }
     }
 
