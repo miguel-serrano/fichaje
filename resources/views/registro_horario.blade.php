@@ -46,7 +46,7 @@
                         </form>
                         @if($tieneRegistroAbierto)
                             <p style="margin-top: 15px;" class="grey-text">
-                                Tienes un fichaje abierto. Puedes cerrarlo desde <a href="{{ route('user.index') }}" class="light-green-text">tu página de fichajes</a>.
+                                Tienes un fichaje abierto. Puedes cerrarlo desde <a href="{{ route('user.me') }}" class="light-green-text">tu página de fichajes</a>.
                             </p>
                         @endif
                     </div>

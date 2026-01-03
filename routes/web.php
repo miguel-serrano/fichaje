@@ -2,7 +2,11 @@
 
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\RegistroHorario\RegistroHorarioController;
-use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\DeleteUserController;
+use App\Http\Controllers\User\GetMyTimeEntriesController;
+use App\Http\Controllers\User\ListUsersController;
+use App\Http\Controllers\User\ShowUserController;
+use App\Http\Controllers\User\ToggleUserActiveController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect root to login
@@ -23,10 +27,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
 
     // Users
-    Route::get('/user', [UserController::class, 'index'])->name('user.index');
-    Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
-    Route::patch('/user/{id}/toggle-active', [UserController::class, 'toggleActive'])->name('user.toggle-active');
-    Route::delete('/user/{id}', [UserController::class, 'delete'])->name('user.delete');
+    Route::get('/user/me', GetMyTimeEntriesController::class)->name('user.me');
+
+    // Admin only routes
+    Route::middleware('admin')->group(function () {
+        Route::get('/users', ListUsersController::class)->name('users.index');
+        Route::get('/user/{id}', ShowUserController::class)->name('user.show');
+        Route::patch('/user/{id}/toggle-active', ToggleUserActiveController::class)->name('user.toggle-active');
+        Route::delete('/user/{id}', DeleteUserController::class)->name('user.delete');
+    });
 
     // Time tracking
     Route::get('/registro-horario', [RegistroHorarioController::class, 'index'])->name('registro_horario.index');

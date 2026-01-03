@@ -102,7 +102,7 @@ final class User
         $this->isActive = false;
     }
 
-    /** @return RegistroHorario[] */
+    /** @return TimeEntry[] */
     public function registrosHorarios(): array
     {
         return $this->registrosHorarios;

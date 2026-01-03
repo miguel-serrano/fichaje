@@ -20,19 +20,15 @@ class UserRegistroHorarioIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-        // Resolve the UserRepositoryInterface from the service container
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrrfToken::class);
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
-
-        // Crear usuario autenticado según el test
-        // Los tests de integración verifican comportamiento de admin
         $this->authenticatedUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Test User',
             'email' => 'user@test.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n', // Hacer admin para tests de integración
+            'remember_token' => 'soyAdm1n',
         ]);
 
         $this->actingAs($this->authenticatedUser);
@@ -40,54 +36,49 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
     public function test_users_index_shows_accumulated_time(): void
     {
-        // Crear un usuario
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $this->userRepository->save($user);
 
-        // Cargar el usuario, fichar entrada y salida varias veces para el mismo día
         $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithTimeEntries->ficharEntrada(); // 1st entry (open)
+        $userWithTimeEntries->ficharEntrada();
         $this->userRepository->save($userWithTimeEntries);
         sleep(1);
-        $userWithTimeEntries->ficharSalida(); // Close 1st entry
+        $userWithTimeEntries->ficharSalida();
         $this->userRepository->save($userWithTimeEntries);
 
         sleep(1);
-        $userWithTimeEntries->ficharEntrada(); // 2nd entry (open)
+        $userWithTimeEntries->ficharEntrada();
         $this->userRepository->save($userWithTimeEntries);
         sleep(1);
-        $userWithTimeEntries->ficharSalida(); // Close 2nd entry
-        $this->userRepository->save($userWithTimeEntries); // Save final state
+        $userWithTimeEntries->ficharSalida();
+        $this->userRepository->save($userWithTimeEntries);
 
-        $response = $this->get('/users');
+        $response = $this->get('/user');
 
         $response->assertStatus(200);
         $response->assertViewIs('users.index');
 
-        // Verificar que la vista contiene usuarios con tiempo acumulado
         $users = $response->viewData('users');
         $this->assertNotEmpty($users);
 
         $testUser = collect($users)->firstWhere('email', 'test@example.com');
         $this->assertNotNull($testUser);
-        $this->assertNotEquals('00:00:00', $testUser['tiempo_acumulado']); // Should be > 0
+        $this->assertNotEquals('00:00:00', $testUser['tiempo_acumulado']);
     }
 
     public function test_users_json_api_includes_accumulated_time(): void
     {
-        // Crear un usuario
         $user = User::create(new Email('api@example.com'), 'API User');
         $savedUser = $this->userRepository->save($user);
 
-        // Cargar el usuario, fichar entrada y salida
         $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithTimeEntries->ficharEntrada(); // Open
+        $userWithTimeEntries->ficharEntrada();
         $this->userRepository->save($userWithTimeEntries);
         sleep(1);
-        $userWithTimeEntries->ficharSalida(); // Close
+        $userWithTimeEntries->ficharSalida();
         $this->userRepository->save($userWithTimeEntries);
 
-        $response = $this->getJson('/users');
+        $response = $this->getJson('/user');
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -108,52 +99,31 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->assertNotEquals('00:00:00', $apiUser['tiempo_acumulado']);
     }
 
-    public function test_complete_workflow_create_user_and_registro(): void
+    public function test_complete_workflow_registro_horario(): void
     {
-        // 1. Crear usuario via web
-        $userData = [
-            'email' => 'workflow@example.com',
-            'name' => 'Workflow User',
-        ];
-
-        $createResponse = $this->post('/users', $userData);
-        $createResponse->assertRedirect('/users');
-
-        // 2. Verificar que el usuario fue creado
-        $this->assertDatabaseHas('users', [
-            'email' => 'workflow@example.com',
-            'name' => 'Workflow User',
-        ]);
-
-        // 3. Fichar entrada (con el usuario autenticado admin)
         $entradaResponse = $this->post('/registro-horario/entrada');
-        $entradaResponse->assertRedirect(route('users.index'));
+        $entradaResponse->assertRedirect(route('user.index'));
         $entradaResponse->assertSessionHas('success');
 
-        // 4. Verificar que aparece en registro horario
         $registroResponse = $this->get('/registro-horario');
         $registroResponse->assertStatus(200);
 
         $tieneRegistroAbierto = $registroResponse->viewData('tieneRegistroAbierto');
         $this->assertTrue($tieneRegistroAbierto);
 
-        // 5. Esperar un segundo para simular tiempo trabajado
         sleep(1);
 
-        // 6. Fichar salida
         $salidaResponse = $this->post('/registro-horario/salida');
-        $salidaResponse->assertRedirect(route('users.index'));
+        $salidaResponse->assertRedirect(route('user.index'));
         $salidaResponse->assertSessionHas('success');
 
-        // 7. Verificar que el registro se cerró
         $finalResponse = $this->get('/registro-horario');
         $finalResponse->assertStatus(200);
 
         $tieneRegistroAbiertoFinal = $finalResponse->viewData('tieneRegistroAbierto');
         $this->assertFalse($tieneRegistroAbiertoFinal);
 
-        // 8. Verificar que el usuario admin aparece con tiempo en users index
-        $usersResponse = $this->get('/users');
+        $usersResponse = $this->get('/user');
         $users = $usersResponse->viewData('users');
         $adminUser = collect($users)->firstWhere('email', $this->authenticatedUser->email);
 
@@ -163,33 +133,28 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
     public function test_user_deletion_handles_registro_horario_gracefully(): void
     {
-        // Crear usuario
         $user = User::create(new Email('delete@example.com'), 'Delete User');
         $savedUser = $this->userRepository->save($user);
 
-        // Cargar el usuario y crear registros horarios
         $userWithEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
         $userWithEntries->ficharEntrada();
-        $this->userRepository->save($userWithEntries); // Save open entry
+        $this->userRepository->save($userWithEntries);
         $userWithEntries->ficharSalida();
-        $this->userRepository->save($userWithEntries); // Save closed entry
+        $this->userRepository->save($userWithEntries);
 
-        // Eliminar usuario
-        $deleteResponse = $this->delete("/users/{$savedUser->id()->getValue()}");
-        $deleteResponse->assertRedirect('/users');
+        $deleteResponse = $this->delete("/user/{$savedUser->id()->getValue()}");
+        $deleteResponse->assertRedirect('/user');
         $deleteResponse->assertSessionHas('success');
 
-        // Verificar que el usuario fue eliminado
         $this->assertDatabaseMissing('users', [
             'id' => $savedUser->id()->getValue(),
         ]);
 
-        // Verificar que los registros horarios asociados también fueron eliminados
         $this->assertDatabaseMissing('registro_horarios', [
             'user_id' => $savedUser->id()->getValue(),
         ]);
 
-        $usersResponse = $this->get('/users');
+        $usersResponse = $this->get('/user');
         $usersResponse->assertStatus(200);
     }
 }

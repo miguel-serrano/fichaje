@@ -8,11 +8,14 @@ use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class DeleteUserUseCaseTest extends TestCase
 {
+    use RefreshDatabase;
+
     private UserRepositoryInterface $userRepository;
 
     private DeleteUserCommandHandler $handler;
@@ -32,14 +35,23 @@ class DeleteUserUseCaseTest extends TestCase
 
     public function test_it_deletes_a_user_successfully(): void
     {
-        $userId = '123';
+        // Create an Eloquent user in the database
+        $eloquentUser = \App\Models\User::create([
+            'uuid' => '123e4567-e89b-12d3-a456-426614174000',
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'is_active' => true,
+        ]);
+
+        $userId = (string) $eloquentUser->id;
         $userIdVO = new UserId($userId);
         $user = User::fromPrimitives(
-            123,
-            '123e4567-e89b-12d3-a456-426614174000',
-            'test@example.com',
-            'Test User',
-            true
+            $eloquentUser->id,
+            $eloquentUser->uuid,
+            $eloquentUser->email,
+            $eloquentUser->name,
+            $eloquentUser->is_active
         );
 
         $this->userRepository
@@ -90,14 +102,23 @@ class DeleteUserUseCaseTest extends TestCase
 
     public function test_it_throws_exception_when_delete_fails(): void
     {
-        $userId = '123';
+        // Create an Eloquent user in the database
+        $eloquentUser = \App\Models\User::create([
+            'uuid' => '123e4567-e89b-12d3-a456-426614174001',
+            'name' => 'Test User',
+            'email' => 'test2@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'is_active' => true,
+        ]);
+
+        $userId = (string) $eloquentUser->id;
         $userIdVO = new UserId($userId);
         $user = User::fromPrimitives(
-            123,
-            '123e4567-e89b-12d3-a456-426614174000',
-            'test@example.com',
-            'Test User',
-            true
+            $eloquentUser->id,
+            $eloquentUser->uuid,
+            $eloquentUser->email,
+            $eloquentUser->name,
+            $eloquentUser->is_active
         );
 
         $this->userRepository

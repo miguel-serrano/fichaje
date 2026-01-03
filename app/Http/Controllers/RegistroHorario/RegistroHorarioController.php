@@ -27,17 +27,17 @@ class RegistroHorarioController extends Controller
             // Verificar que el usuario esté activo
             $eloquentUser = EloquentUser::query()->where('uuid', $user->uuid()->getValue())->first();
             if (! $eloquentUser || ! $eloquentUser->is_active) {
-                return redirect()->route('user.index')
+                return redirect()->route('user.me')
                     ->with('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
             }
 
             $command = new ClockInCommand($user->uuid()->getValue());
             $this->commandBus->dispatch($command);
 
-            return redirect()->route('user.index')
+            return redirect()->route('user.me')
                 ->with('success', 'Entrada registrada correctamente');
         } catch (\Exception $e) {
-            return redirect()->route('user.index')
+            return redirect()->route('user.me')
                 ->with('error', $e->getMessage());
         }
     }
@@ -50,7 +50,7 @@ class RegistroHorarioController extends Controller
             // Verificar que el usuario esté activo
             $eloquentUser = EloquentUser::query()->where('uuid', $user->uuid()->getValue())->first();
             if (! $eloquentUser || ! $eloquentUser->is_active) {
-                return redirect()->route('user.index')
+                return redirect()->route('user.me')
                     ->with('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
             }
 
@@ -61,10 +61,10 @@ class RegistroHorarioController extends Controller
                 ? 'Fichaje cerrado correctamente'
                 : 'Salida registrada correctamente';
 
-            return redirect()->route('user.index')
+            return redirect()->route('user.me')
                 ->with('success', $successMessage);
         } catch (\Exception $e) {
-            return redirect()->route('user.index')
+            return redirect()->route('user.me')
                 ->with('error', $e->getMessage());
         }
     }

@@ -12,7 +12,7 @@
                         <span class="card-title">Información del Usuario</span>
                     </div>
                     <div class="col s12 m4 right-align">
-                        <a href="{{ route('user.index') }}" class="btn waves-effect waves-light light-green">
+                        <a href="{{ route('users.index') }}" class="btn waves-effect waves-light light-green">
                             <i class="material-icons left">arrow_back</i>Volver
                         </a>
                     </div>
