@@ -5,6 +5,15 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [Sin versión] - 2026-01-03
+
+### Añadido
+- Laravel Telescope v5.16.0 para debugging y monitoreo de la aplicación
+  - Dashboard accesible en `/telescope`
+  - Configuración de watchers para queries, requests, exceptions, logs, etc.
+  - Filtros configurados para entornos local y producción
+  - Documentación del sistema en `TELESCOPE.md`
+
 ## [Sin versión] - 2026-01-02
 
 ### Añadido
