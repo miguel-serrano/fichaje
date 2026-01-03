@@ -1,16 +1,15 @@
 <?php
 
-namespace App\DDD\User\Application\Services;
+namespace App\DDD\User\Infrastructure\Services;
 
 use App\DDD\User\Domain\Entity\User as DomainUser;
 use App\DDD\User\Domain\Policy\UserPolicy;
+use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use App\Models\User as EloquentUser;
 
-final class UserAuthorizationService
+final class UserAuthorizationService implements UserAuthorizationServiceInterface
 {
-    public function __construct(private readonly UserPolicy $userPolicy)
-    {
-    }
+    public function __construct(private readonly UserPolicy $userPolicy) {}
 
     public function ensureCanToggleActive(EloquentUser $authenticatedUser): void
     {

@@ -119,6 +119,18 @@ final class User
         $this->isActive = false;
     }
 
+    public function activate(): void
+    {
+        $this->isActive = true;
+    }
+
+    public function toggleActive(): bool
+    {
+        $this->isActive = ! $this->isActive;
+
+        return $this->isActive;
+    }
+
     /** @return TimeEntry[] */
     public function registrosHorarios(): array
     {

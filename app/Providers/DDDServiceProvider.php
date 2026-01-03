@@ -17,6 +17,12 @@ class DDDServiceProvider extends ServiceProvider
         $this->app->bind(CommandBusInterface::class, LaravelTacticianCommandBus::class);
         $this->app->bind(QueryBusInterface::class, LaravelTacticianQueryBus::class);
 
+        // Register User services
+        $this->app->bind(
+            \App\DDD\User\Domain\Services\UserAuthorizationServiceInterface::class,
+            \App\DDD\User\Infrastructure\Services\UserAuthorizationService::class
+        );
+
         // Register Authentication services
         $this->app->bind(
             \App\DDD\Authentication\Domain\Services\AuthenticationService::class,
@@ -47,6 +53,11 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(
             \App\DDD\User\Application\Command\DeleteUserCommand::class,
             \App\DDD\User\Application\Handler\DeleteUserCommandHandler::class
+        );
+
+        $tacticianBus->addHandler(
+            \App\DDD\User\Application\Command\ToggleUserActiveCommand::class,
+            \App\DDD\User\Application\Handler\ToggleUserActiveCommandHandler::class
         );
 
         // TimeTracking Commands
