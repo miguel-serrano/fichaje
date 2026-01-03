@@ -1,0 +1,42 @@
+/* Import Materialize CSS */
+@import 'materialize-css/dist/css/materialize.min.css';
+
+/* Your custom styles below */
+
+/* Remove all box-shadows globally */
+*,
+*::before,
+*::after {
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* Custom chip styles */
+.chip {
+    border-radius: 4px;
+    font-size: .9rem;
+    height: auto;
+    line-height: 1.5;
+    padding: 4px 10px;
+    border: 1px solid #ede7f6;
+}
+
+/* Collapsible header alignment */
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.collapsible-header .badge,
+.collapsible span.badge {
+    position: static;
+    float: none;
+    margin-left: 10px;
+    min-width: auto;
+}
+
+.collapsible-header .chip {
+    margin-left: auto;
+}

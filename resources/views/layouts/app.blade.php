@@ -10,70 +10,95 @@
     <!-- Fonts -->
     <link href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Vite Assets (includes Materialize CSS) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="antialiased" style="background-color: #E0E1DD;">
-    <nav class="shadow-lg" style="background-color: #778DA9;">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="flex items-center space-x-2">
-                            <svg class="w-8 h-8" style="color: #FFFFFF;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                            <span class="text-xl font-bold" style="color: #FFFFFF;">TimeTrack</span>
-                        </a>
-                    </div>
-                    @auth
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'border-white' : 'border-transparent hover:border-white/50' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" style="color: #FFFFFF;">
-                            Información
-                        </a>
-                        <a href="{{ route('registro_horario.index') }}" class="{{ request()->routeIs('registro_horario.*') ? 'border-white' : 'border-transparent hover:border-white/50' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" style="color: #FFFFFF;">
-                            Fichaje
-                        </a>
-                    </div>
-                    @endauth
-                </div>
+<body class="blue-grey lighten-5">
+    <nav class="light-green darken-3">
+        <div class="nav-wrapper">
+            <div class="container">
+                <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="brand-logo">
+                    <i class="material-icons left">access_time</i>TimeTrack
+                </a>
                 @auth
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm font-medium" style="color: #FFFFFF;">{{ auth()->user()->name }}</span>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="text-sm font-medium hover:opacity-70" style="color: #FFFFFF;">
-                            Cerrar Sesión
-                        </button>
-                    </form>
-                </div>
+                <ul id="nav-mobile" class="right">
+                    <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
+                        <a href="{{ route('users.index') }}">
+                            <i class="material-icons left">info</i>Información
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('registro_horario.*') ? 'active' : '' }}">
+                        <a href="{{ route('registro_horario.index') }}">
+                            <i class="material-icons left">timer</i>Fichaje
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="dropdown-trigger" data-target="user-dropdown">
+                            <i class="material-icons left">account_circle</i>{{ auth()->user()->name }}<i class="material-icons right">arrow_drop_down</i>
+                        </a>
+                    </li>
+                </ul>
+                <ul id="user-dropdown" class="dropdown-content">
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                            @csrf
+                            <button type="submit" class="waves-effect waves-light" style="background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; cursor: pointer;">
+                                <i class="material-icons left">exit_to_app</i>Cerrar Sesión
+                            </button>
+                        </form>
+                    </li>
+                </ul>
                 @endauth
             </div>
         </div>
     </nav>
 
-    <main class="py-10">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('.dropdown-trigger');
+            M.Dropdown.init(elems, {
+                coverTrigger: false,
+                constrainWidth: false
+            });
+        });
+    </script>
+
+    <main>
+        <div class="container" style="padding-top: 20px;">
             @if(session('success'))
-                <div class="mb-4 bg-white border border-gray-300 text-black px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="card-panel green lighten-4 green-text text-darken-4">
+                            {{ session('success') }}
+                        </div>
+                    </div>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="mb-4 bg-white border border-gray-300 text-black px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ session('error') }}</span>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="card-panel red lighten-4 red-text text-darken-4">
+                            {{ session('error') }}
+                        </div>
+                    </div>
                 </div>
             @endif
 
             @if ($errors->any())
-                <div class="mb-4 bg-white border border-gray-300 text-black px-4 py-3 rounded relative" role="alert">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="card-panel red lighten-4 red-text text-darken-4">
+                            <ul style="margin: 0;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             @endif
 
@@ -82,4 +107,3 @@
     </main>
 </body>
 </html>
-
