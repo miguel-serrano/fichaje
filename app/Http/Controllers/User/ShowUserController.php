@@ -8,9 +8,7 @@ use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ShowUserController extends Controller
@@ -19,17 +17,12 @@ class ShowUserController extends Controller
         private QueryBusInterface $queryBus
     ) {}
 
-    public function __invoke(Request $request, string $id): View|JsonResponse|RedirectResponse
+    public function __invoke(string $id): View|RedirectResponse
     {
         try {
             $query = new GetUserByIdQuery($id);
-
-            try {
-                /** @var User $user */
-                $user = $this->queryBus->dispatch($query);
-            } catch (UserNotFoundException $e) {
-                return redirect()->route('users.index')->with('error', $e->getMessage());
-            }
+            /** @var User $user */
+            $user = $this->queryBus->dispatch($query);
 
             $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->getValue());
             $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
@@ -40,6 +33,8 @@ class ShowUserController extends Controller
                 'dailyRegistros' => $registrosData['registros'],
                 'totalMes' => $registrosData['total_mes_actual'],
             ]);
+        } catch (UserNotFoundException $e) {
+            return redirect()->route('users.index')->with('error', $e->getMessage());
         } catch (\Exception $e) {
             return redirect()->route('users.index')->with('error', $e->getMessage());
         }

@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Str;
 use Mockery;
-use PHPUnit\Framework\TestCase; // Import Str facade for UUID generation
+use PHPUnit\Framework\TestCase;
 
 class RegistroHorarioServiceTest extends TestCase
 {
@@ -57,13 +57,12 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        // Capture the user passed to save
         $savedUser = null;
         $this->userRepository
             ->shouldReceive('save')
             ->once()
             ->with(Mockery::on(function (User $arg) use (&$savedUser) {
-                $savedUser = $arg; // Capture the argument
+                $savedUser = $arg;
 
                 return count($arg->registrosHorarios()) === 1 && $arg->registrosHorarios()[0]->isAbierto();
             }))
@@ -71,7 +70,6 @@ class RegistroHorarioServiceTest extends TestCase
 
         $this->service->clockIn($userUuidValue);
 
-        // Assertions after the service call
         $this->assertNotNull($savedUser, 'User should have been saved.');
         $this->assertCount(1, $savedUser->registrosHorarios());
         $this->assertTrue($savedUser->registrosHorarios()[0]->isAbierto());
@@ -79,7 +77,7 @@ class RegistroHorarioServiceTest extends TestCase
 
     public function test_it_throws_exception_on_fichar_entrada_if_user_not_found(): void
     {
-        $userUuidValue = Str::uuid()->toString(); // Use a valid UUID format
+        $userUuidValue = Str::uuid()->toString();
         $userUuid = new Uuid($userUuidValue);
 
         $this->userRepository
@@ -116,13 +114,12 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        // Capture the user passed to save
         $savedUser = null;
         $this->userRepository
             ->shouldReceive('save')
             ->once()
             ->with(Mockery::on(function (User $arg) use (&$savedUser) {
-                $savedUser = $arg; // Capture the argument
+                $savedUser = $arg;
 
                 return count($arg->registrosHorarios()) === 1 && ! $arg->registrosHorarios()[0]->isAbierto();
             }))
@@ -130,7 +127,6 @@ class RegistroHorarioServiceTest extends TestCase
 
         $this->service->clockOut($userUuidValue);
 
-        // Assertions after the service call
         $this->assertNotNull($savedUser, 'User should have been saved.');
         $this->assertCount(1, $savedUser->registrosHorarios());
         $this->assertFalse($savedUser->registrosHorarios()[0]->isAbierto());
@@ -158,7 +154,6 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        // Expect the exception from the User entity's ficharSalida method
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('No existe un registro de entrada abierto para cerrar.');
 
@@ -200,7 +195,7 @@ class RegistroHorarioServiceTest extends TestCase
 
         $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
-        $expected = (4 * 3600) + (4 * 3600); // 8 hours
+        $expected = (4 * 3600) + (4 * 3600);
         $this->assertEquals($expected, $result);
     }
 
@@ -209,7 +204,6 @@ class RegistroHorarioServiceTest extends TestCase
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
 
-        // Registros de ayer
         $entrada1 = Carbon::yesterday()->startOfDay()->addHours(9);
         $salida1 = Carbon::yesterday()->startOfDay()->addHours(13);
         $registro1 = [
@@ -249,7 +243,7 @@ class RegistroHorarioServiceTest extends TestCase
         ];
 
         $entrada2 = Carbon::now()->startOfDay()->addHours(14);
-        $registro2 = [ // Registro sin salida
+        $registro2 = [
             'id' => 2,
             'user_id' => 1,
             'entrada' => $entrada2->toDateTimeString(),
@@ -268,7 +262,7 @@ class RegistroHorarioServiceTest extends TestCase
 
         $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
-        $expected = (4 * 3600); // Only registro1 counts
+        $expected = (4 * 3600);
         $this->assertEquals($expected, $result);
     }
 
@@ -349,7 +343,6 @@ class RegistroHorarioServiceTest extends TestCase
             ->once()
             ->with(Mockery::on(function (User $arg) use (&$savedUser, $registroId) {
                 $savedUser = $arg;
-                // Assert that the specific registro is now closed
                 $closedEntry = collect($arg->registrosHorarios())->first(function ($reg) use ($registroId) {
                     return $reg->id()->getValue() === $registroId;
                 });
@@ -392,10 +385,10 @@ class RegistroHorarioServiceTest extends TestCase
     public function test_it_throws_exception_on_fichar_salida_with_registro_id_if_entry_not_found(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
-        $registroId = 999; // Non-existent ID
+        $registroId = 999;
         $userUuid = new Uuid($userUuidValue);
         $user = $this->createUserAggregate($userUuidValue, [
-            [ // Other entry, not the one we're looking for
+            [
                 'id' => 1,
                 'user_id' => 1,
                 'entrada' => Carbon::now()->subHour()->toDateTimeString(),

@@ -34,7 +34,7 @@ class UserManagementTest extends TestCase
 
     public function test_can_view_users_index_page(): void
     {
-        $response = $this->get('/user');
+        $response = $this->get('/users');
 
         $response->assertStatus(200);
         $response->assertViewIs('users.index');
@@ -64,36 +64,12 @@ class UserManagementTest extends TestCase
 
         $response = $this->delete("/user/{$savedUser->id()->getValue()}");
 
-        $response->assertRedirect('/user');
+        $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario eliminado correctamente');
 
         // Verificar que el usuario fue eliminado
         $this->assertDatabaseMissing('users', [
             'id' => $savedUser->id()->getValue(),
-        ]);
-    }
-
-    public function test_can_get_users_as_json(): void
-    {
-        // Crear algunos usuarios
-        $repository = new EloquentUserRepository;
-        $user1 = User::create(new Email('user1@example.com'), 'User One');
-        $user2 = User::create(new Email('user2@example.com'), 'User Two');
-        $repository->save($user1);
-        $repository->save($user2);
-
-        $response = $this->getJson('/user');
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            '*' => [
-                'id',
-                'uuid',
-                'email',
-                'name',
-                'is_active',
-                'tiempo_acumulado',
-            ],
         ]);
     }
 
@@ -110,9 +86,8 @@ class UserManagementTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Desactivar el usuario
         $response = $this->patch("/user/{$savedUser->id()->getValue()}/toggle-active");
-        $response->assertRedirect('/user');
+        $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario desactivado correctamente');
 
         // Verificar que se desactivó
@@ -121,9 +96,8 @@ class UserManagementTest extends TestCase
             'is_active' => false,
         ]);
 
-        // Activar el usuario nuevamente
         $response = $this->patch("/user/{$savedUser->id()->getValue()}/toggle-active");
-        $response->assertRedirect('/user');
+        $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario activado correctamente');
 
         // Verificar que se activó

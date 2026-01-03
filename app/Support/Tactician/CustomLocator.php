@@ -16,7 +16,7 @@ class CustomLocator implements LocatorInterface
     {
         $parts = explode('\\', $commandName);
         $command_name = array_pop($parts);
-        $file = array_pop($parts); // GetUserByIdQuery
+        $file = array_pop($parts);
         $contextPath = implode('\\', $parts);
         $handlerClass = $contextPath.'\\Handler\\'.$command_name.'Handler';
 

@@ -6,8 +6,6 @@ use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class GetMyTimeEntriesController extends Controller
@@ -16,21 +14,12 @@ class GetMyTimeEntriesController extends Controller
         private QueryBusInterface $queryBus
     ) {}
 
-    public function __invoke(Request $request): View|JsonResponse
+    public function __invoke(): View
     {
         $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
 
         $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($authenticatedUser->id()->getValue());
         $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
-
-        if ($request->wantsJson() || $request->expectsJson()) {
-            return response()->json([
-                'user' => $authenticatedUser,
-                'allRegistros' => $authenticatedUser->registrosHorarios(),
-                'dailyRegistros' => $registrosData['registros'],
-                'totalMes' => $registrosData['total_mes_actual'],
-            ]);
-        }
 
         return view('users.detail', [
             'user' => $authenticatedUser,

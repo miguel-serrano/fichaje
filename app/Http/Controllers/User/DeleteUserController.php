@@ -7,9 +7,7 @@ use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Domain\Exceptions\CannotDeleteAdminUserException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class DeleteUserController extends Controller
 {
@@ -17,7 +15,7 @@ class DeleteUserController extends Controller
         private CommandBusInterface $commandBus
     ) {}
 
-    public function __invoke(Request $request, string $id): RedirectResponse|JsonResponse
+    public function __invoke(string $id): RedirectResponse
     {
         try {
             $command = new DeleteUserCommand($id);
@@ -26,26 +24,11 @@ class DeleteUserController extends Controller
             return redirect()->route('users.index')
                 ->with('success', 'Usuario eliminado correctamente');
         } catch (CannotDeleteAdminUserException $e) {
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['error' => $e->getMessage()], 403);
-            }
-
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
+            return redirect()->route('users.index')->with('error', $e->getMessage());
         } catch (UserNotFoundException $e) {
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['error' => $e->getMessage()], 404);
-            }
-
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
+            return redirect()->route('users.index')->with('error', $e->getMessage());
         } catch (\Exception $e) {
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['error' => $e->getMessage()], 500);
-            }
-
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
+            return redirect()->route('users.index')->with('error', $e->getMessage());
         }
     }
 }

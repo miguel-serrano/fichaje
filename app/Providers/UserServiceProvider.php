@@ -13,8 +13,6 @@ class UserServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Repository binding moved to LaravelServiceProvider
-        // $this->app->singleton(UserRepositoryInterface::class, EloquentUserRepository::class);
         $this->app->singleton(CreateUserCommandHandler::class);
         $this->app->singleton(DeleteUserCommandHandler::class);
         $this->app->singleton(GetUserByIdQueryHandler::class);

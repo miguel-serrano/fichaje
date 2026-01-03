@@ -20,7 +20,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrrfToken::class);
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
         $this->authenticatedUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
@@ -53,7 +53,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $userWithTimeEntries->ficharSalida();
         $this->userRepository->save($userWithTimeEntries);
 
-        $response = $this->get('/user');
+        $response = $this->get('/users');
 
         $response->assertStatus(200);
         $response->assertViewIs('users.index');
@@ -66,43 +66,10 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->assertNotEquals('00:00:00', $testUser['tiempo_acumulado']);
     }
 
-    public function test_users_json_api_includes_accumulated_time(): void
-    {
-        $user = User::create(new Email('api@example.com'), 'API User');
-        $savedUser = $this->userRepository->save($user);
-
-        $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
-        $userWithTimeEntries->ficharEntrada();
-        $this->userRepository->save($userWithTimeEntries);
-        sleep(1);
-        $userWithTimeEntries->ficharSalida();
-        $this->userRepository->save($userWithTimeEntries);
-
-        $response = $this->getJson('/user');
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            '*' => [
-                'id',
-                'uuid',
-                'email',
-                'name',
-                'is_active',
-                'tiempo_acumulado',
-            ],
-        ]);
-
-        $users = $response->json();
-        $apiUser = collect($users)->firstWhere('email', 'api@example.com');
-
-        $this->assertNotNull($apiUser);
-        $this->assertNotEquals('00:00:00', $apiUser['tiempo_acumulado']);
-    }
-
     public function test_complete_workflow_registro_horario(): void
     {
         $entradaResponse = $this->post('/registro-horario/entrada');
-        $entradaResponse->assertRedirect(route('user.index'));
+        $entradaResponse->assertRedirect(route('user.me'));
         $entradaResponse->assertSessionHas('success');
 
         $registroResponse = $this->get('/registro-horario');
@@ -114,7 +81,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         sleep(1);
 
         $salidaResponse = $this->post('/registro-horario/salida');
-        $salidaResponse->assertRedirect(route('user.index'));
+        $salidaResponse->assertRedirect(route('user.me'));
         $salidaResponse->assertSessionHas('success');
 
         $finalResponse = $this->get('/registro-horario');
@@ -123,7 +90,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $tieneRegistroAbiertoFinal = $finalResponse->viewData('tieneRegistroAbierto');
         $this->assertFalse($tieneRegistroAbiertoFinal);
 
-        $usersResponse = $this->get('/user');
+        $usersResponse = $this->get('/users');
         $users = $usersResponse->viewData('users');
         $adminUser = collect($users)->firstWhere('email', $this->authenticatedUser->email);
 
@@ -143,7 +110,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->userRepository->save($userWithEntries);
 
         $deleteResponse = $this->delete("/user/{$savedUser->id()->getValue()}");
-        $deleteResponse->assertRedirect('/user');
+        $deleteResponse->assertRedirect('/users');
         $deleteResponse->assertSessionHas('success');
 
         $this->assertDatabaseMissing('users', [
@@ -154,7 +121,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
             'user_id' => $savedUser->id()->getValue(),
         ]);
 
-        $usersResponse = $this->get('/user');
+        $usersResponse = $this->get('/users');
         $usersResponse->assertStatus(200);
     }
 }

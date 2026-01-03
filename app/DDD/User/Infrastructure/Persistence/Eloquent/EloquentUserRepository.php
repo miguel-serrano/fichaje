@@ -43,7 +43,6 @@ class EloquentUserRepository implements UserRepositoryInterface
                 DB::table($usersTable)->where('id', $user_id)->update($userData);
             } else {
                 $userData['created_at'] = $now;
-                // Insert the user and get the new ID
                 $user_id = DB::table($usersTable)->insertGetId($userData);
             }
 
@@ -58,12 +57,11 @@ class EloquentUserRepository implements UserRepositoryInterface
                     DB::table($registrosTable)->where('id', $registro->id()->getValue())->update($registroData);
                 } else {
                     $newId = DB::table($registrosTable)->insertGetId($registroData);
-                    $registro->setId(new TimeEntryId($newId)); // Set the generated ID
+                    $registro->setId(new TimeEntryId($newId));
                 }
             }
         });
 
-        // Re-fetch the user to get a clean state with all associations
         return $this->findById(new UserId($user_id));
     }
 
