@@ -2,12 +2,11 @@
 
 namespace App\DDD\User\Application\Handler;
 
-use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\Exceptions\UserNotFoundException;
-use App\DDD\User\Domain\exceptions\UserHasNotPermissionsException;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
-use App\DDD\User\Domain\Entity\User; // Import User entity
+use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\UserId; // Import User entity
 
 class GetUserByIdQueryHandler
 {
@@ -17,7 +16,7 @@ class GetUserByIdQueryHandler
 
     public function handle(GetUserByIdQuery $query): User // Changed return type
     {
-        $userId = new UserId((int)$query->getId()); // Cast to int
+        $userId = new UserId((int) $query->getId()); // Cast to int
         $user = $this->userRepository->findById($userId);
 
         $this->validate($user, $query);
@@ -27,9 +26,8 @@ class GetUserByIdQueryHandler
 
     private function validate(?User $user, GetUserByIdQuery $query): void // Added ?User type-hint
     {
-        if (!$user) {
-            throw new UserNotFoundException("User not found");
+        if (! $user) {
+            throw new UserNotFoundException('User not found');
         }
     }
 }
-

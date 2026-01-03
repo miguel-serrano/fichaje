@@ -3,22 +3,19 @@
 namespace Tests\Unit\RegistroHorario\Services;
 
 use App\DDD\TimeTracking\Services\TimeTrackingService;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Entity\User;
-use App\DDD\User\Domain\ValueObjects\UserId;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\TimeTracking\Domain\TimeEntry;
-use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
-use PHPUnit\Framework\TestCase;
-use Mockery;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Str; // Import Str facade for UUID generation
+use Illuminate\Support\Str;
+use Mockery;
+use PHPUnit\Framework\TestCase; // Import Str facade for UUID generation
 
 class RegistroHorarioServiceTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
+
     private TimeTrackingService $service;
 
     protected function setUp(): void
@@ -67,14 +64,15 @@ class RegistroHorarioServiceTest extends TestCase
             ->once()
             ->with(Mockery::on(function (User $arg) use (&$savedUser) {
                 $savedUser = $arg; // Capture the argument
+
                 return count($arg->registrosHorarios()) === 1 && $arg->registrosHorarios()[0]->isAbierto();
             }))
-            ->andReturn($user); 
+            ->andReturn($user);
 
         $this->service->clockIn($userUuidValue);
 
         // Assertions after the service call
-        $this->assertNotNull($savedUser, "User should have been saved.");
+        $this->assertNotNull($savedUser, 'User should have been saved.');
         $this->assertCount(1, $savedUser->registrosHorarios());
         $this->assertTrue($savedUser->registrosHorarios()[0]->isAbierto());
     }
@@ -106,7 +104,7 @@ class RegistroHorarioServiceTest extends TestCase
             'id' => 1,
             'user_id' => 1,
             'entrada' => Carbon::now()->subHour()->toDateTimeString(),
-            'salida' => null
+            'salida' => null,
         ];
         $user = $this->createUserAggregate($userUuidValue, [$openRegistro]);
 
@@ -125,14 +123,15 @@ class RegistroHorarioServiceTest extends TestCase
             ->once()
             ->with(Mockery::on(function (User $arg) use (&$savedUser) {
                 $savedUser = $arg; // Capture the argument
-                return count($arg->registrosHorarios()) === 1 && !$arg->registrosHorarios()[0]->isAbierto();
+
+                return count($arg->registrosHorarios()) === 1 && ! $arg->registrosHorarios()[0]->isAbierto();
             }))
             ->andReturn($user);
 
         $this->service->clockOut($userUuidValue);
 
         // Assertions after the service call
-        $this->assertNotNull($savedUser, "User should have been saved.");
+        $this->assertNotNull($savedUser, 'User should have been saved.');
         $this->assertCount(1, $savedUser->registrosHorarios());
         $this->assertFalse($savedUser->registrosHorarios()[0]->isAbierto());
         $this->assertNotNull($savedUser->registrosHorarios()[0]->salida());
@@ -147,8 +146,8 @@ class RegistroHorarioServiceTest extends TestCase
                 'id' => 1,
                 'user_id' => 1,
                 'entrada' => Carbon::now()->subHours(2)->toDateTimeString(),
-                'salida' => Carbon::now()->subHour()->toDateTimeString()
-            ]
+                'salida' => Carbon::now()->subHour()->toDateTimeString(),
+            ],
         ]);
 
         $this->userRepository
@@ -158,9 +157,9 @@ class RegistroHorarioServiceTest extends TestCase
                 return $arg->getValue() === $userUuid->getValue();
             }))
             ->andReturn($user);
-        
+
         // Expect the exception from the User entity's ficharSalida method
-        $this->expectException(Exception::class); 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('No existe un registro de entrada abierto para cerrar.');
 
         $this->service->clockOut($userUuidValue);
@@ -170,14 +169,14 @@ class RegistroHorarioServiceTest extends TestCase
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
-        
+
         $entrada1 = Carbon::now()->startOfDay()->addHours(9);
         $salida1 = Carbon::now()->startOfDay()->addHours(13);
         $registro1 = [
             'id' => 1,
             'user_id' => 1,
             'entrada' => $entrada1->toDateTimeString(),
-            'salida' => $salida1->toDateTimeString()
+            'salida' => $salida1->toDateTimeString(),
         ];
 
         $entrada2 = Carbon::now()->startOfDay()->addHours(14);
@@ -186,9 +185,9 @@ class RegistroHorarioServiceTest extends TestCase
             'id' => 2,
             'user_id' => 1,
             'entrada' => $entrada2->toDateTimeString(),
-            'salida' => $salida2->toDateTimeString()
+            'salida' => $salida2->toDateTimeString(),
         ];
-        
+
         $user = $this->createUserAggregate($userUuidValue, [$registro1, $registro2]);
 
         $this->userRepository
@@ -209,7 +208,7 @@ class RegistroHorarioServiceTest extends TestCase
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
-        
+
         // Registros de ayer
         $entrada1 = Carbon::yesterday()->startOfDay()->addHours(9);
         $salida1 = Carbon::yesterday()->startOfDay()->addHours(13);
@@ -217,9 +216,9 @@ class RegistroHorarioServiceTest extends TestCase
             'id' => 1,
             'user_id' => 1,
             'entrada' => $entrada1->toDateTimeString(),
-            'salida' => $salida1->toDateTimeString()
+            'salida' => $salida1->toDateTimeString(),
         ];
-        
+
         $user = $this->createUserAggregate($userUuidValue, [$registro1]);
 
         $this->userRepository
@@ -239,14 +238,14 @@ class RegistroHorarioServiceTest extends TestCase
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
-        
+
         $entrada1 = Carbon::now()->startOfDay()->addHours(9);
         $salida1 = Carbon::now()->startOfDay()->addHours(13);
         $registro1 = [
             'id' => 1,
             'user_id' => 1,
             'entrada' => $entrada1->toDateTimeString(),
-            'salida' => $salida1->toDateTimeString()
+            'salida' => $salida1->toDateTimeString(),
         ];
 
         $entrada2 = Carbon::now()->startOfDay()->addHours(14);
@@ -254,7 +253,7 @@ class RegistroHorarioServiceTest extends TestCase
             'id' => 2,
             'user_id' => 1,
             'entrada' => $entrada2->toDateTimeString(),
-            'salida' => null
+            'salida' => null,
         ];
 
         $user = $this->createUserAggregate($userUuidValue, [$registro1, $registro2]);
@@ -277,12 +276,12 @@ class RegistroHorarioServiceTest extends TestCase
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
-        
+
         $openRegistro = [
             'id' => 1,
             'user_id' => 1,
             'entrada' => Carbon::now()->subHour()->toDateTimeString(),
-            'salida' => null
+            'salida' => null,
         ];
         $user = $this->createUserAggregate($userUuidValue, [$openRegistro]);
 
@@ -302,12 +301,12 @@ class RegistroHorarioServiceTest extends TestCase
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
-        
+
         $closedRegistro = [
             'id' => 1,
             'user_id' => 1,
             'entrada' => Carbon::now()->subHours(2)->toDateTimeString(),
-            'salida' => Carbon::now()->subHour()->toDateTimeString()
+            'salida' => Carbon::now()->subHour()->toDateTimeString(),
         ];
         $user = $this->createUserAggregate($userUuidValue, [$closedRegistro]);
 
@@ -332,7 +331,7 @@ class RegistroHorarioServiceTest extends TestCase
             'id' => $registroId,
             'user_id' => 1,
             'entrada' => Carbon::now()->subHour()->toDateTimeString(),
-            'salida' => null
+            'salida' => null,
         ];
         $user = $this->createUserAggregate($userUuidValue, [$openRegistro]);
 
@@ -354,13 +353,14 @@ class RegistroHorarioServiceTest extends TestCase
                 $closedEntry = collect($arg->registrosHorarios())->first(function ($reg) use ($registroId) {
                     return $reg->id()->getValue() === $registroId;
                 });
-                return $closedEntry && !$closedEntry->isAbierto();
+
+                return $closedEntry && ! $closedEntry->isAbierto();
             }))
             ->andReturn($user);
 
         $this->service->clockOut($userUuidValue, $registroId);
 
-        $this->assertNotNull($savedUser, "User should have been saved.");
+        $this->assertNotNull($savedUser, 'User should have been saved.');
         $closedEntry = collect($savedUser->registrosHorarios())->first(function ($reg) use ($registroId) {
             return $reg->id()->getValue() === $registroId;
         });
@@ -399,8 +399,8 @@ class RegistroHorarioServiceTest extends TestCase
                 'id' => 1,
                 'user_id' => 1,
                 'entrada' => Carbon::now()->subHour()->toDateTimeString(),
-                'salida' => null
-            ]
+                'salida' => null,
+            ],
         ]);
 
         $this->userRepository
@@ -410,7 +410,7 @@ class RegistroHorarioServiceTest extends TestCase
                 return $arg->getValue() === $userUuid->getValue();
             }))
             ->andReturn($user);
-        
+
         $this->userRepository->shouldNotReceive('save');
 
         $this->expectException(\InvalidArgumentException::class);
@@ -428,7 +428,7 @@ class RegistroHorarioServiceTest extends TestCase
             'id' => $registroId,
             'user_id' => 1,
             'entrada' => Carbon::now()->subHours(2)->toDateTimeString(),
-            'salida' => Carbon::now()->subHour()->toDateTimeString()
+            'salida' => Carbon::now()->subHour()->toDateTimeString(),
         ];
         $user = $this->createUserAggregate($userUuidValue, [$closedRegistro]);
 
@@ -439,7 +439,7 @@ class RegistroHorarioServiceTest extends TestCase
                 return $arg->getValue() === $userUuid->getValue();
             }))
             ->andReturn($user);
-        
+
         $this->userRepository->shouldNotReceive('save');
 
         $this->expectException(\InvalidArgumentException::class);

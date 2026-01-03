@@ -5,15 +5,16 @@ namespace Tests\Unit\User\Application;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\DDD\User\Domain\Entity\User;
-use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
-use PHPUnit\Framework\TestCase;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class GetUserByIdUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
+
     private GetUserByIdQueryHandler $handler;
 
     protected function setUp(): void
@@ -74,7 +75,7 @@ class GetUserByIdUseCaseTest extends TestCase
             ->andReturn(null);
 
         $this->expectException(UserNotFoundException::class);
-        $this->expectExceptionMessage("User not found");
+        $this->expectExceptionMessage('User not found');
 
         $query = new GetUserByIdQuery($userId);
         $this->handler->handle($query);
@@ -116,4 +117,3 @@ class GetUserByIdUseCaseTest extends TestCase
         $this->assertFalse($result->isActive());
     }
 }
-

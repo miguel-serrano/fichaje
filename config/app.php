@@ -196,11 +196,9 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\TelescopeServiceProvider::class,
         App\Providers\DDDServiceProvider::class,
-        //ddd_user
+        // ddd_user
         App\Providers\UserServiceProvider::class,
         App\DDD\User\Infrastructure\LaravelServiceProvider::class,
-
-
 
     ],
 

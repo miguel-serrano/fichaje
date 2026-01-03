@@ -1,4 +1,5 @@
 <?php
+
 namespace App\DDD\User\Domain\Entity;
 
 use App\DDD\TimeTracking\Domain\TimeEntry;
@@ -7,12 +8,18 @@ use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Exception;
 
-final class User {
+final class User
+{
     private ?UserId $id;
+
     private Uuid $uuid;
+
     private Email $email;
+
     private string $name;
+
     private bool $isActive;
+
     /** @var TimeEntry[] */
     private array $registrosHorarios;
 
@@ -112,7 +119,7 @@ final class User {
             throw new Exception('Ya existe un registro de entrada abierto.');
         }
 
-        if (!$this->id()) {
+        if (! $this->id()) {
             throw new Exception('No se puede fichar la entrada para un usuario no guardado.');
         }
 
@@ -124,7 +131,7 @@ final class User {
     public function ficharSalida(): void
     {
         $registroAbierto = $this->getRegistroAbierto();
-        if (!$registroAbierto) {
+        if (! $registroAbierto) {
             throw new Exception('No existe un registro de entrada abierto para cerrar.');
         }
 
@@ -138,6 +145,7 @@ final class User {
                 return $registro;
             }
         }
+
         return null;
     }
 
@@ -151,7 +159,7 @@ final class User {
             'is_active' => $this->isActive(),
             'registros_horarios' => array_map(function (TimeEntry $registro) {
                 return $registro->toArray();
-            }, $this->registrosHorarios)
+            }, $this->registrosHorarios),
         ];
     }
 }

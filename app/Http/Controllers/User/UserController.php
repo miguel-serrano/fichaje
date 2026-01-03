@@ -11,6 +11,7 @@ use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
 use App\DDD\User\Application\Command\GetUserByIdQuery;
 use App\DDD\User\Application\Command\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Exceptions\CannotDeleteAdminUserException;
 use App\DDD\User\Domain\Exceptions\MaxUsersLimitExceededException;
 use App\DDD\User\Domain\Exceptions\UserAlreadyExistsException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
@@ -158,12 +159,24 @@ class UserController extends Controller
             $this->commandBus->dispatch($command);
 
             return redirect()->route('users.index')
-                ->with('success', 'User deleted successfully!');
+                ->with('success', 'Usuario eliminado correctamente');
+        } catch (CannotDeleteAdminUserException $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => $e->getMessage()], 403);
+            }
+
+            return redirect()->route('users.index')
+                ->with('error', $e->getMessage());
+        } catch (UserNotFoundException $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => $e->getMessage()], 404);
+            }
+
+            return redirect()->route('users.index')
+                ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
-                $statusCode = $e instanceof \App\DDD\User\Domain\exceptions\UserNotFoundException ? 404 : 500;
-
-                return response()->json(['error' => $e->getMessage()], $statusCode);
+                return response()->json(['error' => $e->getMessage()], 500);
             }
 
             return redirect()->route('users.index')

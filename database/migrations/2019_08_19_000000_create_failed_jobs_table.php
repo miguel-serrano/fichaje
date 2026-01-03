@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -18,7 +18,7 @@ return new class extends Migration
         if (App::environment('testing')) {
             return;
         }
-        
+
         Schema::create('failed_jobs', function (Blueprint $table) {
             $table->id();
             $table->string('uuid')->unique();

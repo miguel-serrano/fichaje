@@ -22,4 +22,3 @@ class UserServiceProvider extends ServiceProvider
         $this->app->singleton(GetUserDailyRegistrosQueryHandler::class);
     }
 }
-

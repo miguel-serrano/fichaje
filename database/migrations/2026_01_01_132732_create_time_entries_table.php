@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestamp('entrada');
             $table->timestamp('salida')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

@@ -14,17 +14,17 @@ return new class extends Migration
         Schema::table('time_entries', function (Blueprint $table) {
             // Índice para buscar entradas abiertas por usuario (consulta muy frecuente)
             $table->index(['user_id', 'salida'], 'idx_user_open_entries');
-            
+
             // Índice para consultas por rango de fechas
             $table->index(['entrada'], 'idx_entrada_date');
             $table->index(['salida'], 'idx_salida_date');
-            
+
             // Índice compuesto para consultas de usuario por fecha
             $table->index(['user_id', 'entrada'], 'idx_user_entrada');
-            
+
             // Índice para consultas de reportes diarios/mensuales
             $table->index(['entrada', 'salida'], 'idx_date_range');
-            
+
             // Índice para consultas de tiempo trabajado por usuario
             $table->index(['user_id', 'entrada', 'salida'], 'idx_user_time_range');
         });

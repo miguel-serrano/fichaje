@@ -4,17 +4,17 @@ namespace Tests\Unit\User\Application;
 
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
-use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\Entity\User;
-use App\DDD\User\Domain\ValueObjects\UserId;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
-use PHPUnit\Framework\TestCase;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class DeleteUserUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
+
     private DeleteUserCommandHandler $handler;
 
     protected function setUp(): void
@@ -60,7 +60,7 @@ class DeleteUserUseCaseTest extends TestCase
 
         $command = new DeleteUserCommand($userId);
         $this->handler->handle($command);
-        
+
         // Assert that the test completed without exceptions
         $this->assertTrue(true);
     }
@@ -123,4 +123,3 @@ class DeleteUserUseCaseTest extends TestCase
         $this->handler->handle($command);
     }
 }
-

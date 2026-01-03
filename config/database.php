@@ -1,6 +1,5 @@
 <?php
 
-use Pdo\Mysql;
 use Illuminate\Support\Str;
 
 return [

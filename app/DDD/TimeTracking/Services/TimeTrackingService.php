@@ -16,7 +16,7 @@ class TimeTrackingService
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
-        if (!$user) {
+        if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -29,7 +29,7 @@ class TimeTrackingService
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
-        if (!$user) {
+        if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -43,11 +43,11 @@ class TimeTrackingService
                 }
             }
 
-            if (!$registroToClose) {
+            if (! $registroToClose) {
                 throw new \InvalidArgumentException('Registro horario no encontrado.');
             }
 
-            if (!$registroToClose->isAbierto()) {
+            if (! $registroToClose->isAbierto()) {
                 throw new \InvalidArgumentException('El registro horario ya está cerrado.');
             }
 
@@ -64,7 +64,7 @@ class TimeTrackingService
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
-        if (!$user) {
+        if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -76,7 +76,7 @@ class TimeTrackingService
                 $suma += $registro->segundosTrabajados();
             }
         }
-        
+
         return $suma;
     }
 
@@ -84,7 +84,7 @@ class TimeTrackingService
     {
         $user = $this->repository->findByUuid(new Uuid($userUuid));
 
-        if (!$user) {
+        if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -93,6 +93,7 @@ class TimeTrackingService
                 return true;
             }
         }
+
         return false;
     }
 }

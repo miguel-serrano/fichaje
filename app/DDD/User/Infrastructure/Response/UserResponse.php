@@ -36,7 +36,7 @@ class UserResponse
             'uuid' => $this->uuid,
             'email' => $this->email,
             'name' => $this->name,
-            'is_active' => $this->isActive
+            'is_active' => $this->isActive,
         ];
     }
 }

@@ -47,19 +47,28 @@
                                             @endif
                                         </td>
                                         <td class="right-align">
-                                            <form action="{{ route('users.toggle-active', $user['id']) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                @method('PATCH')
-                                                @if($user['is_active'])
-                                                    <button type="submit" class="btn-small waves-effect waves-light red">
-                                                        <i class="material-icons left">block</i>Desactivar
+                                            @if($isAdmin)
+                                                <form action="{{ route('users.toggle-active', $user['id']) }}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    @if($user['is_active'])
+                                                        <button type="submit" class="btn-small waves-effect waves-light red">
+                                                            <i class="material-icons left">block</i>Desactivar
+                                                        </button>
+                                                    @else
+                                                        <button type="submit" class="btn-small waves-effect waves-light light-green">
+                                                            <i class="material-icons left">check_circle</i>Activar
+                                                        </button>
+                                                    @endif
+                                                </form>
+                                                <form action="{{ route('users.destroy', $user['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-small waves-effect waves-light red darken-3">
+                                                        <i class="material-icons left">delete</i>Borrar
                                                     </button>
-                                                @else
-                                                    <button type="submit" class="btn-small waves-effect waves-light light-green">
-                                                        <i class="material-icons left">check_circle</i>Activar
-                                                    </button>
-                                                @endif
-                                            </form>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach

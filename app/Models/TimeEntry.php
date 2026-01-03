@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class TimeEntry extends Model
 {
     use HasFactory;
+
     protected $table = 'time_entries';
+
     protected $fillable = ['user_id', 'entrada', 'salida'];
+
     protected $casts = [
         'user_id' => 'string',
         'entrada' => 'datetime',
@@ -26,4 +29,3 @@ class TimeEntry extends Model
         return $this->belongsTo(User::class);
     }
 }
-

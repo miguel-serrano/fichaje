@@ -2,8 +2,8 @@
 
 namespace App\Support\Tactician;
 
-use League\Tactician\Exception\MissingHandlerException;
 use Joselfonseca\LaravelTactician\Locator\LocatorInterface;
+use League\Tactician\Exception\MissingHandlerException;
 
 /**
  * Custom Handler Locator for Laravel-Tactician that allows
@@ -18,7 +18,7 @@ class CustomLocator implements LocatorInterface
         $command_name = array_pop($parts);
         $file = array_pop($parts); // GetUserByIdQuery
         $contextPath = implode('\\', $parts);
-        $handlerClass = $contextPath . '\\Handler\\' . $command_name . 'Handler';
+        $handlerClass = $contextPath.'\\Handler\\'.$command_name.'Handler';
 
         if (class_exists($handlerClass)) {
             return app($handlerClass);
@@ -31,9 +31,8 @@ class CustomLocator implements LocatorInterface
     {
         return [];
     }
-    public function addHandler($commandName, $handler){}
 
-    public function addHandlers(array $handlers){}
+    public function addHandler($commandName, $handler) {}
+
+    public function addHandlers(array $handlers) {}
 }
-
-

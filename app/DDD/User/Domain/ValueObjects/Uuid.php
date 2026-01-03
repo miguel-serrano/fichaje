@@ -2,8 +2,8 @@
 
 namespace App\DDD\User\Domain\ValueObjects;
 
-use InvalidArgumentException;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 final class Uuid
 {
@@ -11,7 +11,7 @@ final class Uuid
 
     public function __construct(string $value)
     {
-        if (!Str::isUuid($value)) {
+        if (! Str::isUuid($value)) {
             throw new InvalidArgumentException('UUID must be a valid UUID');
         }
         $this->value = $value;
@@ -37,4 +37,3 @@ final class Uuid
         return $this->value;
     }
 }
-

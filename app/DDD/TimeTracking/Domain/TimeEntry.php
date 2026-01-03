@@ -10,8 +10,11 @@ use DateTime;
 final class TimeEntry
 {
     private ?TimeEntryId $id;
+
     private UserId $userId;
+
     private DateTime $entrada;
+
     private ?DateTime $salida;
 
     private function __construct(
@@ -90,6 +93,7 @@ final class TimeEntry
         if ($this->entrada && $this->salida) {
             return $this->salida->getTimestamp() - $this->entrada->getTimestamp();
         }
+
         return 0;
     }
 

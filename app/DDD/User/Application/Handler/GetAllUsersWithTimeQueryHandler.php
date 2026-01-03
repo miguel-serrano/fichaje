@@ -2,9 +2,9 @@
 
 namespace App\DDD\User\Application\Handler;
 
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\TimeTracking\Services\TimeTrackingService;
 use App\DDD\User\Application\Command\GetAllUsersWithTimeQuery;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 class GetAllUsersWithTimeQueryHandler
 {
@@ -22,7 +22,7 @@ class GetAllUsersWithTimeQueryHandler
             try {
                 $segundos = $this->timeTrackingService->getAccumulatedSeconds($user->uuid()->getValue());
                 $tiempoFormateado = $this->formatearTiempo($segundos);
-                
+
                 $userData = $user->toArray();
                 $userData['tiempo_acumulado'] = $tiempoFormateado;
                 $usersWithTime[] = $userData;
@@ -41,9 +41,9 @@ class GetAllUsersWithTimeQueryHandler
         $horas = floor($segundos / 3600);
         $minutos = floor(($segundos % 3600) / 60);
         $segundosRestantes = $segundos % 60;
-        
-        return str_pad($horas, 2, '0', STR_PAD_LEFT) . ':' . 
-               str_pad($minutos, 2, '0', STR_PAD_LEFT) . ':' . 
+
+        return str_pad($horas, 2, '0', STR_PAD_LEFT).':'.
+               str_pad($minutos, 2, '0', STR_PAD_LEFT).':'.
                str_pad($segundosRestantes, 2, '0', STR_PAD_LEFT);
     }
 }
