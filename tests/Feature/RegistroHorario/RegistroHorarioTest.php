@@ -207,4 +207,67 @@ class RegistroHorarioTest extends TestCase
         $response->assertRedirect(route('bienvenido'));
         $response->assertSessionHas('error', 'Tu cuenta está pendiente de activación. Contacta con un administrador.');
     }
+
+    public function test_user_cannot_exceed_daily_time_entry_limit(): void
+    {
+        // Crear 8 registros (el máximo permitido)
+        for ($i = 0; $i < 8; $i++) {
+            \App\Models\TimeEntry::create([
+                'user_id' => $this->authenticatedUser->id,
+                'entrada' => now(),
+                'salida' => now()->addMinutes(30),
+            ]);
+        }
+
+        // El 9º intento debe fallar
+        $response = $this->post('/registro-horario/entrada');
+
+        $response->assertRedirect(route('user.me'));
+        $response->assertSessionHas('error');
+
+        $session = session('error');
+        $this->assertStringContainsString('límite máximo de 8 fichajes', $session);
+    }
+
+    public function test_admin_can_exceed_daily_time_entry_limit(): void
+    {
+        // Hacer al usuario admin
+        $this->authenticatedUser->is_admin = true;
+        $this->authenticatedUser->save();
+
+        // Crear 8 registros
+        for ($i = 0; $i < 8; $i++) {
+            \App\Models\TimeEntry::create([
+                'user_id' => $this->authenticatedUser->id,
+                'entrada' => now(),
+                'salida' => now()->addMinutes(30),
+            ]);
+        }
+
+        // El 9º intento debe funcionar para admin
+        $response = $this->post('/registro-horario/entrada');
+
+        $response->assertRedirect(route('user.me'));
+        $response->assertSessionHas('success', 'Entrada registrada correctamente');
+
+        $this->assertDatabaseCount('time_entries', 9);
+    }
+
+    public function test_daily_limit_resets_for_new_day(): void
+    {
+        // Crear 8 registros de ayer
+        for ($i = 0; $i < 8; $i++) {
+            \App\Models\TimeEntry::create([
+                'user_id' => $this->authenticatedUser->id,
+                'entrada' => now()->subDay(),
+                'salida' => now()->subDay()->addMinutes(30),
+            ]);
+        }
+
+        // Hoy debe poder fichar
+        $response = $this->post('/registro-horario/entrada');
+
+        $response->assertRedirect(route('user.me'));
+        $response->assertSessionHas('success', 'Entrada registrada correctamente');
+    }
 }

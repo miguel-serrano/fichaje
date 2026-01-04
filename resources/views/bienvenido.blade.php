@@ -39,6 +39,13 @@
                 <p class="grey-text" style="text-align: justify; margin-bottom: 15px;">
                     Espero que esta versión sea de utilidad y resulte una buena experiencia mientras se continúa perfeccionando la aplicación.
                 </p>
+
+                <h6 class="grey-text text-darken-2" style="margin-top: 25px;">Límites de Uso</h6>
+                <p class="grey-text" style="text-align: justify; margin-bottom: 15px;">
+                    <i class="material-icons tiny" style="vertical-align: middle;">schedule</i>
+                    Cada usuario puede registrar un máximo de <strong>8 fichajes por día</strong>. Este límite ha sido establecido para garantizar un uso razonable de la aplicación durante la fase beta.
+                </p>
+
                 <p class="grey-text text-lighten-1" style="font-size: 13px; margin-bottom: 25px;">
                     <i class="material-icons tiny" style="vertical-align: middle;">verified</i>
                     {{ \App\Helpers\TestCounter::count() }} tests y subiendo

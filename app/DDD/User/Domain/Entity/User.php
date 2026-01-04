@@ -2,10 +2,12 @@
 
 namespace App\DDD\User\Domain\Entity;
 
+use App\DDD\TimeTracking\Domain\Exceptions\DailyTimeEntryLimitExceededException;
 use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
+use Carbon\Carbon;
 use Exception;
 
 final class User
@@ -146,9 +148,32 @@ final class User
             throw new Exception('No se puede fichar la entrada para un usuario no guardado.');
         }
 
+        // Validar límite diario (solo para usuarios no admin)
+        if (! $this->isAdmin()) {
+            $registrosHoy = $this->countTodayEntries();
+            if ($registrosHoy >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
+                throw new DailyTimeEntryLimitExceededException($registrosHoy);
+            }
+        }
+
         $this->addRegistroHorario(
             TimeEntry::create($this->id())
         );
+    }
+
+    private function countTodayEntries(): int
+    {
+        $today = Carbon::today();
+        $count = 0;
+
+        foreach ($this->registrosHorarios as $registro) {
+            $entradaCarbon = Carbon::instance($registro->entrada());
+            if ($entradaCarbon->isSameDay($today)) {
+                $count++;
+            }
+        }
+
+        return $count;
     }
 
     public function ficharSalida(): void
