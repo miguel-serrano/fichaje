@@ -41,10 +41,11 @@ class BasicAuthenticationTest extends TestCase
             'password_confirmation' => 'password123',
         ]);
 
-        $response->assertRedirect(route('registro_horario.index'));
+        $response->assertRedirect(route('bienvenido'));
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
             'name' => 'Test User',
+            'is_active' => false,
         ]);
         $this->assertAuthenticated();
     }

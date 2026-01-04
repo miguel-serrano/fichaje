@@ -208,3 +208,31 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - To run all tests in a file: `vendor/bin/sail artisan test tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `vendor/bin/sail artisan test --filter=testName` (recommended after making a change to a related file).
 </laravel-boost-guidelines>
+
+## Convenciones del Proyecto TimeTrack
+
+### Arquitectura DDD
+- Los nuevos usuarios se crean con `is_active = false` por defecto
+- El campo `is_admin` (boolean) determina si un usuario es administrador, NO usar `remember_token`
+- Al llamar a `User::fromPrimitives()`, el parámetro `isAdmin` es obligatorio (bool), no pasar null
+
+### Frontend (Materialize CSS)
+- Usar Materialize CSS, NO Tailwind
+- Switch con colores personalizados: usar estilos inline para `.lever` y `.lever:after`
+- Navbar sticky: usar clase `navbar-fixed`
+- Formularios responsive: usar `col s12 l6 offset-l3`
+
+### Tests
+- Al modificar la firma de `User::fromPrimitives()`, actualizar TODOS los tests que lo usan
+- Verificar que los tests reflejan el comportamiento actual (ej: redirecciones a `bienvenido` en lugar de `home`)
+- El contador de tests usa `TestCounter::count()` que escanea archivos `*Test.php`
+
+### Rutas y Redirecciones
+- Post-registro redirige a `/bienvenido`, no a `/registro-horario`
+- Usuarios inactivos que intentan acceder a Fichar son redirigidos a `/bienvenido`
+- La ruta `home` ya no existe, usar `bienvenido`
+
+### Limpieza de Código
+- Buscar y eliminar archivos huérfanos (Value Objects, Exceptions, etc. no usados)
+- Eliminar imports no utilizados
+- Al cambiar arquitectura (ej: remember_token → is_admin), buscar TODAS las referencias

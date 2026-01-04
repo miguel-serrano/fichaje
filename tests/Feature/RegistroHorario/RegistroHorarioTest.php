@@ -187,8 +187,8 @@ class RegistroHorarioTest extends TestCase
 
         $response = $this->post('/registro-horario/entrada');
 
-        $response->assertRedirect(route('user.me'));
-        $response->assertSessionHas('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
+        $response->assertRedirect(route('bienvenido'));
+        $response->assertSessionHas('error', 'Tu cuenta está pendiente de activación. Contacta con un administrador.');
 
         $this->assertDatabaseMissing('time_entries', [
             'user_id' => $this->authenticatedUser->id,
@@ -204,7 +204,7 @@ class RegistroHorarioTest extends TestCase
 
         $response = $this->post('/registro-horario/salida');
 
-        $response->assertRedirect(route('user.me'));
-        $response->assertSessionHas('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
+        $response->assertRedirect(route('bienvenido'));
+        $response->assertSessionHas('error', 'Tu cuenta está pendiente de activación. Contacta con un administrador.');
     }
 }

@@ -39,7 +39,7 @@ class RegistroHorarioServiceTest extends TestCase
             'test@example.com',
             'Test User',
             true,
-            null, // rememberToken
+            false, // isAdmin
             $registros
         );
     }

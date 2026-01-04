@@ -75,27 +75,18 @@ class UserManagementTest extends TestCase
 
     public function test_can_toggle_user_active_status(): void
     {
-        // Crear un usuario
+        // Crear un usuario (is_active = false por defecto)
         $repository = new EloquentUserRepository;
         $user = User::create(new Email('toggle@example.com'), 'Toggle User');
         $savedUser = $repository->save($user);
 
-        // Verificar que está activo inicialmente
-        $this->assertDatabaseHas('users', [
-            'id' => $savedUser->id()->getValue(),
-            'is_active' => true,
-        ]);
-
-        $response = $this->patch("/user/{$savedUser->id()->getValue()}/toggle-active");
-        $response->assertRedirect('/users');
-        $response->assertSessionHas('success', 'Usuario desactivado correctamente');
-
-        // Verificar que se desactivó
+        // Verificar que está inactivo inicialmente (nuevo comportamiento)
         $this->assertDatabaseHas('users', [
             'id' => $savedUser->id()->getValue(),
             'is_active' => false,
         ]);
 
+        // Activar usuario
         $response = $this->patch("/user/{$savedUser->id()->getValue()}/toggle-active");
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario activado correctamente');
@@ -104,6 +95,17 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $savedUser->id()->getValue(),
             'is_active' => true,
+        ]);
+
+        // Desactivar usuario
+        $response = $this->patch("/user/{$savedUser->id()->getValue()}/toggle-active");
+        $response->assertRedirect('/users');
+        $response->assertSessionHas('success', 'Usuario desactivado correctamente');
+
+        // Verificar que se desactivó
+        $this->assertDatabaseHas('users', [
+            'id' => $savedUser->id()->getValue(),
+            'is_active' => false,
         ]);
     }
 }
