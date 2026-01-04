@@ -26,22 +26,22 @@
 
                 <div class="divider" style="margin: 30px 0;"></div>
 
-                <h6 class="grey-text text-darken-2">Términos y Condiciones</h6>
-                <p class="grey-text" style="text-align: justify; margin-bottom: 15px;">
+                <h6 class="grey-text text-darken-2" style="margin-top: 65px; margin-bottom: 24px; font-size: 1.5rem;">Términos y Condiciones</h6>
+                <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
                     Esta aplicación se encuentra actualmente en <strong>versión beta</strong>, lo que significa que se sigue trabajando activamente para mejorar su rendimiento, estabilidad y seguridad. Se realizan ajustes y optimizaciones continuas con el objetivo de ofrecer una experiencia de uso cada vez más confiable y completa.
                 </p>
-                <p class="grey-text" style="text-align: justify; margin-bottom: 15px;">
+                <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
                     Al utilizar este servicio, aceptas que el uso de la aplicación es bajo tu propia responsabilidad. Aunque se procura garantizar su correcto funcionamiento, pueden producirse errores, interrupciones o pérdida de datos propios de esta etapa de prueba.
                 </p>
-                <p class="grey-text" style="text-align: justify; margin-bottom: 15px;">
+                <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
                     Gracias por tu comprensión y colaboración mientras se avanza hacia una versión final más sólida y segura. En breve, se habilitará una sección de comentarios y sugerencias para que puedas compartir tus opiniones y contribuir a la mejora continua de la aplicación.
                 </p>
-                <p class="grey-text" style="text-align: justify; margin-bottom: 15px;">
+                <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
                     Espero que esta versión sea de utilidad y resulte una buena experiencia mientras se continúa perfeccionando la aplicación.
                 </p>
 
-                <h6 class="grey-text text-darken-2" style="margin-top: 25px;">Límites de Uso</h6>
-                <p class="grey-text" style="text-align: justify; margin-bottom: 15px;">
+                <h6 class="grey-text text-darken-2" style="margin-top: 65px; margin-bottom: 24px; font-size: 1.5rem;">Límites de Uso</h6>
+                <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
                     <i class="material-icons tiny" style="vertical-align: middle;">schedule</i>
                     Cada usuario puede registrar un máximo de <strong>8 fichajes por día</strong>. Este límite ha sido establecido para garantizar un uso razonable de la aplicación durante la fase beta.
                 </p>
