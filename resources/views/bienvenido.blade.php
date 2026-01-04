@@ -16,9 +16,8 @@
                 @if(!auth()->user()->is_active)
                     <div class="card-panel amber lighten-4 amber-text text-darken-4" style="margin-top: 20px;">
                         <i class="material-icons left">info</i>
-                        <strong>Tu cuenta está pendiente de activación.</strong>
+                        <strong>Tu cuenta está pendiente de activación, en breve se activará.</strong>
                         <p style="margin-top: 10px; margin-bottom: 0;">
-                            Un administrador debe activar tu cuenta antes de que puedas utilizar la funcionalidad de Fichar.
                             Mientras tanto, puedes acceder a la sección de Seguimiento.
                         </p>
                     </div>
@@ -26,7 +25,7 @@
 
                 <div class="divider" style="margin: 30px 0;"></div>
 
-                <h6 class="grey-text text-darken-2" style="margin-top: 65px; margin-bottom: 24px; font-size: 1.5rem;">Términos y Condiciones</h6>
+                <h6 class="grey-text text-darken-2" style="margin-top: 35px; margin-bottom: 24px; font-size: 1.5rem;">Términos y Condiciones</h6>
                 <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
                     Esta aplicación se encuentra actualmente en <strong>versión beta</strong>, lo que significa que se sigue trabajando activamente para mejorar su rendimiento, estabilidad y seguridad. Se realizan ajustes y optimizaciones continuas con el objetivo de ofrecer una experiencia de uso cada vez más confiable y completa.
                 </p>
@@ -40,10 +39,18 @@
                     Espero que esta versión sea de utilidad y resulte una buena experiencia mientras se continúa perfeccionando la aplicación.
                 </p>
 
-                <h6 class="grey-text text-darken-2" style="margin-top: 65px; margin-bottom: 24px; font-size: 1.5rem;">Límites de Uso</h6>
+                <h6 class="grey-text text-darken-2" style="margin-top: 35px; margin-bottom: 24px; font-size: 1.5rem;">Límites de Uso</h6>
                 <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
-                    <i class="material-icons tiny" style="vertical-align: middle;">schedule</i>
-                    Cada usuario puede registrar un máximo de <strong>8 fichajes por día</strong>. Este límite ha sido establecido para garantizar un uso razonable de la aplicación durante la fase beta.
+                    Para asegurar la estabilidad de la aplicación durante esta etapa inicial, se aplican algunos límites razonables:
+                </p>
+                <p class="grey-text text-darken-3" style="margin-bottom: 10px;">
+                    📅 <strong>Fichajes diarios:</strong> Máximo de 8 registros por usuario al día
+                </p>
+                <p class="grey-text text-darken-3" style="margin-bottom: 15px;">
+                    👥 <strong>Nuevos usuarios:</strong> Hasta 8 registros por día
+                </p>
+                <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
+                    Estos límites se ampliarán progresivamente conforme la aplicación evolucione hacia su versión estable. Gracias por tu comprensión mientras optimizamos el servicio.
                 </p>
 
                 <p class="grey-text text-lighten-1" style="font-size: 13px; margin-bottom: 25px;">

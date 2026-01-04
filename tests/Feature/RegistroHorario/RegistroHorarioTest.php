@@ -188,7 +188,7 @@ class RegistroHorarioTest extends TestCase
         $response = $this->post('/registro-horario/entrada');
 
         $response->assertRedirect(route('bienvenido'));
-        $response->assertSessionHas('error', 'Tu cuenta está pendiente de activación. Contacta con un administrador.');
+        $response->assertSessionHas('error', 'Tu cuenta está pendiente de activación, en breve se activará.');
 
         $this->assertDatabaseMissing('time_entries', [
             'user_id' => $this->authenticatedUser->id,
@@ -205,7 +205,7 @@ class RegistroHorarioTest extends TestCase
         $response = $this->post('/registro-horario/salida');
 
         $response->assertRedirect(route('bienvenido'));
-        $response->assertSessionHas('error', 'Tu cuenta está pendiente de activación. Contacta con un administrador.');
+        $response->assertSessionHas('error', 'Tu cuenta está pendiente de activación, en breve se activará.');
     }
 
     public function test_user_cannot_exceed_daily_time_entry_limit(): void

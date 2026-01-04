@@ -17,7 +17,7 @@ class LaravelServiceProvider extends ServiceProvider
         $this->app->bind(UserCreationValidator::class, function ($app) {
             return new UserCreationValidator(
                 $app->make(UserRepositoryInterface::class),
-                config('users.limits.max_users', 10)
+                config('users.limits.max_users', 96)
             );
         });
 

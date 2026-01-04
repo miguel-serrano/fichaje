@@ -180,6 +180,13 @@ class EloquentUserRepository implements UserRepositoryInterface
         return DB::table($this->getUsersTable())->count();
     }
 
+    public function countTodayRegistrations(): int
+    {
+        return DB::table($this->getUsersTable())
+            ->whereDate('created_at', today())
+            ->count();
+    }
+
     public function saveWithPassword(\App\DDD\User\Domain\Entity\User $user, \App\DDD\Authentication\Domain\ValueObjects\HashedPassword $password): User
     {
         $user_id = $user->id() ? $user->id()->getValue() : null;

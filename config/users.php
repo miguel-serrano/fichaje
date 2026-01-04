@@ -21,6 +21,6 @@ return [
         | Set to null or 0 to disable the limit.
         |
         */
-        'max_users' => env('MAX_USERS', 10),
+        'max_users' => env('MAX_USERS', 96),
     ],
 ];

@@ -2,6 +2,7 @@
 
 namespace App\DDD\User\Domain\Services;
 
+use App\DDD\User\Domain\Exceptions\DailyUserRegistrationLimitExceededException;
 use App\DDD\User\Domain\Exceptions\MaxUsersLimitExceededException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
@@ -16,6 +17,7 @@ class UserCreationValidator
      * Validate if a new user can be created based on business rules.
      *
      * @throws MaxUsersLimitExceededException
+     * @throws DailyUserRegistrationLimitExceededException
      */
     public function validate(): void
     {
@@ -23,6 +25,12 @@ class UserCreationValidator
 
         if ($currentUserCount >= $this->maxUsersLimit) {
             throw new MaxUsersLimitExceededException($this->maxUsersLimit, $currentUserCount);
+        }
+
+        $todayRegistrations = $this->userRepository->countTodayRegistrations();
+
+        if ($todayRegistrations >= DailyUserRegistrationLimitExceededException::MAX_DAILY_REGISTRATIONS) {
+            throw new DailyUserRegistrationLimitExceededException($todayRegistrations);
         }
     }
 
@@ -32,8 +40,10 @@ class UserCreationValidator
     public function canCreateUser(): bool
     {
         $currentUserCount = $this->userRepository->count();
+        $todayRegistrations = $this->userRepository->countTodayRegistrations();
 
-        return $currentUserCount < $this->maxUsersLimit;
+        return $currentUserCount < $this->maxUsersLimit
+            && $todayRegistrations < DailyUserRegistrationLimitExceededException::MAX_DAILY_REGISTRATIONS;
     }
 
     /**
