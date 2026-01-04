@@ -3,7 +3,6 @@
 namespace App\DDD\User\Application\Handler;
 
 use App\DDD\User\Application\Command\ToggleUserActiveCommand;
-use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -20,11 +19,7 @@ class ToggleUserActiveCommandHandler
         $this->authorizationService->ensureCanToggleActive($command->authenticatedUser);
 
         $userId = new UserId($command->targetUserId);
-
-        $user = $this->userRepository->findById($userId);
-        if (! $user) {
-            throw new UserNotFoundException("User {$command->targetUserId} not found");
-        }
+        $user = $this->userRepository->findByIdOrFail($userId);
 
         $newState = $user->toggleActive();
         $this->userRepository->save($user);

@@ -53,8 +53,8 @@
                     <li>
                         <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                             @csrf
-                            <button type="submit" class="waves-effect waves-light" style="background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; cursor: pointer;">
-                                <i class="material-icons left">exit_to_app</i>Cerrar Sesión
+                            <button type="submit" class="waves-effect waves-light" style="background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                <i class="material-icons">exit_to_app</i>Cerrar Sesión
                             </button>
                         </form>
                     </li>

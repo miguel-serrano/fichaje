@@ -16,7 +16,17 @@ interface UserRepositoryInterface
 
     public function findById(UserId $id): ?User;
 
+    /**
+     * @throws \App\DDD\User\Domain\Exceptions\UserNotFoundException
+     */
+    public function findByIdOrFail(UserId $id): User;
+
     public function findByUuid(Uuid $uuid): ?User;
+
+    /**
+     * @throws \App\DDD\User\Domain\Exceptions\UserNotFoundException
+     */
+    public function findByUuidOrFail(Uuid $uuid): User;
 
     public function existsByEmail(Email $email): bool;
 

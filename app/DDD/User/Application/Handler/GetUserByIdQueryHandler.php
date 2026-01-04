@@ -4,7 +4,6 @@ namespace App\DDD\User\Application\Handler;
 
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Domain\Entity\User;
-use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -20,11 +19,7 @@ class GetUserByIdQueryHandler
     public function handle(GetUserByIdQuery $query): User
     {
         $userId = new UserId($query->targetUserId);
-        $user = $this->userRepository->findById($userId);
-
-        if (! $user) {
-            throw new UserNotFoundException('User not found');
-        }
+        $user = $this->userRepository->findByIdOrFail($userId);
 
         // Authorization check
         $targetEloquentUser = EloquentUser::query()->find($query->targetUserId);

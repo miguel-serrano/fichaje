@@ -190,7 +190,7 @@
                         <button onclick="expandAll()" class="btn-small waves-effect waves-light light-green">
                             <i class="material-icons left">unfold_more</i>Expandir
                         </button>
-                        <button onclick="collapseAll()" class="btn-small waves-effect waves-light grey">
+                        <button onclick="collapseAll()" class="btn-small waves-effect waves-light light-green">
                             <i class="material-icons left">unfold_less</i>Colapsar
                         </button>
                     </div>
@@ -258,24 +258,28 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize collapsibles
+    // Initialize collapsibles with accordion disabled (allows multiple open)
     var elems = document.querySelectorAll('.collapsible');
-    M.Collapsible.init(elems);
+    M.Collapsible.init(elems, { accordion: false });
 });
 
 function expandAll() {
-    var instance = M.Collapsible.getInstance(document.getElementById('daily-collapsible'));
+    var elem = document.getElementById('daily-collapsible');
+    var instance = M.Collapsible.getInstance(elem);
     if (instance) {
-        for (let i = 0; i < instance.$el[0].children.length; i++) {
+        var items = elem.querySelectorAll('li');
+        for (let i = 0; i < items.length; i++) {
             instance.open(i);
         }
     }
 }
 
 function collapseAll() {
-    var instance = M.Collapsible.getInstance(document.getElementById('daily-collapsible'));
+    var elem = document.getElementById('daily-collapsible');
+    var instance = M.Collapsible.getInstance(elem);
     if (instance) {
-        for (let i = 0; i < instance.$el[0].children.length; i++) {
+        var items = elem.querySelectorAll('li');
+        for (let i = 0; i < items.length; i++) {
             instance.close(i);
         }
     }

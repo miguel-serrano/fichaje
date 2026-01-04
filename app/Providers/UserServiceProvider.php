@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\DDD\User\Application\Handler\CreateUserCommandHandler;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
 use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
@@ -13,7 +12,6 @@ class UserServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(CreateUserCommandHandler::class);
         $this->app->singleton(DeleteUserCommandHandler::class);
         $this->app->singleton(GetUserByIdQueryHandler::class);
         $this->app->singleton(GetAllUsersWithTimeQueryHandler::class);

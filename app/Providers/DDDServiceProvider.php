@@ -46,11 +46,6 @@ class DDDServiceProvider extends ServiceProvider
     {
         // User Commands
         $tacticianBus->addHandler(
-            \App\DDD\User\Application\Command\CreateUserCommand::class,
-            \App\DDD\User\Application\Handler\CreateUserCommandHandler::class
-        );
-
-        $tacticianBus->addHandler(
             \App\DDD\User\Application\Command\DeleteUserCommand::class,
             \App\DDD\User\Application\Handler\DeleteUserCommandHandler::class
         );
@@ -92,17 +87,17 @@ class DDDServiceProvider extends ServiceProvider
     {
         // User Queries
         $tacticianBus->addHandler(
-            \App\DDD\User\Application\Command\GetUserByIdQuery::class,
+            \App\DDD\User\Application\Query\GetUserByIdQuery::class,
             \App\DDD\User\Application\Handler\GetUserByIdQueryHandler::class
         );
 
         $tacticianBus->addHandler(
-            \App\DDD\User\Application\Command\GetAllUsersWithTimeQuery::class,
+            \App\DDD\User\Application\Query\GetAllUsersWithTimeQuery::class,
             \App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler::class
         );
 
         $tacticianBus->addHandler(
-            \App\DDD\User\Application\Command\GetUserDailyRegistrosQuery::class,
+            \App\DDD\User\Application\Query\GetUserDailyRegistrosQuery::class,
             \App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler::class
         );
 

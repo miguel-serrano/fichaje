@@ -4,6 +4,7 @@ namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -90,6 +91,17 @@ class EloquentUserRepository implements UserRepositoryInterface
         );
     }
 
+    public function findByIdOrFail(UserId $id): User
+    {
+        $user = $this->findById($id);
+
+        if (! $user) {
+            throw new UserNotFoundException("User {$id->getValue()} not found");
+        }
+
+        return $user;
+    }
+
     public function findByUuid(Uuid $uuid): ?User
     {
         $eloquentUser = DB::table($this->getUsersTable())->where('uuid', $uuid->getValue())->first();
@@ -113,6 +125,17 @@ class EloquentUserRepository implements UserRepositoryInterface
             $eloquentUser->remember_token ?? null,
             $registrosHorarios
         );
+    }
+
+    public function findByUuidOrFail(Uuid $uuid): User
+    {
+        $user = $this->findByUuid($uuid);
+
+        if (! $user) {
+            throw new UserNotFoundException("User with UUID {$uuid->getValue()} not found");
+        }
+
+        return $user;
     }
 
     public function existsByEmail(Email $email): bool

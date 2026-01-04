@@ -78,7 +78,7 @@ class GetUserByIdUseCaseTest extends TestCase
         $userId = 999;
 
         $this->expectException(UserNotFoundException::class);
-        $this->expectExceptionMessage('User not found');
+        $this->expectExceptionMessage('User 999 not found');
 
         $query = new GetUserByIdQuery($adminUser, $userId);
         $this->handler->handle($query);
