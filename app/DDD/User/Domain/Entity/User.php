@@ -4,7 +4,6 @@ namespace App\DDD\User\Domain\Entity;
 
 use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\User\Domain\ValueObjects\RememberToken;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Exception;
@@ -21,7 +20,7 @@ final class User
 
     private bool $isActive;
 
-    private RememberToken $rememberToken;
+    private bool $isAdmin;
 
     /** @var TimeEntry[] */
     private array $registrosHorarios;
@@ -32,7 +31,7 @@ final class User
         Email $email,
         string $name,
         bool $isActive = true,
-        ?RememberToken $rememberToken = null,
+        bool $isAdmin = false,
         array $registrosHorarios = []
     ) {
         $this->id = $id;
@@ -40,13 +39,13 @@ final class User
         $this->email = $email;
         $this->name = $name;
         $this->isActive = $isActive;
-        $this->rememberToken = $rememberToken ?? new RememberToken(null);
+        $this->isAdmin = $isAdmin;
         $this->registrosHorarios = $registrosHorarios;
     }
 
     public static function create(Email $email, string $name): self
     {
-        return new self(null, Uuid::generate(), $email, $name);
+        return new self(null, Uuid::generate(), $email, $name, false);
     }
 
     public static function fromPrimitives(
@@ -55,7 +54,7 @@ final class User
         string $email,
         string $name,
         bool $isActive,
-        ?string $rememberToken = null,
+        bool $isAdmin = false,
         array $registrosHorarios = []
     ): self {
         $user = new self(
@@ -64,7 +63,7 @@ final class User
             new Email($email),
             $name,
             $isActive,
-            new RememberToken($rememberToken)
+            $isAdmin
         );
 
         foreach ($registrosHorarios as $registro) {
@@ -104,14 +103,9 @@ final class User
         return $this->isActive;
     }
 
-    public function rememberToken(): RememberToken
-    {
-        return $this->rememberToken;
-    }
-
     public function isAdmin(): bool
     {
-        return $this->rememberToken->isAdmin();
+        return $this->isAdmin;
     }
 
     public function deactivate(): void
@@ -186,6 +180,7 @@ final class User
             'email' => $this->email->getValue(),
             'name' => $this->name(),
             'is_active' => $this->isActive(),
+            'is_admin' => $this->isAdmin(),
             'registros_horarios' => array_map(function (TimeEntry $registro) {
                 return $registro->toArray();
             }, $this->registrosHorarios),

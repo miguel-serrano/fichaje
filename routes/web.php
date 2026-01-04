@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\BienvenidoController;
 use App\Http\Controllers\RegistroHorario\RegistroHorarioController;
 use App\Http\Controllers\User\DeleteUserController;
 use App\Http\Controllers\User\GetMyTimeEntriesController;
@@ -23,6 +24,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
 
+    Route::get('/bienvenido', [BienvenidoController::class, 'index'])->name('bienvenido');
+    Route::post('/bienvenido/accept-terms', [BienvenidoController::class, 'acceptTerms'])->name('bienvenido.accept-terms');
+
     Route::get('/user/me', GetMyTimeEntriesController::class)->name('user.me');
 
     Route::middleware('admin')->group(function () {
@@ -32,7 +36,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/user/{id}', DeleteUserController::class)->name('user.delete');
     });
 
-    Route::get('/registro-horario', [RegistroHorarioController::class, 'index'])->name('registro_horario.index');
-    Route::post('/registro-horario/entrada', [RegistroHorarioController::class, 'ficharEntrada'])->name('registro_horario.entrada');
-    Route::post('/registro-horario/salida/{registroHorarioId?}', [RegistroHorarioController::class, 'ficharSalida'])->name('registro_horario.salida');
+    Route::middleware('active')->group(function () {
+        Route::get('/registro-horario', [RegistroHorarioController::class, 'index'])->name('registro_horario.index');
+        Route::post('/registro-horario/entrada', [RegistroHorarioController::class, 'ficharEntrada'])->name('registro_horario.entrada');
+        Route::post('/registro-horario/salida/{registroHorarioId?}', [RegistroHorarioController::class, 'ficharSalida'])->name('registro_horario.salida');
+    });
 });

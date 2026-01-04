@@ -22,6 +22,12 @@ class DeleteUserCommandHandler
         // Get Eloquent user for authorization
         $targetEloquentUser = EloquentUser::query()->find($command->targetUserId);
 
+        if (! $targetEloquentUser) {
+            throw new \App\DDD\User\Domain\Exceptions\UserNotFoundException(
+                "User {$command->targetUserId} not found"
+            );
+        }
+
         // Authorization check (replaces the fragile remember_token check)
         $this->authorizationService->ensureCanDelete(
             $command->authenticatedUser,

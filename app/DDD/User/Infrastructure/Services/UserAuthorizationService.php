@@ -58,7 +58,7 @@ final class UserAuthorizationService implements UserAuthorizationServiceInterfac
             $eloquentUser->email,
             $eloquentUser->name,
             $eloquentUser->is_active ?? true,
-            $eloquentUser->remember_token ?? null
+            $eloquentUser->is_admin ?? false
         );
     }
 }

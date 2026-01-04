@@ -101,6 +101,11 @@ class DDDServiceProvider extends ServiceProvider
             \App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler::class
         );
 
+        $tacticianBus->addHandler(
+            \App\DDD\User\Application\Query\GetUserTodayRegistrosQuery::class,
+            \App\DDD\User\Application\Handler\GetUserTodayRegistrosQueryHandler::class
+        );
+
         // TimeTracking Queries
         $tacticianBus->addHandler(
             \App\DDD\TimeTracking\Application\Query\GetAccumulatedSecondsQuery::class,

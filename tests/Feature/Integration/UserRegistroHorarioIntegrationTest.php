@@ -28,7 +28,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
             'email' => 'user@test.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         $this->actingAs($this->authenticatedUser);

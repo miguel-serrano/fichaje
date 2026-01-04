@@ -86,7 +86,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             $eloquentUser->email,
             $eloquentUser->name,
             $eloquentUser->is_active ?? true,
-            $eloquentUser->remember_token ?? null,
+            $eloquentUser->is_admin ?? false,
             $registrosHorarios
         );
     }
@@ -122,7 +122,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             $eloquentUser->email,
             $eloquentUser->name,
             $eloquentUser->is_active ?? true,
-            $eloquentUser->remember_token ?? null,
+            $eloquentUser->is_admin ?? false,
             $registrosHorarios
         );
     }
@@ -160,7 +160,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $user->email,
                 $user->name,
                 $user->is_active ?? true,
-                $user->remember_token ?? null,
+                $user->is_admin ?? false,
                 $registros
             );
         })->toArray();
@@ -222,5 +222,16 @@ class EloquentUserRepository implements UserRepositoryInterface
         });
 
         return $this->findById(new UserId($user_id));
+    }
+
+    /** @return array<array-key, mixed> */
+    public function findTodayRegistrosByUserId(UserId $id): array
+    {
+        return DB::table($this->getRegistrosTable())
+            ->where('user_id', $id->getValue())
+            ->whereDate('entrada', today())
+            ->get()
+            ->map(fn ($r) => (array) $r)
+            ->toArray();
     }
 }

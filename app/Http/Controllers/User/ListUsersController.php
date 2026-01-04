@@ -27,12 +27,12 @@ class ListUsersController extends Controller
                 'isAdmin' => true,
             ]);
         } catch (UnauthorizedException $e) {
-            return redirect()->route('dashboard')
+            return redirect()->route('bienvenido')
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             report($e);
 
-            return redirect()->route('dashboard')
+            return redirect()->route('bienvenido')
                 ->with('error', 'Error al cargar la lista de usuarios');
         }
     }

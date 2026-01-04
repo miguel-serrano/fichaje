@@ -43,7 +43,7 @@ class DeleteUserUseCaseTest extends TestCase
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         // Create target user to delete
@@ -72,7 +72,7 @@ class DeleteUserUseCaseTest extends TestCase
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         $userId = 999;
@@ -92,7 +92,7 @@ class DeleteUserUseCaseTest extends TestCase
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         // Try to delete another admin - should fail authorization
@@ -102,7 +102,7 @@ class DeleteUserUseCaseTest extends TestCase
             'email' => 'admin2@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         $this->expectException(UnauthorizedException::class);

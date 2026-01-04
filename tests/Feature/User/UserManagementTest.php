@@ -26,7 +26,7 @@ class UserManagementTest extends TestCase
             'email' => 'admin@test.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n', // Admin user
+            'is_admin' => true,
         ]);
 
         $this->actingAs($this->authenticatedUser);

@@ -42,7 +42,7 @@ class GetUserByIdUseCaseTest extends TestCase
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         $targetUser = \App\Models\User::create([
@@ -72,7 +72,7 @@ class GetUserByIdUseCaseTest extends TestCase
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         $userId = 999;
@@ -92,7 +92,7 @@ class GetUserByIdUseCaseTest extends TestCase
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'remember_token' => 'soyAdm1n',
+            'is_admin' => true,
         ]);
 
         $targetUser = \App\Models\User::create([

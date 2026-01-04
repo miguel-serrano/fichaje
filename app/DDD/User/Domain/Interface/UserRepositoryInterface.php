@@ -36,4 +36,7 @@ interface UserRepositoryInterface
     public function delete(UserId $id): bool;
 
     public function count(): int;
+
+    /** @return array<array-key, mixed> */
+    public function findTodayRegistrosByUserId(UserId $id): array;
 }

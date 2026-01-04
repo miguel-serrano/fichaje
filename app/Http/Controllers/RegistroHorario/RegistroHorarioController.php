@@ -16,7 +16,8 @@ class RegistroHorarioController extends Controller
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private QueryBusInterface $queryBus
+        private QueryBusInterface $queryBus,
+        private \App\DDD\User\Domain\Interface\UserRepositoryInterface $userRepository
     ) {}
 
     public function ficharEntrada()
@@ -71,16 +72,21 @@ class RegistroHorarioController extends Controller
 
     public function index()
     {
-        $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
-        $userUuid = $user->uuid()->getValue();
+        try {
+            $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
+            $userUuid = $user->uuid()->getValue();
 
-        $segundos = $this->queryBus->dispatch(new GetAccumulatedSecondsQuery($userUuid));
-        $tieneRegistroAbierto = $this->queryBus->dispatch(new HasOpenTimeEntryQuery($userUuid));
+            $segundos = $this->queryBus->dispatch(new GetAccumulatedSecondsQuery($userUuid));
+            $tieneRegistroAbierto = $this->queryBus->dispatch(new HasOpenTimeEntryQuery($userUuid));
 
-        return view('registro_horario', [
-            'user' => $user,
-            'segundos' => $segundos,
-            'tieneRegistroAbierto' => $tieneRegistroAbierto,
-        ]);
+            return view('registro_horario', [
+                'user' => $user,
+                'segundos' => $segundos,
+                'tieneRegistroAbierto' => $tieneRegistroAbierto,
+            ]);
+        } catch (\Throwable $th) {
+            return 'Error al cargar la página de registro horario: '.$th->getMessage();
+        }
+
     }
 }

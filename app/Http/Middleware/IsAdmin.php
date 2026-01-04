@@ -14,7 +14,7 @@ class IsAdmin
             return redirect()->route('login');
         }
 
-        if (auth()->user()->remember_token !== 'soyAdm1n') {
+        if (! auth()->user()->is_admin) {
             abort(403, 'No tienes permisos para acceder a esta página.');
         }
 

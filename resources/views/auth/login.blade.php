@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="row">
-    <div class="col s12 m6 offset-m3">
+    <div class="col s12 l6 offset-l3">
         <div class="card">
             <div class="card-content">
                 <span class="card-title center-align">Iniciar Sesión</span>

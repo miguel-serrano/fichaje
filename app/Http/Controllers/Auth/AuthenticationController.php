@@ -62,7 +62,7 @@ class AuthenticationController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->route('registro_horario.index')
+            return redirect()->route('bienvenido')
                 ->with('success', 'Cuenta creada exitosamente!');
         } catch (\Exception $e) {
             return back()

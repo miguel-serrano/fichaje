@@ -3,29 +3,52 @@
 @section('title', 'Mi Información')
 
 @section('content')
+<style>
+    .switch label input[type=checkbox]:checked + .lever {
+        background-color: #f48fb1;
+    }
+    .switch label input[type=checkbox]:checked + .lever:after {
+        background-color: #c2185b;
+    }
+</style>
 <div class="row">
     <div class="col s12">
         <div class="card">
             <div class="card-content">
-                <span class="card-title">
-                    <i class="material-icons left">person</i>
-                    Información Personal
-                </span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="card-title" style="margin: 0;">
+                        <i class="material-icons left">person</i>
+                        Información Personal
+                    </span>
+                    <div class="switch" style="display: flex; align-items: center;">
+                        <label>
+                            <input type="checkbox" id="show-full-info">
+                            <span class="lever"></span>
+                        </label>
+                        <i class="material-icons grey-text" id="visibility-icon" style="margin-left: 8px;">visibility_off</i>
+                    </div>
+                </div>
 
                 <div class="divider" style="margin: 20px 0;"></div>
 
                 <div class="row">
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">Nombre</h6>
-                        <p>{{ $user->name() }}</p>
+                        <p>{{ Str::ucfirst($user->name()) }}</p>
                     </div>
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">Email</h6>
-                        <p>{{ $user->email()->getValue() }}</p>
+                        <p>
+                            <span class="masked-info">{{ Str::mask($user->email()->getValue(), '*', 3, strpos($user->email()->getValue(), '@') - 3) }}</span>
+                            <span class="full-info" style="display: none;">{{ $user->email()->getValue() }}</span>
+                        </p>
                     </div>
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">UUID</h6>
-                        <p><code class="grey-text">{{ $user->uuid()->getValue() }}</code></p>
+                        <p>
+                            <code class="grey-text masked-info">{{ Str::limit($user->uuid()->getValue(), 18) }}</code>
+                            <code class="grey-text full-info" style="display: none;">{{ $user->uuid()->getValue() }}</code>
+                        </p>
                     </div>
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">Estado</h6>
@@ -78,12 +101,12 @@
         <div class="card light-green lighten-5">
             <div class="card-content">
                 <div class="row valign-wrapper" style="margin-bottom: 0;">
-                    <div class="col s12 m6">
-                        <i class="material-icons left light-green-text">event</i>
-                        <span class="card-title">Total {{ $totalMes['mes'] }}</span>
+                    <div class="col s12 m6" style="display: flex; align-items: center;">
+                        <i class="material-icons light-green-text" style="margin-right: 8px;">event</i>
+                        <span class="card-title" style="margin: 0;">Total {{ $totalMes['mes'] }}</span>
                     </div>
                     <div class="col s12 m6 right-align">
-                        <h4 class="light-green-text text-darken-2" style="margin: 0;">{{ $totalMes['formateado'] }}</h4>
+                        <h6 class="light-green-text text-darken-2" style="margin: 0; font-size: 1.2rem; font-weight: 600;">{{ $totalMes['formateado'] }}</h6>
                     </div>
                 </div>
             </div>
@@ -99,7 +122,7 @@
             <div class="card-content">
                 <span class="card-title">
                     <i class="material-icons left">assignment</i>
-                    Todos los Fichajes
+                    Fichaje de hoy
                 </span>
 
                 @if(isset($allRegistros) && count($allRegistros) > 0)
@@ -151,7 +174,7 @@
                                         <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST" style="display: inline;">
                                             @csrf
                                             <input type="hidden" name="userUuid" value="{{ $user->uuid()->getValue() }}">
-                                            <button type="submit" class="btn-small waves-effect waves-light light-green">
+                                            <button type="submit" class="btn-small waves-effect waves-light pink darken-2">
                                                 <i class="material-icons left">check</i>Cerrar
                                             </button>
                                         </form>
@@ -203,10 +226,10 @@
                             <div class="collapsible-header">
                                 <i class="material-icons">date_range</i>
                                 <span style="flex: 1;">{{ $dia['fecha_formateada'] }}</span>
-                                <span class="chip blue lighten-4 blue-text text-darken-2">
+                                <span class="chip blue lighten-4 blue-text text-darken-2" style="min-width: 90px; text-align: center;">
                                     {{ $dia['total_formateado'] }}
                                 </span>
-                                <span class="badge grey lighten-2 grey-text text-darken-2">
+                                <span class="chip grey lighten-2 grey-text text-darken-2" style="min-width: 90px; text-align: center;">
                                     {{ count($dia['registros']) }} {{ count($dia['registros']) == 1 ? 'fichaje' : 'fichajes' }}
                                 </span>
                             </div>
@@ -256,11 +279,116 @@
     </div>
 </div>
 
+<!-- Resumen Mensual -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    <i class="material-icons left">date_range</i>
+                    Resumen Mensual
+                </span>
+
+                @if(isset($monthlyRegistros) && count($monthlyRegistros) > 0)
+                    <ul class="collapsible" id="monthly-collapsible">
+                        <li>
+                            <div class="collapsible-header">
+                                <i class="material-icons">event_note</i>
+                                <span style="flex: 1;">{{ $totalMes['mes'] }}</span>
+                                <span class="chip blue lighten-4 blue-text text-darken-2" style="min-width: 90px; text-align: center;">
+                                    {{ $totalMes['formateado'] }}
+                                </span>
+                                <span class="chip grey lighten-2 grey-text text-darken-2" style="min-width: 90px; text-align: center;">
+                                    {{ count($monthlyRegistros) }} {{ count($monthlyRegistros) == 1 ? 'fichaje' : 'fichajes' }}
+                                </span>
+                            </div>
+                            <div class="collapsible-body">
+                                <table class="striped responsive-table highlight">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Entrada</th>
+                                            <th>Salida</th>
+                                            <th>Duración</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(collect($monthlyRegistros)->sortByDesc(function($registro) { return $registro->entrada(); }) as $registro)
+                                        <tr>
+                                            <td>{{ $registro->entrada()->format('d/m/Y') }}</td>
+                                            <td>{{ $registro->entrada()->format('H:i:s') }}</td>
+                                            <td>
+                                                @if($registro->salida())
+                                                    {{ $registro->salida()->format('H:i:s') }}
+                                                @else
+                                                    <span class="amber-text text-darken-2">
+                                                        <i class="material-icons tiny">schedule</i> Abierto
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($registro->salida())
+                                                    <span class="chip blue lighten-4 blue-text text-darken-2">
+                                                        {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                                    </span>
+                                                @else
+                                                    <span class="grey-text">--</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($registro->isAbierto())
+                                                    <span class="chip amber lighten-4 amber-text text-darken-2">Abierto</span>
+                                                @else
+                                                    <span class="chip green lighten-4 green-text text-darken-2">Cerrado</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </li>
+                    </ul>
+                @else
+                    <div class="center-align" style="padding: 60px 20px;">
+                        <i class="material-icons grey-text" style="font-size: 72px;">event_busy</i>
+                        <h5 class="grey-text text-darken-1">Sin fichajes este mes</h5>
+                        <p class="grey-text">Aún no tienes registros de fichajes este mes.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize collapsibles with accordion disabled (allows multiple open)
     var elems = document.querySelectorAll('.collapsible');
     M.Collapsible.init(elems, { accordion: false });
+
+    // Toggle show/hide full info
+    var toggle = document.getElementById('show-full-info');
+    var icon = document.getElementById('visibility-icon');
+    toggle.addEventListener('change', function() {
+        var masked = document.querySelectorAll('.masked-info');
+        var full = document.querySelectorAll('.full-info');
+
+        if (this.checked) {
+            masked.forEach(function(el) { el.style.display = 'none'; });
+            full.forEach(function(el) { el.style.display = 'inline'; });
+            icon.textContent = 'visibility';
+            icon.classList.remove('grey-text');
+            icon.classList.add('pink-text', 'text-darken-2');
+        } else {
+            masked.forEach(function(el) { el.style.display = 'inline'; });
+            full.forEach(function(el) { el.style.display = 'none'; });
+            icon.textContent = 'visibility_off';
+            icon.classList.remove('pink-text', 'text-darken-2');
+            icon.classList.add('grey-text');
+        }
+    });
 });
 
 function expandAll() {
