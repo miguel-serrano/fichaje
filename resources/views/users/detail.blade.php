@@ -120,13 +120,34 @@
     <div class="col s12">
         <div class="card">
             <div class="card-content">
-                <span class="card-title">
-                    <i class="material-icons left">assignment</i>
-                    Fichaje de hoy
-                </span>
+                @php
+                    $totalSegundosHoy = collect($allRegistros)->sum(fn($r) => $r->segundosTrabajados());
+                    $tieneAbiertoHoy = collect($allRegistros)->contains(fn($r) => $r->isAbierto());
+                    $registroAbierto = collect($allRegistros)->first(fn($r) => $r->isAbierto());
+                @endphp
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <span class="card-title" style="margin: 0;">
+                        <i class="material-icons left">assignment</i>
+                        Fichaje de hoy
+                    </span>
+                    @if(isset($allRegistros) && count($allRegistros) > 0)
+                        @if($tieneAbiertoHoy)
+                            <span class="chip amber lighten-4 amber-text text-darken-2 live-timer-total"
+                                  style="margin: 0; font-size: 1.1rem; font-weight: 600;"
+                                  data-base-seconds="{{ $totalSegundosHoy }}"
+                                  data-start-time="{{ $registroAbierto->entrada()->getTimestamp() }}">
+                                {{ gmdate('H:i:s', $totalSegundosHoy) }}
+                            </span>
+                        @else
+                            <span class="chip blue lighten-4 blue-text text-darken-2" style="margin: 0; font-size: 1.1rem; font-weight: 600;">
+                                {{ gmdate('H:i:s', $totalSegundosHoy) }}
+                            </span>
+                        @endif
+                    @endif
+                </div>
 
                 @if(isset($allRegistros) && count($allRegistros) > 0)
-                    <p class="grey-text">Total de {{ count($allRegistros) }} {{ count($allRegistros) == 1 ? 'registro' : 'registros' }}</p>
+                    <p class="grey-text" style="margin-top: 10px;">Total de {{ count($allRegistros) }} {{ count($allRegistros) == 1 ? 'registro' : 'registros' }}</p>
 
                     <table class="striped responsive-table highlight">
                         <thead>
