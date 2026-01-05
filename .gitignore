@@ -20,3 +20,4 @@ yarn-error.log
 backup.sql
 custom.txt
 mysql-schema.sql
+*.md
