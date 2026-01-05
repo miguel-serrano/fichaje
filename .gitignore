@@ -19,3 +19,4 @@ yarn-error.log
 .cursorignore
 backup.sql
 custom.txt
+mysql-schema.sql
