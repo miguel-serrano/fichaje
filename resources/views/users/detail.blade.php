@@ -159,7 +159,11 @@
                                             {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
                                         </span>
                                     @else
-                                        <span class="grey-text">--</span>
+                                        <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
+                                              data-start-time="{{ $registro->entrada()->getTimestamp() }}">
+                                            {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                        </span>
+                                        <small class="grey-text">(en curso)</small>
                                     @endif
                                 </td>
                                 <td>
@@ -226,9 +230,19 @@
                             <div class="collapsible-header">
                                 <i class="material-icons">date_range</i>
                                 <span style="flex: 1;">{{ $dia['fecha_formateada'] }}</span>
-                                <span class="chip blue lighten-4 blue-text text-darken-2" style="min-width: 90px; text-align: center;">
-                                    {{ $dia['total_formateado'] }}
-                                </span>
+                                @if(!empty($dia['tiene_abierto']))
+                                    <span class="chip amber lighten-4 amber-text text-darken-2 live-timer-total"
+                                          style="min-width: 90px; text-align: center;"
+                                          data-base-seconds="{{ $dia['total_segundos'] }}"
+                                          data-start-time="{{ collect($dia['registros'])->firstWhere('abierto', true)['entrada_timestamp'] ?? 0 }}">
+                                        {{ $dia['total_formateado'] }}
+                                    </span>
+                                    <small class="grey-text">(en curso)</small>
+                                @else
+                                    <span class="chip blue lighten-4 blue-text text-darken-2" style="min-width: 90px; text-align: center;">
+                                        {{ $dia['total_formateado'] }}
+                                    </span>
+                                @endif
                                 <span class="chip grey lighten-2 grey-text text-darken-2" style="min-width: 90px; text-align: center;">
                                     {{ count($dia['registros']) }} {{ count($dia['registros']) == 1 ? 'fichaje' : 'fichajes' }}
                                 </span>
@@ -250,14 +264,29 @@
                                                 {{ $registro['entrada'] }}
                                             </td>
                                             <td>
-                                                <i class="material-icons tiny red-text text-lighten-1">logout</i>
-                                                {{ $registro['salida'] }}
+                                                @if(!empty($registro['abierto']))
+                                                    <span class="amber-text text-darken-2">
+                                                        <i class="material-icons tiny">schedule</i> Abierto
+                                                    </span>
+                                                @else
+                                                    <i class="material-icons tiny red-text text-lighten-1">logout</i>
+                                                    {{ $registro['salida'] }}
+                                                @endif
                                             </td>
                                             <td>
-                                                <span class="chip green lighten-4 green-text text-darken-2">
-                                                    <i class="material-icons tiny">timer</i>
-                                                    {{ $registro['duracion'] }}
-                                                </span>
+                                                @if(!empty($registro['abierto']))
+                                                    <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
+                                                          data-start-time="{{ $registro['entrada_timestamp'] }}">
+                                                        <i class="material-icons tiny">timer</i>
+                                                        {{ $registro['duracion'] }}
+                                                    </span>
+                                                    <small class="grey-text">(en curso)</small>
+                                                @else
+                                                    <span class="chip green lighten-4 green-text text-darken-2">
+                                                        <i class="material-icons tiny">timer</i>
+                                                        {{ $registro['duracion'] }}
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                         @endforeach
@@ -333,7 +362,11 @@
                                                         {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
                                                     </span>
                                                 @else
-                                                    <span class="grey-text">--</span>
+                                                    <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
+                                                          data-start-time="{{ $registro->entrada()->getTimestamp() }}">
+                                                        {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                                    </span>
+                                                    <small class="grey-text">(en curso)</small>
                                                 @endif
                                             </td>
                                             <td>
@@ -411,6 +444,64 @@ function collapseAll() {
             instance.close(i);
         }
     }
+}
+
+// Formatear segundos a HH:MM:SS
+function formatTime(seconds) {
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = seconds % 60;
+    return String(h).padStart(2, '0') + ':' +
+           String(m).padStart(2, '0') + ':' +
+           String(s).padStart(2, '0');
+}
+
+// Live timer para fichajes abiertos individuales
+function updateLiveTimers() {
+    document.querySelectorAll('.live-timer').forEach(function(el) {
+        var startTime = parseInt(el.getAttribute('data-start-time'));
+        var now = Math.floor(Date.now() / 1000);
+        var seconds = now - startTime;
+
+        // Preservar icono si existe
+        var icon = el.querySelector('i');
+        if (icon) {
+            el.innerHTML = '';
+            el.appendChild(icon);
+            el.appendChild(document.createTextNode(' ' + formatTime(seconds)));
+        } else {
+            el.textContent = formatTime(seconds);
+        }
+    });
+
+    // Live timer para totales del día con fichaje abierto
+    document.querySelectorAll('.live-timer-total').forEach(function(el) {
+        var startTime = parseInt(el.getAttribute('data-start-time'));
+        var baseSeconds = parseInt(el.getAttribute('data-base-seconds')) || 0;
+        var now = Math.floor(Date.now() / 1000);
+
+        // El total es: tiempo base (fichajes cerrados) + tiempo actual del abierto
+        // Pero baseSeconds ya incluye el tiempo del abierto al momento de cargar
+        // Así que solo necesitamos calcular la diferencia desde ese momento
+        var secondsFromOpen = now - startTime;
+        var initialSecondsFromOpen = baseSeconds - (baseSeconds > 0 ? (el.dataset.initialOpen || 0) : 0);
+
+        // Recalcular: base cerrados + tiempo actual abierto
+        if (!el.dataset.baseClosed) {
+            // Guardar la base de cerrados (total - tiempo abierto al cargar)
+            var openAtLoad = now - startTime;
+            el.dataset.baseClosed = baseSeconds - openAtLoad;
+        }
+        var totalSeconds = parseInt(el.dataset.baseClosed) + secondsFromOpen;
+
+        el.textContent = formatTime(totalSeconds);
+    });
+}
+
+// Actualizar cada segundo si hay timers activos
+if (document.querySelector('.live-timer') || document.querySelector('.live-timer-total')) {
+    setInterval(updateLiveTimers, 1000);
+    updateLiveTimers();
 }
 </script>
 

@@ -94,6 +94,11 @@ final class TimeEntry
             return $this->salida->getTimestamp() - $this->entrada->getTimestamp();
         }
 
+        // Si está abierto, calcular con la hora actual (tiempo teórico)
+        if ($this->entrada && $this->salida === null) {
+            return time() - $this->entrada->getTimestamp();
+        }
+
         return 0;
     }
 

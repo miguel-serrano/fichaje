@@ -17,23 +17,32 @@ class GetUserDailyRegistrosQueryHandler
     public function handle(GetUserDailyRegistrosQuery $query): array
     {
         $userId = $query->getUserId();
+        $hoy = date('Y-m-d');
 
-        // Obtener todos los registros del usuario agrupados por día
-        $registros = DB::table('time_entries')
+        // Obtener registros cerrados
+        $registrosCerrados = DB::table('time_entries')
             ->where('user_id', $userId)
-            ->whereNotNull('salida') // Solo registros completos
+            ->whereNotNull('salida')
+            ->orderBy('entrada', 'desc')
+            ->get();
+
+        // Obtener registros abiertos de hoy
+        $registrosAbiertos = DB::table('time_entries')
+            ->where('user_id', $userId)
+            ->whereNull('salida')
+            ->whereDate('entrada', $hoy)
             ->orderBy('entrada', 'desc')
             ->get();
 
         $registrosPorDia = [];
 
-        foreach ($registros as $registro) {
+        // Procesar registros cerrados
+        foreach ($registrosCerrados as $registro) {
             $fecha = date('Y-m-d', strtotime($registro->entrada));
             $entrada = new \DateTime($registro->entrada);
             $salida = new \DateTime($registro->salida);
             $duracion = $salida->diff($entrada);
 
-            // Convertir duración a segundos para facilitar cálculos
             $segundosTrabajados = ($duracion->h * 3600) + ($duracion->i * 60) + $duracion->s;
 
             if (! isset($registrosPorDia[$fecha])) {
@@ -43,6 +52,7 @@ class GetUserDailyRegistrosQueryHandler
                     'registros' => [],
                     'total_segundos' => 0,
                     'total_formateado' => '00:00:00',
+                    'tiene_abierto' => false,
                 ];
             }
 
@@ -50,11 +60,45 @@ class GetUserDailyRegistrosQueryHandler
                 'entrada' => date('H:i:s', strtotime($registro->entrada)),
                 'salida' => date('H:i:s', strtotime($registro->salida)),
                 'duracion' => $this->formatearTiempo($segundosTrabajados),
+                'abierto' => false,
             ];
 
             $registrosPorDia[$fecha]['total_segundos'] += $segundosTrabajados;
             $registrosPorDia[$fecha]['total_formateado'] = $this->formatearTiempo($registrosPorDia[$fecha]['total_segundos']);
         }
+
+        // Procesar registros abiertos de hoy
+        foreach ($registrosAbiertos as $registro) {
+            $fecha = date('Y-m-d', strtotime($registro->entrada));
+            $entrada = new \DateTime($registro->entrada);
+            $segundosTrabajados = time() - $entrada->getTimestamp();
+
+            if (! isset($registrosPorDia[$fecha])) {
+                $registrosPorDia[$fecha] = [
+                    'fecha' => $fecha,
+                    'fecha_formateada' => date('d/m/Y', strtotime($fecha)),
+                    'registros' => [],
+                    'total_segundos' => 0,
+                    'total_formateado' => '00:00:00',
+                    'tiene_abierto' => false,
+                ];
+            }
+
+            $registrosPorDia[$fecha]['registros'][] = [
+                'entrada' => date('H:i:s', strtotime($registro->entrada)),
+                'salida' => null,
+                'duracion' => $this->formatearTiempo($segundosTrabajados),
+                'abierto' => true,
+                'entrada_timestamp' => $entrada->getTimestamp(),
+            ];
+
+            $registrosPorDia[$fecha]['total_segundos'] += $segundosTrabajados;
+            $registrosPorDia[$fecha]['total_formateado'] = $this->formatearTiempo($registrosPorDia[$fecha]['total_segundos']);
+            $registrosPorDia[$fecha]['tiene_abierto'] = true;
+        }
+
+        // Reordenar por fecha descendente
+        krsort($registrosPorDia);
 
         // Calcular total del mes actual
         $totalSegundosMes = 0;
