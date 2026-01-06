@@ -73,7 +73,9 @@ final class User
                 $registro['id'],
                 $registro['user_id'],
                 $registro['entrada'],
-                $registro['salida']
+                $registro['salida'],
+                (bool) ($registro['auto_closed'] ?? false),
+                $registro['auto_close_reason'] ?? null
             ));
         }
 

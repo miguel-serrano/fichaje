@@ -52,6 +52,8 @@ class EloquentUserRepository implements UserRepositoryInterface
                     'user_id' => $user_id,
                     'entrada' => $registro->entrada()->format('Y-m-d H:i:s'),
                     'salida' => $registro->salida() ? $registro->salida()->format('Y-m-d H:i:s') : null,
+                    'auto_closed' => $registro->isAutoClosed(),
+                    'auto_close_reason' => $registro->autoCloseReason(),
                 ];
 
                 if ($registro->id()) {
@@ -217,6 +219,8 @@ class EloquentUserRepository implements UserRepositoryInterface
                     'user_id' => $user_id,
                     'entrada' => $registro->entrada()->format('Y-m-d H:i:s'),
                     'salida' => $registro->salida() ? $registro->salida()->format('Y-m-d H:i:s') : null,
+                    'auto_closed' => $registro->isAutoClosed(),
+                    'auto_close_reason' => $registro->autoCloseReason(),
                 ];
 
                 if ($registro->id()) {

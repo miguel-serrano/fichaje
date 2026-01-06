@@ -10,7 +10,7 @@ class BienvenidoController extends Controller
 {
     public function index(): View
     {
-        return view('bienvenido');
+        return view('bienvenida');
     }
 
     public function acceptTerms(Request $request): JsonResponse

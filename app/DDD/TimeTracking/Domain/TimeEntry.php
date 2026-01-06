@@ -17,16 +17,24 @@ final class TimeEntry
 
     private ?DateTime $salida;
 
+    private bool $autoClosed;
+
+    private ?string $autoCloseReason;
+
     private function __construct(
         ?TimeEntryId $id,
         UserId $userId,
         DateTime $entrada,
-        ?DateTime $salida
+        ?DateTime $salida,
+        bool $autoClosed = false,
+        ?string $autoCloseReason = null
     ) {
         $this->id = $id;
         $this->userId = $userId;
         $this->entrada = $entrada;
         $this->salida = $salida;
+        $this->autoClosed = $autoClosed;
+        $this->autoCloseReason = $autoCloseReason;
     }
 
     public static function create(UserId $userId): self
@@ -35,6 +43,8 @@ final class TimeEntry
             null,
             $userId,
             Carbon::now()->toDateTime(),
+            null,
+            false,
             null
         );
     }
@@ -43,13 +53,17 @@ final class TimeEntry
         ?int $id,
         int $userId,
         string $entrada,
-        ?string $salida
+        ?string $salida,
+        bool $autoClosed = false,
+        ?string $autoCloseReason = null
     ): self {
         return new self(
             $id ? new TimeEntryId($id) : null,
             new UserId($userId),
             new DateTime($entrada),
-            $salida ? new DateTime($salida) : null
+            $salida ? new DateTime($salida) : null,
+            $autoClosed,
+            $autoCloseReason
         );
     }
 
@@ -83,9 +97,26 @@ final class TimeEntry
         $this->salida = Carbon::now()->toDateTime();
     }
 
+    public function cerrarConFecha(DateTime $fechaCierre, bool $autoClosed = false, ?string $autoCloseReason = null): void
+    {
+        $this->salida = $fechaCierre;
+        $this->autoClosed = $autoClosed;
+        $this->autoCloseReason = $autoCloseReason;
+    }
+
     public function isAbierto(): bool
     {
         return $this->salida === null;
+    }
+
+    public function isAutoClosed(): bool
+    {
+        return $this->autoClosed;
+    }
+
+    public function autoCloseReason(): ?string
+    {
+        return $this->autoCloseReason;
     }
 
     public function segundosTrabajados(): int
@@ -109,6 +140,8 @@ final class TimeEntry
             'user_id' => $this->userId->getValue(),
             'entrada' => $this->entrada->format('Y-m-d H:i:s'),
             'salida' => $this->salida ? $this->salida->format('Y-m-d H:i:s') : null,
+            'auto_closed' => $this->autoClosed,
+            'auto_close_reason' => $this->autoCloseReason,
         ];
     }
 }

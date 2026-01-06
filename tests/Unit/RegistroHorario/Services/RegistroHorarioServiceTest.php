@@ -229,7 +229,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->assertEquals(0, $result);
     }
 
-    public function test_it_calculates_segundos_acumulados_ignores_registros_sin_salida(): void
+    public function test_it_calculates_segundos_acumulados_includes_open_registros(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
@@ -243,7 +243,8 @@ class RegistroHorarioServiceTest extends TestCase
             'salida' => $salida1->toDateTimeString(),
         ];
 
-        $entrada2 = Carbon::now()->startOfDay()->addHours(14);
+        // Open registro started 1 hour ago
+        $entrada2 = Carbon::now()->subHour();
         $registro2 = [
             'id' => 2,
             'user_id' => 1,
@@ -263,8 +264,14 @@ class RegistroHorarioServiceTest extends TestCase
 
         $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
-        $expected = (4 * 3600);
-        $this->assertEquals($expected, $result);
+        // Should include closed registro (4h) + open registro (~1h)
+        // Allow some tolerance for execution time
+        $closedSeconds = 4 * 3600;
+        $openSeconds = 3600; // approximately 1 hour
+        $tolerance = 5; // 5 seconds tolerance
+
+        $this->assertGreaterThanOrEqual($closedSeconds + $openSeconds - $tolerance, $result);
+        $this->assertLessThanOrEqual($closedSeconds + $openSeconds + $tolerance, $result);
     }
 
     public function test_has_open_registro_returns_true_if_open_exists(): void

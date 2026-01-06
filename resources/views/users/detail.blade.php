@@ -94,27 +94,6 @@
 </div>
 @endif
 
-<!-- Resumen Mensual -->
-@if(isset($totalMes) && $totalMes['segundos'] > 0)
-<div class="row">
-    <div class="col s12">
-        <div class="card light-green lighten-5">
-            <div class="card-content">
-                <div class="row valign-wrapper" style="margin-bottom: 0;">
-                    <div class="col s12 m6" style="display: flex; align-items: center;">
-                        <i class="material-icons light-green-text" style="margin-right: 8px;">event</i>
-                        <span class="card-title" style="margin: 0;">Total {{ $totalMes['mes'] }}</span>
-                    </div>
-                    <div class="col s12 m6 right-align">
-                        <h6 class="light-green-text text-darken-2" style="margin: 0; font-size: 1.2rem; font-weight: 600;">{{ $totalMes['formateado'] }}</h6>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-
 <!-- Todos los Fichajes -->
 <div class="row">
     <div class="col s12">
@@ -184,7 +163,6 @@
                                               data-start-time="{{ $registro->entrada()->getTimestamp() }}">
                                             {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
                                         </span>
-                                        <small class="grey-text">(en curso)</small>
                                     @endif
                                 </td>
                                 <td>
@@ -258,7 +236,6 @@
                                           data-start-time="{{ collect($dia['registros'])->firstWhere('abierto', true)['entrada_timestamp'] ?? 0 }}">
                                         {{ $dia['total_formateado'] }}
                                     </span>
-                                    <small class="grey-text">(en curso)</small>
                                 @else
                                     <span class="chip blue lighten-4 blue-text text-darken-2" style="min-width: 90px; text-align: center;">
                                         {{ $dia['total_formateado'] }}
@@ -301,7 +278,6 @@
                                                         <i class="material-icons tiny">timer</i>
                                                         {{ $registro['duracion'] }}
                                                     </span>
-                                                    <small class="grey-text">(en curso)</small>
                                                 @else
                                                     <span class="chip green lighten-4 green-text text-darken-2">
                                                         <i class="material-icons tiny">timer</i>
@@ -337,6 +313,9 @@
                 <span class="card-title">
                     <i class="material-icons left">date_range</i>
                     Resumen Mensual
+                    @if($tieneAbiertoHoy)
+                        <i class="material-icons amber-text text-darken-2" style="font-size: 20px; vertical-align: middle;" title="Fichaje abierto">warning</i>
+                    @endif
                 </span>
 
                 @if(isset($monthlyRegistros) && count($monthlyRegistros) > 0)
@@ -387,7 +366,6 @@
                                                           data-start-time="{{ $registro->entrada()->getTimestamp() }}">
                                                         {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
                                                     </span>
-                                                    <small class="grey-text">(en curso)</small>
                                                 @endif
                                             </td>
                                             <td>

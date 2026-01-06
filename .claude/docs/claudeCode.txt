@@ -1,0 +1,27 @@
+session (claude)
+-------
+/login
+/logout
+--resume
+
+
+
+modos
+-----
+think
+think hard
+think harder
+ultrathink
+
+
+ctrl
+----
+ctrl-t
+ctrl-o
+ctrl-g to ide
+
+
+comandos
+--------
+
+vendor/bin/sail artisan time-entries:close-user a0bc1548-718f-4b96-a9c7-7cb74625d02e

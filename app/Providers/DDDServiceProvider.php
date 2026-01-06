@@ -32,6 +32,16 @@ class DDDServiceProvider extends ServiceProvider
             \App\DDD\Authentication\Domain\Services\PasswordHashingService::class,
             \App\DDD\Authentication\Infrastructure\LaravelPasswordHashingService::class
         );
+
+        // Register Notification services
+        $this->app->singleton(
+            \App\DDD\Notification\Application\NotificationService::class,
+            function ($app) {
+                return new \App\DDD\Notification\Application\NotificationService([
+                    $app->make(\App\DDD\Notification\Infrastructure\DatabaseNotifier::class),
+                ]);
+            }
+        );
     }
 
     public function boot(): void
@@ -64,6 +74,11 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(
             \App\DDD\TimeTracking\Application\Command\ClockOutCommand::class,
             \App\DDD\TimeTracking\Application\Handler\ClockOutCommandHandler::class
+        );
+
+        $tacticianBus->addHandler(
+            \App\DDD\TimeTracking\Application\Command\CloseOrphanTimeEntriesCommand::class,
+            \App\DDD\TimeTracking\Application\Handler\CloseOrphanTimeEntriesCommandHandler::class
         );
 
         // Authentication Commands

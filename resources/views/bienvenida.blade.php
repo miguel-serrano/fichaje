@@ -49,8 +49,11 @@
                 <p class="grey-text text-darken-3" style="margin-bottom: 15px;">
                     👥 <strong>Nuevos usuarios:</strong> Hasta 8 registros por día
                 </p>
+                <p class="grey-text text-darken-3" style="margin-bottom: 15px;">
+                    🌙 <strong>Cierre automático:</strong> Los fichajes abiertos se cerrarán automáticamente por la noche, computando un máximo de 8 horas diarias
+                </p>
                 <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
-                    Estos límites se ampliarán progresivamente conforme la aplicación evolucione hacia su versión estable. Gracias por tu comprensión mientras optimizamos el servicio.
+                    Estos límites se ampliarán progresivamente conforme la aplicación evolucione hacia su versión estable.
                 </p>
 
                 <p class="grey-text text-lighten-1" style="font-size: 13px; margin-bottom: 25px;">

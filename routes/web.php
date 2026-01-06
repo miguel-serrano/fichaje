@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\BienvenidoController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RegistroHorario\RegistroHorarioController;
 use App\Http\Controllers\User\DeleteUserController;
 use App\Http\Controllers\User\GetMyTimeEntriesController;
@@ -24,10 +25,13 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
 
-    Route::get('/bienvenido', [BienvenidoController::class, 'index'])->name('bienvenido');
-    Route::post('/bienvenido/accept-terms', [BienvenidoController::class, 'acceptTerms'])->name('bienvenido.accept-terms');
+    Route::get('/bienvenida', [BienvenidoController::class, 'index'])->name('bienvenido');
+    Route::post('/bienvenida/accept-terms', [BienvenidoController::class, 'acceptTerms'])->name('bienvenido.accept-terms');
 
     Route::get('/user/me', GetMyTimeEntriesController::class)->name('user.me');
+
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
     Route::middleware('admin')->group(function () {
         Route::get('/users', ListUsersController::class)->name('users.index');

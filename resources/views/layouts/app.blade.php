@@ -45,11 +45,52 @@
                             <i class="material-icons left">timer</i>Fichar
                         </a>
                     </li>
+                    @php
+                        $unreadNotifications = \App\Models\Notification::where('user_id', auth()->id())
+                            ->whereNull('read_at')
+                            ->orderBy('created_at', 'desc')
+                            ->take(5)
+                            ->get();
+                        $unreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                            ->whereNull('read_at')
+                            ->count();
+                    @endphp
+                    <li>
+                        <a href="#" class="dropdown-trigger" data-target="notifications-dropdown" style="position: relative;">
+                            <i class="material-icons">notifications</i>
+                            @if($unreadCount > 0)
+                                <span class="new badge red" data-badge-caption="" style="position: absolute; top: 10px; right: 5px; min-width: 18px; height: 18px; line-height: 18px; font-size: 10px; font-weight: 500; border-radius: 50%;">{{ $unreadCount }}</span>
+                            @endif
+                        </a>
+                    </li>
                     <li>
                         <a href="#" class="dropdown-trigger" data-target="user-dropdown">
                             <i class="material-icons left">account_circle</i>{{ auth()->user()->name }}<i class="material-icons right">arrow_drop_down</i>
                         </a>
                     </li>
+                </ul>
+                <ul id="notifications-dropdown" class="dropdown-content" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                    @if($unreadNotifications->isEmpty())
+                        <li style="padding: 16px; text-align: center; color: #9e9e9e;">
+                            <i class="material-icons" style="font-size: 32px; display: block; margin-bottom: 8px;">notifications_none</i>
+                            No tienes notificaciones
+                        </li>
+                    @else
+                        @foreach($unreadNotifications as $notification)
+                            <li style="border-bottom: 1px solid #eee;">
+                                <a href="#" class="notification-item" data-id="{{ $notification->id }}" style="white-space: normal; line-height: 1.4; padding: 12px 16px;">
+                                    <strong style="display: block; font-size: 13px;">{{ $notification->title }}</strong>
+                                    <span style="font-size: 12px; color: #666;">{{ $notification->message }}</span>
+                                    <small style="display: block; color: #9e9e9e; margin-top: 4px;">{{ $notification->created_at->diffForHumans() }}</small>
+                                </a>
+                            </li>
+                        @endforeach
+                        @if($unreadCount > 5)
+                            <li style="padding: 8px; text-align: center;">
+                                <span style="font-size: 12px; color: #666;">Y {{ $unreadCount - 5 }} más...</span>
+                            </li>
+                        @endif
+                    @endif
                 </ul>
                 <ul id="user-dropdown" class="dropdown-content">
                     <li>
@@ -116,6 +157,40 @@
 
             var sidenavs = document.querySelectorAll('.sidenav');
             M.Sidenav.init(sidenavs);
+
+            // Handle notification clicks
+            document.querySelectorAll('.notification-item').forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var notificationId = this.dataset.id;
+
+                    fetch('/notifications/' + notificationId + '/read', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(function(response) {
+                        if (!response.ok) {
+                            console.error('Error marcando notificación como leída:', response.status);
+                            return;
+                        }
+                        item.closest('li').remove();
+                        var badge = document.querySelector('.badge.red');
+                        if (badge) {
+                            var count = parseInt(badge.textContent) - 1;
+                            if (count <= 0) {
+                                badge.remove();
+                            } else {
+                                badge.textContent = count;
+                            }
+                        }
+                    }).catch(function(error) {
+                        console.error('Error de red:', error);
+                    });
+                });
+            });
         });
     </script>
 

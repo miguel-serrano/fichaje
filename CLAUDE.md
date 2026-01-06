@@ -236,3 +236,8 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Buscar y eliminar archivos huérfanos (Value Objects, Exceptions, etc. no usados)
 - Eliminar imports no utilizados
 - Al cambiar arquitectura (ej: remember_token → is_admin), buscar TODAS las referencias
+
+### Documentación de Ramas
+- Al finalizar una funcionalidad, documentar automáticamente en `.claude/code/{nombre-rama}.md`
+- Si el archivo existe, actualizarlo con los nuevos cambios
+- Incluir: descripción, archivos creados/modificados, comandos, estructura BD, tests
