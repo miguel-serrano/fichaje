@@ -33,12 +33,12 @@ use App\DDD\TimeTracking\Application\Query\HasOpenTimeEntryQuery;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Command\ToggleUserActiveCommand;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
-use App\DDD\User\Application\Handler\GetAllUsersWithTimeQueryHandler;
+use App\DDD\User\Application\Handler\GetAllUsersQueryHandler;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\DDD\User\Application\Handler\GetUserDailyRegistrosQueryHandler;
 use App\DDD\User\Application\Handler\GetUserTodayRegistrosQueryHandler;
 use App\DDD\User\Application\Handler\ToggleUserActiveCommandHandler;
-use App\DDD\User\Application\Query\GetAllUsersWithTimeQuery;
+use App\DDD\User\Application\Query\GetAllUsersQuery;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
@@ -56,7 +56,7 @@ class DDDServiceProvider extends ServiceProvider
         $this->app->bind(QueryBusInterface::class, LaravelTacticianQueryBus::class);
 
         // Register User services
-        $this->app->bind(UserAuthorizationServiceInterface::class,UserAuthorizationService::class);
+        $this->app->bind(UserAuthorizationServiceInterface::class, UserAuthorizationService::class);
 
         // Register Authentication services
         $this->app->bind(AuthenticationService::class, LaravelAuthenticationService::class);
@@ -102,7 +102,7 @@ class DDDServiceProvider extends ServiceProvider
     {
         // User Queries
         $tacticianBus->addHandler(GetUserByIdQuery::class, GetUserByIdQueryHandler::class);
-        $tacticianBus->addHandler(GetAllUsersWithTimeQuery::class, GetAllUsersWithTimeQueryHandler::class);
+        $tacticianBus->addHandler(GetAllUsersQuery::class, GetAllUsersQueryHandler::class);
         $tacticianBus->addHandler(GetUserDailyRegistrosQuery::class, GetUserDailyRegistrosQueryHandler::class);
         $tacticianBus->addHandler(GetUserTodayRegistrosQuery::class, GetUserTodayRegistrosQueryHandler::class);
 

@@ -2,7 +2,7 @@
 
 namespace App\DDD\User\Application\Query;
 
-final class GetAllUsersWithTimeQuery
+class GetAllUsersQuery
 {
     public function __construct(
         public int $authenticatedUserId

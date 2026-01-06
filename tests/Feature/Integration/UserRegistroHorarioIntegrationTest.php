@@ -34,24 +34,10 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->actingAs($this->authenticatedUser);
     }
 
-    public function test_users_index_shows_accumulated_time(): void
+    public function test_users_index_shows_user_list(): void
     {
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $this->userRepository->save($user);
-
-        $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->value()));
-        $userWithTimeEntries->clockIn();
-        $this->userRepository->save($userWithTimeEntries);
-        sleep(1);
-        $userWithTimeEntries->clockOut();
-        $this->userRepository->save($userWithTimeEntries);
-
-        sleep(1);
-        $userWithTimeEntries->clockIn();
-        $this->userRepository->save($userWithTimeEntries);
-        sleep(1);
-        $userWithTimeEntries->clockOut();
-        $this->userRepository->save($userWithTimeEntries);
 
         $response = $this->get('/users');
 
@@ -63,7 +49,8 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
         $testUser = collect($users)->firstWhere('email', 'test@example.com');
         $this->assertNotNull($testUser);
-        $this->assertNotEquals('00:00:00', $testUser['tiempo_acumulado']);
+        $this->assertEquals('test@example.com', $testUser['email']);
+        $this->assertEquals('Test User', $testUser['name']);
     }
 
     public function test_complete_workflow_registro_horario(): void
@@ -89,13 +76,6 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
         $tieneRegistroAbiertoFinal = $finalResponse->viewData('tieneRegistroAbierto');
         $this->assertFalse($tieneRegistroAbiertoFinal);
-
-        $usersResponse = $this->get('/users');
-        $users = $usersResponse->viewData('users');
-        $adminUser = collect($users)->firstWhere('email', $this->authenticatedUser->email);
-
-        $this->assertNotNull($adminUser);
-        $this->assertNotEquals('00:00:00', $adminUser['tiempo_acumulado']);
     }
 
     public function test_user_deletion_handles_registro_horario_gracefully(): void

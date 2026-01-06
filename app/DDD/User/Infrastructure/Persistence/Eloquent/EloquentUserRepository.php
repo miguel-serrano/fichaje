@@ -148,24 +148,17 @@ class EloquentUserRepository implements UserRepositoryInterface
     /** @return User[] */
     public function findAll(): array
     {
-        $users = DB::table($this->getUsersTable())->get();
-        $allRegistros = DB::table($this->getRegistrosTable())->get()->groupBy('user_id');
-
-        return $users->map(function ($user) use ($allRegistros) {
-            $registros = $allRegistros->get($user->id, collect())
-                ->map(fn ($r) => (array) $r)
-                ->toArray();
-
-            return User::fromPrimitives(
+        return DB::table($this->getUsersTable())
+            ->get()
+            ->map(fn ($user) => User::fromPrimitives(
                 $user->id,
                 $user->uuid,
                 $user->email,
                 $user->name,
                 $user->is_active ?? true,
-                $user->is_admin ?? false,
-                $registros
-            );
-        })->toArray();
+                $user->is_admin ?? false
+            ))
+            ->toArray();
     }
 
     public function delete(UserId $id): bool

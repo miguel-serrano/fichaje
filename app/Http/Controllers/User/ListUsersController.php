@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
-use App\DDD\User\Application\Query\GetAllUsersWithTimeQuery;
+use App\DDD\User\Application\Query\GetAllUsersQuery;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +19,7 @@ class ListUsersController extends Controller
     public function __invoke(): View|RedirectResponse
     {
         try {
-            $query = new GetAllUsersWithTimeQuery(Auth::id());
+            $query = new GetAllUsersQuery(Auth::id());
             $users = $this->queryBus->dispatch($query);
 
             return view('users.index', [
