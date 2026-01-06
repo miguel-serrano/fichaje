@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\DDD\TimeTracking\Services\TimeTrackingService;
+use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use Illuminate\Console\Command;
 
 class CloseOrphanTimeEntriesCommand extends Command

@@ -1,16 +1,16 @@
 <?php
 
-namespace App\DDD\TimeTracking\Services;
+namespace App\DDD\TimeTracking\Application\Service;
 
 use App\DDD\Notification\Application\NotificationService;
 use App\DDD\Notification\Domain\Channel;
 use App\DDD\Notification\Domain\Notification;
 use App\DDD\Notification\Domain\NotificationType;
+use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TimeTrackingService
@@ -18,13 +18,14 @@ class TimeTrackingService
     private const MAX_HOURS = 8;
 
     public function __construct(
-        protected UserRepositoryInterface $repository,
-        protected ?NotificationService $notificationService = null
+        private UserRepositoryInterface $userRepository,
+        private TimeEntryRepositoryInterface $timeEntryRepository,
+        private ?NotificationService $notificationService = null
     ) {}
 
     public function clockIn(string $userUuid): void
     {
-        $user = $this->repository->findByUuid(new Uuid($userUuid));
+        $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
         if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
@@ -32,18 +33,17 @@ class TimeTrackingService
 
         $user->clockIn();
 
-        $this->repository->save($user);
+        $this->userRepository->save($user);
     }
 
     public function clockOut(string $userUuid, ?int $timeEntryId = null): void
     {
-        $user = $this->repository->findByUuid(new Uuid($userUuid));
+        $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
         if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        // Si se proporciona un ID específico, cerrar ese registro
         if ($timeEntryId !== null) {
             $entryToClose = null;
             foreach ($user->timeEntries() as $entry) {
@@ -63,16 +63,15 @@ class TimeTrackingService
 
             $entryToClose->close();
         } else {
-            // Comportamiento original: cerrar el registro abierto actual
             $user->clockOut();
         }
 
-        $this->repository->save($user);
+        $this->userRepository->save($user);
     }
 
     public function getAccumulatedSeconds(string $userUuid): int
     {
-        $user = $this->repository->findByUuid(new Uuid($userUuid));
+        $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
         if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
@@ -92,7 +91,7 @@ class TimeTrackingService
 
     public function hasOpenTimeEntry(string $userUuid): bool
     {
-        $user = $this->repository->findByUuid(new Uuid($userUuid));
+        $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
         if (! $user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
@@ -114,30 +113,24 @@ class TimeTrackingService
      */
     public function closeOrphanTimeEntries(): array
     {
-        $orphanEntries = DB::table('time_entries')
-            ->whereNull('salida')
-            ->whereDate('entrada', '<', today())
-            ->get();
+        $orphanEntries = $this->timeEntryRepository->findOrphanEntries();
 
         $closedByUser = [];
 
         foreach ($orphanEntries as $entry) {
-            $entrada = Carbon::parse($entry->entrada);
+            $entrada = Carbon::instance($entry->startTime());
             $endOfDay = $entrada->copy()->endOfDay();
             $maxSecondsDaily = self::MAX_HOURS * 3600;
 
-            // Calcular segundos ya trabajados ese día (otros fichajes cerrados)
-            $workedSecondsToday = $this->getWorkedSecondsByUserAndDate(
-                $entry->user_id,
-                $entrada->toDateString(),
-                $entry->id
+            $workedSecondsToday = $this->timeEntryRepository->getWorkedSecondsByUserAndDate(
+                $entry->userId(),
+                $entrada,
+                $entry->id()
             );
 
             $remainingSeconds = $maxSecondsDaily - $workedSecondsToday;
 
-            // Determinar hora de cierre y motivo
             if ($remainingSeconds <= 0) {
-                // Ya alcanzó las 8 horas, cerrar en la entrada
                 $salida = $entrada;
                 $reason = 'max_hours_exceeded';
             } else {
@@ -152,42 +145,24 @@ class TimeTrackingService
                 }
             }
 
-            DB::table('time_entries')
-                ->where('id', $entry->id)
-                ->update([
-                    'salida' => $salida,
-                    'auto_closed' => true,
-                    'auto_close_reason' => $reason,
-                    'updated_at' => now(),
-                ]);
+            $this->timeEntryRepository->closeWithAutoClosed(
+                $entry->id(),
+                $salida,
+                $reason
+            );
 
-            $closedByUser[$entry->user_id][] = [
-                'entry_id' => $entry->id,
+            $closedByUser[$entry->userId()->value()][] = [
+                'entry_id' => $entry->id()->value(),
                 'entrada' => $entrada->toDateTimeString(),
                 'salida' => $salida->toDateTimeString(),
                 'reason' => $reason,
             ];
         }
 
-        // Notificar a cada usuario afectado
-        if ($this->notificationService) {
-            foreach ($closedByUser as $userId => $entries) {
-                $user = $this->repository->findById(new UserId($userId));
-                if ($user) {
-                    $notification = new Notification(
-                        type: NotificationType::TimeEntryAutoClosed,
-                        title: 'Fichaje cerrado automáticamente',
-                        message: $this->buildNotificationMessage($entries),
-                        data: ['entries' => $entries],
-                        channels: [Channel::Database]
-                    );
-                    $this->notificationService->notify($user, $notification);
-                }
-            }
-        }
+        $this->notifyAffectedUsers($closedByUser);
 
         Log::info('Fichajes huérfanos cerrados', [
-            'total' => $orphanEntries->count(),
+            'total' => count($orphanEntries),
             'users_affected' => count($closedByUser),
         ]);
 
@@ -195,30 +170,27 @@ class TimeTrackingService
     }
 
     /**
-     * Calcula los segundos trabajados por un usuario en una fecha específica.
-     * Excluye opcionalmente un entry_id (el huérfano que estamos procesando).
+     * @param  array<int, array<int, array<string, mixed>>>  $closedByUser
      */
-    private function getWorkedSecondsByUserAndDate(int $userId, string $date, ?int $excludeEntryId = null): int
+    private function notifyAffectedUsers(array $closedByUser): void
     {
-        $query = DB::table('time_entries')
-            ->where('user_id', $userId)
-            ->whereDate('entrada', $date)
-            ->whereNotNull('salida');
-
-        if ($excludeEntryId !== null) {
-            $query->where('id', '!=', $excludeEntryId);
+        if (! $this->notificationService) {
+            return;
         }
 
-        $entries = $query->get();
-        $totalSeconds = 0;
-
-        foreach ($entries as $entry) {
-            $entrada = Carbon::parse($entry->entrada);
-            $salida = Carbon::parse($entry->salida);
-            $totalSeconds += $entrada->diffInSeconds($salida);
+        foreach ($closedByUser as $userId => $entries) {
+            $user = $this->userRepository->findById(new UserId($userId));
+            if ($user) {
+                $notification = new Notification(
+                    type: NotificationType::TimeEntryAutoClosed,
+                    title: 'Fichaje cerrado automáticamente',
+                    message: $this->buildNotificationMessage($entries),
+                    data: ['entries' => $entries],
+                    channels: [Channel::Database]
+                );
+                $this->notificationService->notify($user, $notification);
+            }
         }
-
-        return $totalSeconds;
     }
 
     /**

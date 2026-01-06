@@ -3,12 +3,14 @@
 namespace App\DDD\User\Domain\Entity;
 
 use App\DDD\TimeTracking\Domain\Exceptions\DailyTimeEntryLimitExceededException;
+use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
+use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
+use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
 use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Carbon\Carbon;
-use Exception;
 
 final class User
 {
@@ -143,11 +145,11 @@ final class User
     public function clockIn(): void
     {
         if ($this->getOpenTimeEntry()) {
-            throw new Exception('An open time entry already exists.');
+            throw new OpenTimeEntryAlreadyExistsException;
         }
 
         if (! $this->id()) {
-            throw new Exception('Cannot clock in for an unsaved user.');
+            throw new UnsavedUserCannotClockInException;
         }
 
         // Validate daily limit (only for non-admin users)
@@ -182,7 +184,7 @@ final class User
     {
         $openEntry = $this->getOpenTimeEntry();
         if (! $openEntry) {
-            throw new Exception('No open time entry exists to close.');
+            throw new NoOpenTimeEntryException;
         }
 
         $openEntry->close();

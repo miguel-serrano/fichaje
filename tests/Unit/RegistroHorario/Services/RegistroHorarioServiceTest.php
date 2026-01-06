@@ -2,12 +2,13 @@
 
 namespace Tests\Unit\RegistroHorario\Services;
 
-use App\DDD\TimeTracking\Services\TimeTrackingService;
+use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
+use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
+use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Support\Str;
 use Mockery;
 use PHPUnit\Framework\TestCase;
@@ -16,13 +17,16 @@ class RegistroHorarioServiceTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
 
+    private TimeEntryRepositoryInterface $timeEntryRepository;
+
     private TimeTrackingService $service;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->service = new TimeTrackingService($this->userRepository);
+        $this->timeEntryRepository = Mockery::mock(TimeEntryRepositoryInterface::class);
+        $this->service = new TimeTrackingService($this->userRepository, $this->timeEntryRepository);
     }
 
     protected function tearDown(): void
@@ -155,7 +159,7 @@ class RegistroHorarioServiceTest extends TestCase
             }))
             ->andReturn($user);
 
-        $this->expectException(Exception::class);
+        $this->expectException(NoOpenTimeEntryException::class);
         $this->expectExceptionMessage('No open time entry exists to close.');
 
         $this->service->clockOut($userUuidValue);

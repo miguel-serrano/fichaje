@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DDD\TimeTracking\Application\Handler;
 
 use App\DDD\TimeTracking\Application\Command\CloseOrphanTimeEntriesCommand;
-use App\DDD\TimeTracking\Services\TimeTrackingService;
+use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 
 final class CloseOrphanTimeEntriesCommandHandler
 {

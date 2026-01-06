@@ -3,7 +3,7 @@
 namespace App\DDD\TimeTracking\Application\Handler;
 
 use App\DDD\TimeTracking\Application\Query\GetAccumulatedSecondsQuery;
-use App\DDD\TimeTracking\Services\TimeTrackingService;
+use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 
 class GetAccumulatedSecondsQueryHandler
 {

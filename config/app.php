@@ -199,6 +199,8 @@ return [
         // ddd_user
         App\Providers\UserServiceProvider::class,
         App\DDD\User\Infrastructure\LaravelServiceProvider::class,
+        // ddd_time_tracking
+        App\DDD\TimeTracking\Infrastructure\LaravelServiceProvider::class,
 
     ],
 
