@@ -65,15 +65,15 @@ class RegistroHorarioServiceTest extends TestCase
             ->with(Mockery::on(function (User $arg) use (&$savedUser) {
                 $savedUser = $arg;
 
-                return count($arg->registrosHorarios()) === 1 && $arg->registrosHorarios()[0]->isAbierto();
+                return count($arg->timeEntries()) === 1 && $arg->timeEntries()[0]->isOpen();
             }))
             ->andReturn($user);
 
         $this->service->clockIn($userUuidValue);
 
         $this->assertNotNull($savedUser, 'User should have been saved.');
-        $this->assertCount(1, $savedUser->registrosHorarios());
-        $this->assertTrue($savedUser->registrosHorarios()[0]->isAbierto());
+        $this->assertCount(1, $savedUser->timeEntries());
+        $this->assertTrue($savedUser->timeEntries()[0]->isOpen());
     }
 
     public function test_it_throws_exception_on_fichar_entrada_if_user_not_found(): void
@@ -122,16 +122,16 @@ class RegistroHorarioServiceTest extends TestCase
             ->with(Mockery::on(function (User $arg) use (&$savedUser) {
                 $savedUser = $arg;
 
-                return count($arg->registrosHorarios()) === 1 && ! $arg->registrosHorarios()[0]->isAbierto();
+                return count($arg->timeEntries()) === 1 && ! $arg->timeEntries()[0]->isOpen();
             }))
             ->andReturn($user);
 
         $this->service->clockOut($userUuidValue);
 
         $this->assertNotNull($savedUser, 'User should have been saved.');
-        $this->assertCount(1, $savedUser->registrosHorarios());
-        $this->assertFalse($savedUser->registrosHorarios()[0]->isAbierto());
-        $this->assertNotNull($savedUser->registrosHorarios()[0]->salida());
+        $this->assertCount(1, $savedUser->timeEntries());
+        $this->assertFalse($savedUser->timeEntries()[0]->isOpen());
+        $this->assertNotNull($savedUser->timeEntries()[0]->endTime());
     }
 
     public function test_it_throws_exception_on_fichar_salida_if_no_open_registro(): void
@@ -156,7 +156,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->andReturn($user);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('No existe un registro de entrada abierto para cerrar.');
+        $this->expectExceptionMessage('No open time entry exists to close.');
 
         $this->service->clockOut($userUuidValue);
     }
@@ -351,23 +351,23 @@ class RegistroHorarioServiceTest extends TestCase
             ->once()
             ->with(Mockery::on(function (User $arg) use (&$savedUser, $registroId) {
                 $savedUser = $arg;
-                $closedEntry = collect($arg->registrosHorarios())->first(function ($reg) use ($registroId) {
+                $closedEntry = collect($arg->timeEntries())->first(function ($reg) use ($registroId) {
                     return $reg->id()->value() === $registroId;
                 });
 
-                return $closedEntry && ! $closedEntry->isAbierto();
+                return $closedEntry && ! $closedEntry->isOpen();
             }))
             ->andReturn($user);
 
         $this->service->clockOut($userUuidValue, $registroId);
 
         $this->assertNotNull($savedUser, 'User should have been saved.');
-        $closedEntry = collect($savedUser->registrosHorarios())->first(function ($reg) use ($registroId) {
+        $closedEntry = collect($savedUser->timeEntries())->first(function ($reg) use ($registroId) {
             return $reg->id()->value() === $registroId;
         });
         $this->assertNotNull($closedEntry);
-        $this->assertFalse($closedEntry->isAbierto());
-        $this->assertNotNull($closedEntry->salida());
+        $this->assertFalse($closedEntry->isOpen());
+        $this->assertNotNull($closedEntry->endTime());
     }
 
     public function test_it_throws_exception_on_fichar_salida_with_registro_id_if_user_not_found(): void

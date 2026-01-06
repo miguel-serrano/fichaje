@@ -6,7 +6,6 @@ use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use App\Models\User as EloquentUser;
 
 class DeleteUserCommandHandler
 {
@@ -17,24 +16,15 @@ class DeleteUserCommandHandler
 
     public function handle(DeleteUserCommand $command): void
     {
-        $userId = new UserId($command->targetUserId);
+        $authenticatedUserId = new UserId($command->authenticatedUserId);
+        $targetUserId = new UserId($command->targetUserId);
 
-        // Get Eloquent user for authorization
-        $targetEloquentUser = EloquentUser::query()->find($command->targetUserId);
+        $authenticatedUser = $this->userRepository->findByIdOrFail($authenticatedUserId);
+        $targetUser = $this->userRepository->findByIdOrFail($targetUserId);
 
-        if (! $targetEloquentUser) {
-            throw new \App\DDD\User\Domain\Exceptions\UserNotFoundException(
-                "User {$command->targetUserId} not found"
-            );
-        }
+        $this->authorizationService->ensureCanDelete($authenticatedUser, $targetUser);
 
-        // Authorization check (replaces the fragile remember_token check)
-        $this->authorizationService->ensureCanDelete(
-            $command->authenticatedUser,
-            $targetEloquentUser
-        );
-
-        $deleted = $this->userRepository->delete($userId);
+        $deleted = $this->userRepository->delete($targetUserId);
         if (! $deleted) {
             throw new \RuntimeException("Failed to delete user {$command->targetUserId}");
         }

@@ -40,17 +40,17 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $savedUser = $this->userRepository->save($user);
 
         $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->value()));
-        $userWithTimeEntries->ficharEntrada();
+        $userWithTimeEntries->clockIn();
         $this->userRepository->save($userWithTimeEntries);
         sleep(1);
-        $userWithTimeEntries->ficharSalida();
+        $userWithTimeEntries->clockOut();
         $this->userRepository->save($userWithTimeEntries);
 
         sleep(1);
-        $userWithTimeEntries->ficharEntrada();
+        $userWithTimeEntries->clockIn();
         $this->userRepository->save($userWithTimeEntries);
         sleep(1);
-        $userWithTimeEntries->ficharSalida();
+        $userWithTimeEntries->clockOut();
         $this->userRepository->save($userWithTimeEntries);
 
         $response = $this->get('/users');
@@ -104,9 +104,9 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $savedUser = $this->userRepository->save($user);
 
         $userWithEntries = $this->userRepository->findById(new UserId($savedUser->id()->value()));
-        $userWithEntries->ficharEntrada();
+        $userWithEntries->clockIn();
         $this->userRepository->save($userWithEntries);
-        $userWithEntries->ficharSalida();
+        $userWithEntries->clockOut();
         $this->userRepository->save($userWithEntries);
 
         $deleteResponse = $this->delete("/user/{$savedUser->id()->value()}");

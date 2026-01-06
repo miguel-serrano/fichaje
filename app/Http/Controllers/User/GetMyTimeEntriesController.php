@@ -34,8 +34,8 @@ class GetMyTimeEntriesController extends Controller
             );
 
             $monthlyRegistros = array_filter(
-                $authenticatedUser->registrosHorarios(),
-                fn (TimeEntry $r) => $r->entrada()->format('Y-m') === date('Y-m')
+                $authenticatedUser->timeEntries(),
+                fn (TimeEntry $r) => $r->startTime()->format('Y-m') === date('Y-m')
             );
 
             return view('users.detail', [

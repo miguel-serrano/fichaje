@@ -6,6 +6,7 @@ use App\DDD\TimeTracking\Services\TimeTrackingService;
 use App\DDD\User\Application\Query\GetAllUsersWithTimeQuery;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
+use App\DDD\User\Domain\ValueObjects\UserId;
 
 class GetAllUsersWithTimeQueryHandler
 {
@@ -17,7 +18,10 @@ class GetAllUsersWithTimeQueryHandler
 
     public function handle(GetAllUsersWithTimeQuery $query): array
     {
-        $this->authorizationService->ensureCanList($query->authenticatedUser);
+        $authenticatedUserId = new UserId($query->authenticatedUserId);
+        $authenticatedUser = $this->userRepository->findByIdOrFail($authenticatedUserId);
+
+        $this->authorizationService->ensureCanList($authenticatedUser);
 
         $users = $this->userRepository->findAll();
         $usersWithTime = [];

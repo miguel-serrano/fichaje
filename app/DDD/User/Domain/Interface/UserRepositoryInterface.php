@@ -40,5 +40,5 @@ interface UserRepositoryInterface
     public function countTodayRegistrations(): int;
 
     /** @return array<array-key, mixed> */
-    public function findTodayRegistrosByUserId(UserId $id): array;
+    public function findTodayTimeEntriesByUserId(UserId $id): array;
 }

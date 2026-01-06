@@ -47,20 +47,20 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $user_id = DB::table($usersTable)->insertGetId($userData);
             }
 
-            foreach ($user->registrosHorarios() as $registro) {
-                $registroData = [
+            foreach ($user->timeEntries() as $entry) {
+                $entryData = [
                     'user_id' => $user_id,
-                    'entrada' => $registro->entrada()->format('Y-m-d H:i:s'),
-                    'salida' => $registro->salida() ? $registro->salida()->format('Y-m-d H:i:s') : null,
-                    'auto_closed' => $registro->isAutoClosed(),
-                    'auto_close_reason' => $registro->autoCloseReason(),
+                    'entrada' => $entry->startTime()->format('Y-m-d H:i:s'),
+                    'salida' => $entry->endTime() ? $entry->endTime()->format('Y-m-d H:i:s') : null,
+                    'auto_closed' => $entry->isAutoClosed(),
+                    'auto_close_reason' => $entry->autoCloseReason(),
                 ];
 
-                if ($registro->id()) {
-                    DB::table($registrosTable)->where('id', $registro->id()->value())->update($registroData);
+                if ($entry->id()) {
+                    DB::table($registrosTable)->where('id', $entry->id()->value())->update($entryData);
                 } else {
-                    $newId = DB::table($registrosTable)->insertGetId($registroData);
-                    $registro->setId(new TimeEntryId($newId));
+                    $newId = DB::table($registrosTable)->insertGetId($entryData);
+                    $entry->setId(new TimeEntryId($newId));
                 }
             }
         });
@@ -214,20 +214,20 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $user_id = DB::table($usersTable)->insertGetId($userData);
             }
 
-            foreach ($user->registrosHorarios() as $registro) {
-                $registroData = [
+            foreach ($user->timeEntries() as $entry) {
+                $entryData = [
                     'user_id' => $user_id,
-                    'entrada' => $registro->entrada()->format('Y-m-d H:i:s'),
-                    'salida' => $registro->salida() ? $registro->salida()->format('Y-m-d H:i:s') : null,
-                    'auto_closed' => $registro->isAutoClosed(),
-                    'auto_close_reason' => $registro->autoCloseReason(),
+                    'entrada' => $entry->startTime()->format('Y-m-d H:i:s'),
+                    'salida' => $entry->endTime() ? $entry->endTime()->format('Y-m-d H:i:s') : null,
+                    'auto_closed' => $entry->isAutoClosed(),
+                    'auto_close_reason' => $entry->autoCloseReason(),
                 ];
 
-                if ($registro->id()) {
-                    DB::table($registrosTable)->where('id', $registro->id()->value())->update($registroData);
+                if ($entry->id()) {
+                    DB::table($registrosTable)->where('id', $entry->id()->value())->update($entryData);
                 } else {
-                    $newId = DB::table($registrosTable)->insertGetId($registroData);
-                    $registro->setId(new TimeEntryId($newId));
+                    $newId = DB::table($registrosTable)->insertGetId($entryData);
+                    $entry->setId(new TimeEntryId($newId));
                 }
             }
         });
@@ -236,7 +236,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /** @return array<array-key, mixed> */
-    public function findTodayRegistrosByUserId(UserId $id): array
+    public function findTodayTimeEntriesByUserId(UserId $id): array
     {
         return DB::table($this->getRegistrosTable())
             ->where('user_id', $id->value())

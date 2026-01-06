@@ -17,6 +17,6 @@ class GetUserTodayRegistrosQueryHandler
     {
         $userId = new UserId($query->getUserId());
 
-        return $this->userRepository->findTodayRegistrosByUserId($userId);
+        return $this->userRepository->findTodayTimeEntriesByUserId($userId);
     }
 }

@@ -7,7 +7,6 @@ use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use App\Models\User as EloquentUser;
 
 class GetUserByIdQueryHandler
 {
@@ -18,16 +17,14 @@ class GetUserByIdQueryHandler
 
     public function handle(GetUserByIdQuery $query): User
     {
-        $userId = new UserId($query->targetUserId);
-        $user = $this->userRepository->findByIdOrFail($userId);
+        $authenticatedUserId = new UserId($query->authenticatedUserId);
+        $targetUserId = new UserId($query->targetUserId);
 
-        // Authorization check
-        $targetEloquentUser = EloquentUser::query()->find($query->targetUserId);
-        $this->authorizationService->ensureCanView(
-            $query->authenticatedUser,
-            $targetEloquentUser
-        );
+        $authenticatedUser = $this->userRepository->findByIdOrFail($authenticatedUserId);
+        $targetUser = $this->userRepository->findByIdOrFail($targetUserId);
 
-        return $user;
+        $this->authorizationService->ensureCanView($authenticatedUser, $targetUser);
+
+        return $targetUser;
     }
 }

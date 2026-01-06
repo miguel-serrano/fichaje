@@ -22,7 +22,7 @@ class ShowUserController extends Controller
     public function __invoke(string $id): View|RedirectResponse
     {
         try {
-            $query = new GetUserByIdQuery(Auth::user(), (int) $id);
+            $query = new GetUserByIdQuery(Auth::id(), (int) $id);
             /** @var User $user */
             $user = $this->queryBus->dispatch($query);
 
@@ -31,7 +31,7 @@ class ShowUserController extends Controller
 
             return view('users.show', [
                 'user' => $user,
-                'allRegistros' => $user->registrosHorarios(),
+                'allRegistros' => $user->timeEntries(),
                 'dailyRegistros' => $registrosData['registros'],
                 'totalMes' => $registrosData['total_mes_actual'],
             ]);

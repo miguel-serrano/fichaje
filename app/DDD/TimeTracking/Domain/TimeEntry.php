@@ -13,9 +13,9 @@ final class TimeEntry
 
     private UserId $userId;
 
-    private DateTime $entrada;
+    private DateTime $startTime;
 
-    private ?DateTime $salida;
+    private ?DateTime $endTime;
 
     private bool $autoClosed;
 
@@ -24,15 +24,15 @@ final class TimeEntry
     private function __construct(
         ?TimeEntryId $id,
         UserId $userId,
-        DateTime $entrada,
-        ?DateTime $salida,
+        DateTime $startTime,
+        ?DateTime $endTime,
         bool $autoClosed = false,
         ?string $autoCloseReason = null
     ) {
         $this->id = $id;
         $this->userId = $userId;
-        $this->entrada = $entrada;
-        $this->salida = $salida;
+        $this->startTime = $startTime;
+        $this->endTime = $endTime;
         $this->autoClosed = $autoClosed;
         $this->autoCloseReason = $autoCloseReason;
     }
@@ -52,16 +52,16 @@ final class TimeEntry
     public static function fromPrimitives(
         ?int $id,
         int $userId,
-        string $entrada,
-        ?string $salida,
+        string $startTime,
+        ?string $endTime,
         bool $autoClosed = false,
         ?string $autoCloseReason = null
     ): self {
         return new self(
             $id ? new TimeEntryId($id) : null,
             new UserId($userId),
-            new DateTime($entrada),
-            $salida ? new DateTime($salida) : null,
+            new DateTime($startTime),
+            $endTime ? new DateTime($endTime) : null,
             $autoClosed,
             $autoCloseReason
         );
@@ -82,31 +82,31 @@ final class TimeEntry
         return $this->userId;
     }
 
-    public function entrada(): DateTime
+    public function startTime(): DateTime
     {
-        return $this->entrada;
+        return $this->startTime;
     }
 
-    public function salida(): ?DateTime
+    public function endTime(): ?DateTime
     {
-        return $this->salida;
+        return $this->endTime;
     }
 
-    public function cerrar(): void
+    public function close(): void
     {
-        $this->salida = Carbon::now()->toDateTime();
+        $this->endTime = Carbon::now()->toDateTime();
     }
 
-    public function cerrarConFecha(DateTime $fechaCierre, bool $autoClosed = false, ?string $autoCloseReason = null): void
+    public function closeAt(DateTime $closeTime, bool $autoClosed = false, ?string $autoCloseReason = null): void
     {
-        $this->salida = $fechaCierre;
+        $this->endTime = $closeTime;
         $this->autoClosed = $autoClosed;
         $this->autoCloseReason = $autoCloseReason;
     }
 
-    public function isAbierto(): bool
+    public function isOpen(): bool
     {
-        return $this->salida === null;
+        return $this->endTime === null;
     }
 
     public function isAutoClosed(): bool
@@ -119,15 +119,15 @@ final class TimeEntry
         return $this->autoCloseReason;
     }
 
-    public function segundosTrabajados(): int
+    public function workedSeconds(): int
     {
-        if ($this->entrada && $this->salida) {
-            return $this->salida->getTimestamp() - $this->entrada->getTimestamp();
+        if ($this->startTime && $this->endTime) {
+            return $this->endTime->getTimestamp() - $this->startTime->getTimestamp();
         }
 
-        // Si está abierto, calcular con la hora actual (tiempo teórico)
-        if ($this->entrada && $this->salida === null) {
-            return time() - $this->entrada->getTimestamp();
+        // If open, calculate with current time (theoretical time)
+        if ($this->startTime && $this->endTime === null) {
+            return Carbon::now()->getTimestamp() - $this->startTime->getTimestamp();
         }
 
         return 0;
@@ -138,8 +138,8 @@ final class TimeEntry
         return [
             'id' => $this->id ? $this->id->value() : null,
             'user_id' => $this->userId->value(),
-            'entrada' => $this->entrada->format('Y-m-d H:i:s'),
-            'salida' => $this->salida ? $this->salida->format('Y-m-d H:i:s') : null,
+            'entrada' => $this->startTime->format('Y-m-d H:i:s'),
+            'salida' => $this->endTime ? $this->endTime->format('Y-m-d H:i:s') : null,
             'auto_closed' => $this->autoClosed,
             'auto_close_reason' => $this->autoCloseReason,
         ];

@@ -115,9 +115,9 @@
         <div class="card">
             <div class="card-content">
                 @php
-                    $totalSegundosHoy = collect($allRegistros)->sum(fn($r) => $r->segundosTrabajados());
-                    $tieneAbiertoHoy = collect($allRegistros)->contains(fn($r) => $r->isAbierto());
-                    $registroAbierto = collect($allRegistros)->first(fn($r) => $r->isAbierto());
+                    $totalSegundosHoy = collect($allRegistros)->sum(fn($r) => $r->workedSeconds());
+                    $tieneAbiertoHoy = collect($allRegistros)->contains(fn($r) => $r->isOpen());
+                    $registroAbierto = collect($allRegistros)->first(fn($r) => $r->isOpen());
                 @endphp
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                     <span class="card-title" style="margin: 0;">
@@ -129,7 +129,7 @@
                             <span class="chip amber lighten-4 amber-text text-darken-2 live-timer-total"
                                   style="margin: 0; font-size: 1.1rem; font-weight: 600;"
                                   data-base-seconds="{{ $totalSegundosHoy }}"
-                                  data-start-time="{{ $registroAbierto->entrada()->getTimestamp() }}">
+                                  data-start-time="{{ $registroAbierto->startTime()->getTimestamp() }}">
                                 {{ gmdate('H:i:s', $totalSegundosHoy) }}
                             </span>
                         @else
@@ -155,13 +155,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(collect($allRegistros)->sortByDesc(function($registro) { return $registro->entrada(); }) as $registro)
+                            @foreach(collect($allRegistros)->sortByDesc(function($registro) { return $registro->startTime(); }) as $registro)
                             <tr>
-                                <td>{{ $registro->entrada()->format('d/m/Y') }}</td>
-                                <td>{{ $registro->entrada()->format('H:i:s') }}</td>
+                                <td>{{ $registro->startTime()->format('d/m/Y') }}</td>
+                                <td>{{ $registro->startTime()->format('H:i:s') }}</td>
                                 <td>
-                                    @if($registro->salida())
-                                        {{ $registro->salida()->format('H:i:s') }}
+                                    @if($registro->endTime())
+                                        {{ $registro->endTime()->format('H:i:s') }}
                                     @else
                                         <span class="amber-text text-darken-2">
                                             <i class="material-icons tiny">schedule</i> Abierto
@@ -169,26 +169,26 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($registro->salida())
+                                    @if($registro->endTime())
                                         <span class="chip blue lighten-4 blue-text text-darken-2">
-                                            {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                            {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                         </span>
                                     @else
                                         <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
-                                              data-start-time="{{ $registro->entrada()->getTimestamp() }}">
-                                            {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                              data-start-time="{{ $registro->startTime()->getTimestamp() }}">
+                                            {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                         </span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if($registro->isAbierto())
+                                    @if($registro->isOpen())
                                         <span class="chip amber lighten-4 amber-text text-darken-2">Abierto</span>
                                     @else
                                         <span class="chip green lighten-4 green-text text-darken-2">Cerrado</span>
                                     @endif
                                 </td>
                                 <td class="right-align">
-                                    @if($registro->isAbierto())
+                                    @if($registro->isOpen())
                                         <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->value()]) }}" method="POST" style="display: inline;">
                                             @csrf
                                             <input type="hidden" name="userUuid" value="{{ $user->uuid()->value() }}">
@@ -358,13 +358,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach(collect($monthlyRegistros)->sortByDesc(function($registro) { return $registro->entrada(); }) as $registro)
+                                        @foreach(collect($monthlyRegistros)->sortByDesc(function($registro) { return $registro->startTime(); }) as $registro)
                                         <tr>
-                                            <td>{{ $registro->entrada()->format('d/m/Y') }}</td>
-                                            <td>{{ $registro->entrada()->format('H:i:s') }}</td>
+                                            <td>{{ $registro->startTime()->format('d/m/Y') }}</td>
+                                            <td>{{ $registro->startTime()->format('H:i:s') }}</td>
                                             <td>
-                                                @if($registro->salida())
-                                                    {{ $registro->salida()->format('H:i:s') }}
+                                                @if($registro->endTime())
+                                                    {{ $registro->endTime()->format('H:i:s') }}
                                                 @else
                                                     <span class="amber-text text-darken-2">
                                                         <i class="material-icons tiny">schedule</i> Abierto
@@ -372,19 +372,19 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if($registro->salida())
+                                                @if($registro->endTime())
                                                     <span class="chip blue lighten-4 blue-text text-darken-2">
-                                                        {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                                        {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                                     </span>
                                                 @else
                                                     <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
-                                                          data-start-time="{{ $registro->entrada()->getTimestamp() }}">
-                                                        {{ gmdate('H:i:s', $registro->segundosTrabajados()) }}
+                                                          data-start-time="{{ $registro->startTime()->getTimestamp() }}">
+                                                        {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                                     </span>
                                                 @endif
                                             </td>
                                             <td>
-                                                @if($registro->isAbierto())
+                                                @if($registro->isOpen())
                                                     <span class="chip amber lighten-4 amber-text text-darken-2">Abierto</span>
                                                 @else
                                                     <span class="chip green lighten-4 green-text text-darken-2">Cerrado</span>

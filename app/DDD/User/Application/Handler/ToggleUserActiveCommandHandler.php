@@ -16,13 +16,16 @@ class ToggleUserActiveCommandHandler
 
     public function handle(ToggleUserActiveCommand $command): bool
     {
-        $this->authorizationService->ensureCanToggleActive($command->authenticatedUser);
+        $authenticatedUserId = new UserId($command->authenticatedUserId);
+        $authenticatedUser = $this->userRepository->findByIdOrFail($authenticatedUserId);
 
-        $userId = new UserId($command->targetUserId);
-        $user = $this->userRepository->findByIdOrFail($userId);
+        $this->authorizationService->ensureCanToggleActive($authenticatedUser);
 
-        $newState = $user->toggleActive();
-        $this->userRepository->save($user);
+        $targetUserId = new UserId($command->targetUserId);
+        $targetUser = $this->userRepository->findByIdOrFail($targetUserId);
+
+        $newState = $targetUser->toggleActive();
+        $this->userRepository->save($targetUser);
 
         return $newState;
     }

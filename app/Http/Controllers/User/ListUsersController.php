@@ -19,7 +19,7 @@ class ListUsersController extends Controller
     public function __invoke(): View|RedirectResponse
     {
         try {
-            $query = new GetAllUsersWithTimeQuery(Auth::user());
+            $query = new GetAllUsersWithTimeQuery(Auth::id());
             $users = $this->queryBus->dispatch($query);
 
             return view('users.index', [

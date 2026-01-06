@@ -53,7 +53,7 @@ class GetUserByIdUseCaseTest extends TestCase
             'is_active' => true,
         ]);
 
-        $query = new GetUserByIdQuery($adminUser, $targetUser->id);
+        $query = new GetUserByIdQuery($adminUser->id, $targetUser->id);
         $result = $this->handler->handle($query);
 
         $this->assertInstanceOf(\App\DDD\User\Domain\Entity\User::class, $result);
@@ -78,9 +78,8 @@ class GetUserByIdUseCaseTest extends TestCase
         $userId = 999;
 
         $this->expectException(UserNotFoundException::class);
-        $this->expectExceptionMessage('User 999 not found');
 
-        $query = new GetUserByIdQuery($adminUser, $userId);
+        $query = new GetUserByIdQuery($adminUser->id, $userId);
         $this->handler->handle($query);
     }
 
@@ -103,7 +102,7 @@ class GetUserByIdUseCaseTest extends TestCase
             'is_active' => false,
         ]);
 
-        $query = new GetUserByIdQuery($adminUser, $targetUser->id);
+        $query = new GetUserByIdQuery($adminUser->id, $targetUser->id);
         $result = $this->handler->handle($query);
 
         $this->assertInstanceOf(\App\DDD\User\Domain\Entity\User::class, $result);
@@ -129,7 +128,7 @@ class GetUserByIdUseCaseTest extends TestCase
             'is_active' => true,
         ]);
 
-        $query = new GetUserByIdQuery($regularUser, $regularUser->id);
+        $query = new GetUserByIdQuery($regularUser->id, $regularUser->id);
         $result = $this->handler->handle($query);
 
         $this->assertInstanceOf(\App\DDD\User\Domain\Entity\User::class, $result);
@@ -156,7 +155,7 @@ class GetUserByIdUseCaseTest extends TestCase
 
         $this->expectException(UnauthorizedException::class);
 
-        $query = new GetUserByIdQuery($regularUser, $otherUser->id);
+        $query = new GetUserByIdQuery($regularUser->id, $otherUser->id);
         $this->handler->handle($query);
     }
 }

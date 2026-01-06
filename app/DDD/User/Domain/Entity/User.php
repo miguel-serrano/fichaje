@@ -25,7 +25,7 @@ final class User
     private bool $isAdmin;
 
     /** @var TimeEntry[] */
-    private array $registrosHorarios;
+    private array $timeEntries;
 
     private function __construct(
         ?UserId $id,
@@ -34,7 +34,7 @@ final class User
         string $name,
         bool $isActive = true,
         bool $isAdmin = false,
-        array $registrosHorarios = []
+        array $timeEntries = []
     ) {
         $this->id = $id;
         $this->uuid = $uuid;
@@ -42,7 +42,7 @@ final class User
         $this->name = $name;
         $this->isActive = $isActive;
         $this->isAdmin = $isAdmin;
-        $this->registrosHorarios = $registrosHorarios;
+        $this->timeEntries = $timeEntries;
     }
 
     public static function create(Email $email, string $name): self
@@ -57,7 +57,7 @@ final class User
         string $name,
         bool $isActive,
         bool $isAdmin = false,
-        array $registrosHorarios = []
+        array $timeEntries = []
     ): self {
         $user = new self(
             $id !== null ? new UserId($id) : null,
@@ -68,14 +68,14 @@ final class User
             $isAdmin
         );
 
-        foreach ($registrosHorarios as $registro) {
-            $user->addRegistroHorario(TimeEntry::fromPrimitives(
-                $registro['id'],
-                $registro['user_id'],
-                $registro['entrada'],
-                $registro['salida'],
-                (bool) ($registro['auto_closed'] ?? false),
-                $registro['auto_close_reason'] ?? null
+        foreach ($timeEntries as $entry) {
+            $user->addTimeEntry(TimeEntry::fromPrimitives(
+                $entry['id'],
+                $entry['user_id'],
+                $entry['entrada'],
+                $entry['salida'],
+                (bool) ($entry['auto_closed'] ?? false),
+                $entry['auto_close_reason'] ?? null
             ));
         }
 
@@ -130,35 +130,35 @@ final class User
     }
 
     /** @return TimeEntry[] */
-    public function registrosHorarios(): array
+    public function timeEntries(): array
     {
-        return $this->registrosHorarios;
+        return $this->timeEntries;
     }
 
-    public function addRegistroHorario(TimeEntry $registroHorario): void
+    public function addTimeEntry(TimeEntry $timeEntry): void
     {
-        $this->registrosHorarios[] = $registroHorario;
+        $this->timeEntries[] = $timeEntry;
     }
 
-    public function ficharEntrada(): void
+    public function clockIn(): void
     {
-        if ($this->getRegistroAbierto()) {
-            throw new Exception('Ya existe un registro de entrada abierto.');
+        if ($this->getOpenTimeEntry()) {
+            throw new Exception('An open time entry already exists.');
         }
 
         if (! $this->id()) {
-            throw new Exception('No se puede fichar la entrada para un usuario no guardado.');
+            throw new Exception('Cannot clock in for an unsaved user.');
         }
 
-        // Validar límite diario (solo para usuarios no admin)
+        // Validate daily limit (only for non-admin users)
         if (! $this->isAdmin()) {
-            $registrosHoy = $this->countTodayEntries();
-            if ($registrosHoy >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
-                throw new DailyTimeEntryLimitExceededException($registrosHoy);
+            $todayEntries = $this->countTodayEntries();
+            if ($todayEntries >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
+                throw new DailyTimeEntryLimitExceededException($todayEntries);
             }
         }
 
-        $this->addRegistroHorario(
+        $this->addTimeEntry(
             TimeEntry::create($this->id())
         );
     }
@@ -168,9 +168,9 @@ final class User
         $today = Carbon::today();
         $count = 0;
 
-        foreach ($this->registrosHorarios as $registro) {
-            $entradaCarbon = Carbon::instance($registro->entrada());
-            if ($entradaCarbon->isSameDay($today)) {
+        foreach ($this->timeEntries as $entry) {
+            $startTimeCarbon = Carbon::instance($entry->startTime());
+            if ($startTimeCarbon->isSameDay($today)) {
                 $count++;
             }
         }
@@ -178,21 +178,21 @@ final class User
         return $count;
     }
 
-    public function ficharSalida(): void
+    public function clockOut(): void
     {
-        $registroAbierto = $this->getRegistroAbierto();
-        if (! $registroAbierto) {
-            throw new Exception('No existe un registro de entrada abierto para cerrar.');
+        $openEntry = $this->getOpenTimeEntry();
+        if (! $openEntry) {
+            throw new Exception('No open time entry exists to close.');
         }
 
-        $registroAbierto->cerrar();
+        $openEntry->close();
     }
 
-    private function getRegistroAbierto(): ?TimeEntry
+    private function getOpenTimeEntry(): ?TimeEntry
     {
-        foreach ($this->registrosHorarios as $registro) {
-            if ($registro->isAbierto()) {
-                return $registro;
+        foreach ($this->timeEntries as $entry) {
+            if ($entry->isOpen()) {
+                return $entry;
             }
         }
 
@@ -208,9 +208,9 @@ final class User
             'name' => $this->name(),
             'is_active' => $this->isActive(),
             'is_admin' => $this->isAdmin(),
-            'registros_horarios' => array_map(function (TimeEntry $registro) {
-                return $registro->toArray();
-            }, $this->registrosHorarios),
+            'registros_horarios' => array_map(function (TimeEntry $entry) {
+                return $entry->toArray();
+            }, $this->timeEntries),
         ];
     }
 }

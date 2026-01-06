@@ -2,63 +2,41 @@
 
 namespace App\DDD\User\Infrastructure\Services;
 
-use App\DDD\User\Domain\Entity\User as DomainUser;
+use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Policy\UserPolicy;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
-use App\Models\User as EloquentUser;
 
 final class UserAuthorizationService implements UserAuthorizationServiceInterface
 {
     public function __construct(private readonly UserPolicy $userPolicy) {}
 
-    public function ensureCanToggleActive(EloquentUser $authenticatedUser): void
+    public function ensureCanToggleActive(User $authenticatedUser): void
     {
-        $domainUser = $this->toDomainUser($authenticatedUser);
-        $this->userPolicy->ensureCanToggleActive($domainUser);
+        $this->userPolicy->ensureCanToggleActive($authenticatedUser);
     }
 
-    public function ensureCanView(EloquentUser $authenticatedUser, EloquentUser $targetUser): void
+    public function ensureCanView(User $authenticatedUser, User $targetUser): void
     {
-        $domainAuthUser = $this->toDomainUser($authenticatedUser);
-        $domainTargetUser = $this->toDomainUser($targetUser);
-        $this->userPolicy->ensureCanView($domainAuthUser, $domainTargetUser);
+        $this->userPolicy->ensureCanView($authenticatedUser, $targetUser);
     }
 
-    public function ensureCanCreate(EloquentUser $authenticatedUser): void
+    public function ensureCanCreate(User $authenticatedUser): void
     {
-        $domainUser = $this->toDomainUser($authenticatedUser);
-        $this->userPolicy->ensureCanCreate($domainUser);
+        $this->userPolicy->ensureCanCreate($authenticatedUser);
     }
 
-    public function ensureCanUpdate(EloquentUser $authenticatedUser, EloquentUser $targetUser): void
+    public function ensureCanUpdate(User $authenticatedUser, User $targetUser): void
     {
-        $domainAuthUser = $this->toDomainUser($authenticatedUser);
-        $domainTargetUser = $this->toDomainUser($targetUser);
-        $this->userPolicy->ensureCanUpdate($domainAuthUser, $domainTargetUser);
+        $this->userPolicy->ensureCanUpdate($authenticatedUser, $targetUser);
     }
 
-    public function ensureCanDelete(EloquentUser $authenticatedUser, EloquentUser $targetUser): void
+    public function ensureCanDelete(User $authenticatedUser, User $targetUser): void
     {
-        $domainAuthUser = $this->toDomainUser($authenticatedUser);
-        $domainTargetUser = $this->toDomainUser($targetUser);
-        $this->userPolicy->ensureCanDelete($domainAuthUser, $domainTargetUser);
+        $this->userPolicy->ensureCanDelete($authenticatedUser, $targetUser);
     }
 
-    public function ensureCanList(EloquentUser $authenticatedUser): void
+    public function ensureCanList(User $authenticatedUser): void
     {
-        $domainUser = $this->toDomainUser($authenticatedUser);
-        $this->userPolicy->ensureCanList($domainUser);
-    }
-
-    private function toDomainUser(EloquentUser $eloquentUser): DomainUser
-    {
-        return DomainUser::fromPrimitives(
-            $eloquentUser->id,
-            $eloquentUser->uuid,
-            $eloquentUser->email,
-            $eloquentUser->name,
-            $eloquentUser->is_active ?? true,
-            $eloquentUser->is_admin ?? false
-        );
+        $this->userPolicy->ensureCanList($authenticatedUser);
     }
 }

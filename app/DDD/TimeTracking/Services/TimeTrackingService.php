@@ -30,7 +30,7 @@ class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        $user->ficharEntrada();
+        $user->clockIn();
 
         $this->repository->save($user);
     }
@@ -45,26 +45,26 @@ class TimeTrackingService
 
         // Si se proporciona un ID específico, cerrar ese registro
         if ($timeEntryId !== null) {
-            $registroToClose = null;
-            foreach ($user->registrosHorarios() as $registro) {
-                if ($registro->id() && $registro->id()->value() === $timeEntryId) {
-                    $registroToClose = $registro;
+            $entryToClose = null;
+            foreach ($user->timeEntries() as $entry) {
+                if ($entry->id() && $entry->id()->value() === $timeEntryId) {
+                    $entryToClose = $entry;
                     break;
                 }
             }
 
-            if (! $registroToClose) {
+            if (! $entryToClose) {
                 throw new \InvalidArgumentException('Registro horario no encontrado.');
             }
 
-            if (! $registroToClose->isAbierto()) {
+            if (! $entryToClose->isOpen()) {
                 throw new \InvalidArgumentException('El registro horario ya está cerrado.');
             }
 
-            $registroToClose->cerrar();
+            $entryToClose->close();
         } else {
             // Comportamiento original: cerrar el registro abierto actual
-            $user->ficharSalida();
+            $user->clockOut();
         }
 
         $this->repository->save($user);
@@ -81,9 +81,9 @@ class TimeTrackingService
         $today = Carbon::now()->startOfDay();
         $suma = 0;
 
-        foreach ($user->registrosHorarios() as $registro) {
-            if (Carbon::instance($registro->entrada())->isSameDay($today)) {
-                $suma += $registro->segundosTrabajados();
+        foreach ($user->timeEntries() as $entry) {
+            if (Carbon::instance($entry->startTime())->isSameDay($today)) {
+                $suma += $entry->workedSeconds();
             }
         }
 
@@ -98,8 +98,8 @@ class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        foreach ($user->registrosHorarios() as $registro) {
-            if ($registro->isAbierto()) {
+        foreach ($user->timeEntries() as $entry) {
+            if ($entry->isOpen()) {
                 return true;
             }
         }
