@@ -2,30 +2,41 @@
 
 namespace App\DDD\Shared\Domain\ValueObject;
 
-abstract class StringValueObject
+use Illuminate\Support\Stringable;
+use InvalidArgumentException;
+use MichaelRubel\ValueObjects\ValueObject;
+
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @method static static make(string|Stringable $value)
+ * @method static static from(string|Stringable $value)
+ * @method static static makeOrNull(string|Stringable|null $value)
+ *
+ * @extends ValueObject<TKey, TValue>
+ */
+abstract class StringValueObject extends ValueObject
 {
-    public function __construct(
-        protected string $value
-    ) {
-        $this->validate($value);
+    protected string $value;
+
+    public function __construct(string|Stringable $value)
+    {
+        if (isset($this->value)) {
+            throw new InvalidArgumentException(static::IMMUTABLE_MESSAGE);
+        }
+
+        $this->value = (string) $value;
+
+        $this->validate();
     }
 
-    public function getValue(): string
+    public function value(): string
     {
         return $this->value;
     }
 
-    public function equals(StringValueObject $other): bool
-    {
-        return $this->value === $other->value;
-    }
-
-    public function __toString(): string
-    {
-        return $this->value;
-    }
-
-    protected function validate(string $value): void
+    protected function validate(): void
     {
         // Override in child classes for specific validation
     }

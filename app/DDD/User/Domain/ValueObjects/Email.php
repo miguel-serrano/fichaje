@@ -3,26 +3,24 @@
 namespace App\DDD\User\Domain\ValueObjects;
 
 use InvalidArgumentException;
+use MichaelRubel\ValueObjects\Collection\Complex\Email as BaseEmail;
 
-final class Email
+/**
+ * @method static static make(string $value)
+ * @method static static from(string $value)
+ * @method static static makeOrNull(string|null $value)
+ */
+final class Email extends BaseEmail
 {
-    private string $value;
-
-    public function __construct(string $value)
+    protected function validate(): void
     {
-        if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($this->value(), FILTER_VALIDATE_EMAIL)) {
             throw new InvalidArgumentException('Invalid email format');
         }
-        $this->value = strtolower(trim($value));
     }
 
-    public function getValue(): string
+    protected function sanitize(): void
     {
-        return $this->value;
-    }
-
-    public function __toString(): string
-    {
-        return $this->value;
+        $this->value = strtolower(trim($this->value()));
     }
 }

@@ -26,13 +26,13 @@ class RegistroHorarioController extends Controller
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
 
             // Verificar que el usuario esté activo
-            $eloquentUser = EloquentUser::query()->where('uuid', $user->uuid()->getValue())->first();
+            $eloquentUser = EloquentUser::query()->where('uuid', $user->uuid()->value())->first();
             if (! $eloquentUser || ! $eloquentUser->is_active) {
                 return redirect()->route('user.me')
                     ->with('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
             }
 
-            $command = new ClockInCommand($user->uuid()->getValue());
+            $command = new ClockInCommand($user->uuid()->value());
             $this->commandBus->dispatch($command);
 
             return redirect()->route('user.me')
@@ -49,13 +49,13 @@ class RegistroHorarioController extends Controller
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
 
             // Verificar que el usuario esté activo
-            $eloquentUser = EloquentUser::query()->where('uuid', $user->uuid()->getValue())->first();
+            $eloquentUser = EloquentUser::query()->where('uuid', $user->uuid()->value())->first();
             if (! $eloquentUser || ! $eloquentUser->is_active) {
                 return redirect()->route('user.me')
                     ->with('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
             }
 
-            $command = new ClockOutCommand($user->uuid()->getValue(), $registroHorarioId);
+            $command = new ClockOutCommand($user->uuid()->value(), $registroHorarioId);
             $this->commandBus->dispatch($command);
 
             $successMessage = $registroHorarioId !== null
@@ -74,7 +74,7 @@ class RegistroHorarioController extends Controller
     {
         try {
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
-            $userUuid = $user->uuid()->getValue();
+            $userUuid = $user->uuid()->value();
 
             $segundos = $this->queryBus->dispatch(new GetAccumulatedSecondsQuery($userUuid));
             $tieneRegistroAbierto = $this->queryBus->dispatch(new HasOpenTimeEntryQuery($userUuid));

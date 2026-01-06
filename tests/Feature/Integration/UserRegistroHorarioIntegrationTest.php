@@ -39,7 +39,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $this->userRepository->save($user);
 
-        $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
+        $userWithTimeEntries = $this->userRepository->findById(new UserId($savedUser->id()->value()));
         $userWithTimeEntries->ficharEntrada();
         $this->userRepository->save($userWithTimeEntries);
         sleep(1);
@@ -103,22 +103,22 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $user = User::create(new Email('delete@example.com'), 'Delete User');
         $savedUser = $this->userRepository->save($user);
 
-        $userWithEntries = $this->userRepository->findById(new UserId($savedUser->id()->getValue()));
+        $userWithEntries = $this->userRepository->findById(new UserId($savedUser->id()->value()));
         $userWithEntries->ficharEntrada();
         $this->userRepository->save($userWithEntries);
         $userWithEntries->ficharSalida();
         $this->userRepository->save($userWithEntries);
 
-        $deleteResponse = $this->delete("/user/{$savedUser->id()->getValue()}");
+        $deleteResponse = $this->delete("/user/{$savedUser->id()->value()}");
         $deleteResponse->assertRedirect('/users');
         $deleteResponse->assertSessionHas('success');
 
         $this->assertDatabaseMissing('users', [
-            'id' => $savedUser->id()->getValue(),
+            'id' => $savedUser->id()->value(),
         ]);
 
         $this->assertDatabaseMissing('registro_horarios', [
-            'user_id' => $savedUser->id()->getValue(),
+            'user_id' => $savedUser->id()->value(),
         ]);
 
         $usersResponse = $this->get('/users');

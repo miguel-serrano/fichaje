@@ -18,14 +18,14 @@ final class LaravelAuthenticationService implements AuthenticationService
     public function attempt(Email $email, string $password): bool
     {
         return Auth::attempt([
-            'email' => $email->getValue(),
+            'email' => $email->value(),
             'password' => $password,
         ]);
     }
 
     public function login(User $user): void
     {
-        $eloquentUser = \App\Models\User::find($user->id()->getValue());
+        $eloquentUser = \App\Models\User::find($user->id()->value());
         Auth::login($eloquentUser);
     }
 

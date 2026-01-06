@@ -15,7 +15,7 @@
                 <div class="row">
                     <div class="col s12 m6">
                         <p><strong class="grey-text text-darken-1">Usuario:</strong></p>
-                        <p>{{ Str::ucfirst($user->name()) }} ({{ $user->email()->getValue() }})</p>
+                        <p>{{ Str::ucfirst($user->name()) }} ({{ $user->email()->value() }})</p>
                     </div>
                     <div class="col s12 m6">
                         <p><strong class="grey-text text-darken-1">Tiempo acumulado hoy:</strong></p>

@@ -54,7 +54,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -85,7 +85,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn(null);
 
@@ -111,7 +111,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -151,7 +151,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -190,7 +190,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -220,7 +220,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -258,7 +258,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -291,7 +291,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -316,7 +316,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -341,7 +341,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -352,7 +352,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->with(Mockery::on(function (User $arg) use (&$savedUser, $registroId) {
                 $savedUser = $arg;
                 $closedEntry = collect($arg->registrosHorarios())->first(function ($reg) use ($registroId) {
-                    return $reg->id()->getValue() === $registroId;
+                    return $reg->id()->value() === $registroId;
                 });
 
                 return $closedEntry && ! $closedEntry->isAbierto();
@@ -363,7 +363,7 @@ class RegistroHorarioServiceTest extends TestCase
 
         $this->assertNotNull($savedUser, 'User should have been saved.');
         $closedEntry = collect($savedUser->registrosHorarios())->first(function ($reg) use ($registroId) {
-            return $reg->id()->getValue() === $registroId;
+            return $reg->id()->value() === $registroId;
         });
         $this->assertNotNull($closedEntry);
         $this->assertFalse($closedEntry->isAbierto());
@@ -380,7 +380,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn(null);
 
@@ -408,7 +408,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 
@@ -437,7 +437,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->shouldReceive('findByUuid')
             ->once()
             ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->getValue() === $userUuid->getValue();
+                return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
 

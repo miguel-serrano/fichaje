@@ -3,37 +3,17 @@
 namespace App\DDD\User\Domain\ValueObjects;
 
 use Illuminate\Support\Str;
-use InvalidArgumentException;
+use MichaelRubel\ValueObjects\Collection\Complex\Uuid as BaseUuid;
 
-final class Uuid
+/**
+ * @method static static make(string $value)
+ * @method static static from(string $value)
+ * @method static static makeOrNull(string|null $value)
+ */
+final class Uuid extends BaseUuid
 {
-    private string $value;
-
-    public function __construct(string $value)
-    {
-        if (! Str::isUuid($value)) {
-            throw new InvalidArgumentException('UUID must be a valid UUID');
-        }
-        $this->value = $value;
-    }
-
     public static function generate(): self
     {
         return new self(Str::orderedUuid()->toString());
-    }
-
-    public function getValue(): string
-    {
-        return $this->value;
-    }
-
-    public function equals(Uuid $other): bool
-    {
-        return $this->value === $other->value;
-    }
-
-    public function __toString(): string
-    {
-        return $this->value;
     }
 }

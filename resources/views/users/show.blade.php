@@ -27,11 +27,11 @@
                     </div>
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">Email</h6>
-                        <p>{{ $user->email()->getValue() }}</p>
+                        <p>{{ $user->email()->value() }}</p>
                     </div>
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">UUID</h6>
-                        <p><code class="grey-text">{{ $user->uuid()->getValue() }}</code></p>
+                        <p><code class="grey-text">{{ $user->uuid()->value() }}</code></p>
                     </div>
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">Estado</h6>
@@ -130,9 +130,9 @@
                                 </td>
                                 <td class="right-align">
                                     @if($registro->isAbierto())
-                                        <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST" style="display: inline;">
+                                        <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->value()]) }}" method="POST" style="display: inline;">
                                             @csrf
-                                            <input type="hidden" name="userUuid" value="{{ $user->uuid()->getValue() }}">
+                                            <input type="hidden" name="userUuid" value="{{ $user->uuid()->value() }}">
                                             <button type="submit" class="btn-small waves-effect waves-light light-green">
                                                 <i class="material-icons left">check</i>Cerrar
                                             </button>

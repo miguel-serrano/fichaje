@@ -26,7 +26,7 @@ class ShowUserController extends Controller
             /** @var User $user */
             $user = $this->queryBus->dispatch($query);
 
-            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->getValue());
+            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->value());
             $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
 
             return view('users.show', [

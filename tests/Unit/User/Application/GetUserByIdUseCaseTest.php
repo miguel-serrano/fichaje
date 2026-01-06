@@ -57,9 +57,9 @@ class GetUserByIdUseCaseTest extends TestCase
         $result = $this->handler->handle($query);
 
         $this->assertInstanceOf(\App\DDD\User\Domain\Entity\User::class, $result);
-        $this->assertEquals($targetUser->id, $result->id()->getValue());
-        $this->assertEquals('123e4567-e89b-12d3-a456-426614174000', $result->uuid()->getValue());
-        $this->assertEquals('test@example.com', $result->email()->getValue());
+        $this->assertEquals($targetUser->id, $result->id()->value());
+        $this->assertEquals('123e4567-e89b-12d3-a456-426614174000', $result->uuid()->value());
+        $this->assertEquals('test@example.com', $result->email()->value());
         $this->assertEquals('Test User', $result->name());
         $this->assertTrue($result->isActive());
     }
@@ -112,9 +112,9 @@ class GetUserByIdUseCaseTest extends TestCase
         $this->assertNotNull($result->email());
         $this->assertNotNull($result->name());
         $this->assertIsBool($result->isActive());
-        $this->assertEquals($targetUser->id, $result->id()->getValue());
-        $this->assertEquals('223e4567-e89b-12d3-a456-426614174001', $result->uuid()->getValue());
-        $this->assertEquals('another@example.com', $result->email()->getValue());
+        $this->assertEquals($targetUser->id, $result->id()->value());
+        $this->assertEquals('223e4567-e89b-12d3-a456-426614174001', $result->uuid()->value());
+        $this->assertEquals('another@example.com', $result->email()->value());
         $this->assertEquals('Another User', $result->name());
         $this->assertFalse($result->isActive());
     }
@@ -133,7 +133,7 @@ class GetUserByIdUseCaseTest extends TestCase
         $result = $this->handler->handle($query);
 
         $this->assertInstanceOf(\App\DDD\User\Domain\Entity\User::class, $result);
-        $this->assertEquals($regularUser->id, $result->id()->getValue());
+        $this->assertEquals($regularUser->id, $result->id()->value());
     }
 
     public function test_non_admin_cannot_view_other_users(): void

@@ -24,7 +24,7 @@ class GetAllUsersWithTimeQueryHandler
 
         foreach ($users as $user) {
             try {
-                $segundos = $this->timeTrackingService->getAccumulatedSeconds($user->uuid()->getValue());
+                $segundos = $this->timeTrackingService->getAccumulatedSeconds($user->uuid()->value());
                 $tiempoFormateado = $this->formatearTiempo($segundos);
 
                 $userData = $user->toArray();

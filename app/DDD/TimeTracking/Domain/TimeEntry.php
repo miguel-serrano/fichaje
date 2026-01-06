@@ -136,8 +136,8 @@ final class TimeEntry
     public function toArray(): array
     {
         return [
-            'id' => $this->id ? $this->id->getValue() : null,
-            'user_id' => $this->userId->getValue(),
+            'id' => $this->id ? $this->id->value() : null,
+            'user_id' => $this->userId->value(),
             'entrada' => $this->entrada->format('Y-m-d H:i:s'),
             'salida' => $this->salida ? $this->salida->format('Y-m-d H:i:s') : null,
             'auto_closed' => $this->autoClosed,

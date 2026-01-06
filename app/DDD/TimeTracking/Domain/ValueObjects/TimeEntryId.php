@@ -3,13 +3,19 @@
 namespace App\DDD\TimeTracking\Domain\ValueObjects;
 
 use App\DDD\Shared\Domain\ValueObject\IntValueObject;
+use InvalidArgumentException;
 
+/**
+ * @method static static make(int $value)
+ * @method static static from(int $value)
+ * @method static static makeOrNull(int|null $value)
+ */
 final class TimeEntryId extends IntValueObject
 {
-    protected function validate(int $value): void
+    protected function validate(): void
     {
-        if ($value <= 0) {
-            throw new \InvalidArgumentException('TimeEntryId must be a positive integer');
+        if ($this->value <= 0) {
+            throw new InvalidArgumentException('TimeEntryId must be a positive integer');
         }
     }
 }

@@ -202,9 +202,9 @@ final class User
     public function toArray(): array
     {
         return [
-            'id' => $this->id ? $this->id->getValue() : null,
-            'uuid' => $this->uuid->getValue(),
-            'email' => $this->email->getValue(),
+            'id' => $this->id ? $this->id->value() : null,
+            'uuid' => $this->uuid->value(),
+            'email' => $this->email->value(),
             'name' => $this->name(),
             'is_active' => $this->isActive(),
             'is_admin' => $this->isAdmin(),

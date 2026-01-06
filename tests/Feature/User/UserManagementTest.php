@@ -48,7 +48,7 @@ class UserManagementTest extends TestCase
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $repository->save($user);
 
-        $response = $this->get("/user/{$savedUser->id()->getValue()}");
+        $response = $this->get("/user/{$savedUser->id()->value()}");
 
         $response->assertStatus(200);
         $response->assertViewIs('users.show');
@@ -62,14 +62,14 @@ class UserManagementTest extends TestCase
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $repository->save($user);
 
-        $response = $this->delete("/user/{$savedUser->id()->getValue()}");
+        $response = $this->delete("/user/{$savedUser->id()->value()}");
 
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario eliminado correctamente');
 
         // Verificar que el usuario fue eliminado
         $this->assertDatabaseMissing('users', [
-            'id' => $savedUser->id()->getValue(),
+            'id' => $savedUser->id()->value(),
         ]);
     }
 
@@ -82,29 +82,29 @@ class UserManagementTest extends TestCase
 
         // Verificar que está inactivo inicialmente (nuevo comportamiento)
         $this->assertDatabaseHas('users', [
-            'id' => $savedUser->id()->getValue(),
+            'id' => $savedUser->id()->value(),
             'is_active' => false,
         ]);
 
         // Activar usuario
-        $response = $this->patch("/user/{$savedUser->id()->getValue()}/toggle-active");
+        $response = $this->patch("/user/{$savedUser->id()->value()}/toggle-active");
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario activado correctamente');
 
         // Verificar que se activó
         $this->assertDatabaseHas('users', [
-            'id' => $savedUser->id()->getValue(),
+            'id' => $savedUser->id()->value(),
             'is_active' => true,
         ]);
 
         // Desactivar usuario
-        $response = $this->patch("/user/{$savedUser->id()->getValue()}/toggle-active");
+        $response = $this->patch("/user/{$savedUser->id()->value()}/toggle-active");
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario desactivado correctamente');
 
         // Verificar que se desactivó
         $this->assertDatabaseHas('users', [
-            'id' => $savedUser->id()->getValue(),
+            'id' => $savedUser->id()->value(),
             'is_active' => false,
         ]);
     }

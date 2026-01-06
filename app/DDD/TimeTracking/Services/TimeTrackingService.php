@@ -47,7 +47,7 @@ class TimeTrackingService
         if ($timeEntryId !== null) {
             $registroToClose = null;
             foreach ($user->registrosHorarios() as $registro) {
-                if ($registro->id() && $registro->id()->getValue() === $timeEntryId) {
+                if ($registro->id() && $registro->id()->value() === $timeEntryId) {
                     $registroToClose = $registro;
                     break;
                 }

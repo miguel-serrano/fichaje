@@ -54,15 +54,15 @@
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">Email</h6>
                         <p>
-                            <span class="masked-info">{{ Str::mask($user->email()->getValue(), '*', 3, strpos($user->email()->getValue(), '@') - 3) }}</span>
-                            <span class="full-info" style="display: none;">{{ $user->email()->getValue() }}</span>
+                            <span class="masked-info">{{ Str::mask($user->email()->value(), '*', 3, strpos($user->email()->value(), '@') - 3) }}</span>
+                            <span class="full-info" style="display: none;">{{ $user->email()->value() }}</span>
                         </p>
                     </div>
                     <div class="col s12 m6">
                         <h6 class="grey-text text-darken-1">UUID</h6>
                         <p>
-                            <code class="grey-text masked-info">{{ Str::limit($user->uuid()->getValue(), 18) }}</code>
-                            <code class="grey-text full-info" style="display: none;">{{ $user->uuid()->getValue() }}</code>
+                            <code class="grey-text masked-info">{{ Str::limit($user->uuid()->value(), 18) }}</code>
+                            <code class="grey-text full-info" style="display: none;">{{ $user->uuid()->value() }}</code>
                         </p>
                     </div>
                     <div class="col s12 m6">
@@ -189,9 +189,9 @@
                                 </td>
                                 <td class="right-align">
                                     @if($registro->isAbierto())
-                                        <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->getValue()]) }}" method="POST" style="display: inline;">
+                                        <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->value()]) }}" method="POST" style="display: inline;">
                                             @csrf
-                                            <input type="hidden" name="userUuid" value="{{ $user->uuid()->getValue() }}">
+                                            <input type="hidden" name="userUuid" value="{{ $user->uuid()->value() }}">
                                             <button type="submit" class="btn-small waves-effect waves-light pink darken-2">
                                                 <i class="material-icons left">check</i>Cerrar
                                             </button>

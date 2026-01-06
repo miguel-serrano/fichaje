@@ -14,7 +14,7 @@ final class UserPolicy implements UserPolicyInterface
 
     public function canView(User $authenticatedUser, User $targetUser): bool
     {
-        return $authenticatedUser->isAdmin() || $authenticatedUser->id()?->getValue() === $targetUser->id()?->getValue();
+        return $authenticatedUser->isAdmin() || $authenticatedUser->id()?->value() === $targetUser->id()?->value();
     }
 
     public function canCreate(User $authenticatedUser): bool

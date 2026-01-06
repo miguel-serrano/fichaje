@@ -11,11 +11,11 @@ final class LaravelPasswordHashingService implements PasswordHashingService
 {
     public function hash(PlainPassword $password): HashedPassword
     {
-        return new HashedPassword(Hash::make($password->getValue()));
+        return new HashedPassword(Hash::make($password->value()));
     }
 
     public function verify(PlainPassword $plainPassword, HashedPassword $hashedPassword): bool
     {
-        return Hash::check($plainPassword->getValue(), $hashedPassword->getValue());
+        return Hash::check($plainPassword->value(), $hashedPassword->value());
     }
 }

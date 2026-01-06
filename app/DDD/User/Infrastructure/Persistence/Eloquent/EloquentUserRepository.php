@@ -25,7 +25,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function save(User $user): User
     {
-        $user_id = $user->id() ? $user->id()->getValue() : null;
+        $user_id = $user->id() ? $user->id()->value() : null;
 
         DB::transaction(function () use ($user, &$user_id) {
             $usersTable = $this->getUsersTable();
@@ -33,8 +33,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             $now = now();
 
             $userData = [
-                'uuid' => $user->uuid()->getValue(),
-                'email' => $user->email()->getValue(),
+                'uuid' => $user->uuid()->value(),
+                'email' => $user->email()->value(),
                 'name' => $user->name(),
                 'is_active' => $user->isActive(),
                 'updated_at' => $now,
@@ -57,7 +57,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 ];
 
                 if ($registro->id()) {
-                    DB::table($registrosTable)->where('id', $registro->id()->getValue())->update($registroData);
+                    DB::table($registrosTable)->where('id', $registro->id()->value())->update($registroData);
                 } else {
                     $newId = DB::table($registrosTable)->insertGetId($registroData);
                     $registro->setId(new TimeEntryId($newId));
@@ -70,7 +70,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function findById(UserId $id): ?User
     {
-        $eloquentUser = DB::table($this->getUsersTable())->where('id', $id->getValue())->first();
+        $eloquentUser = DB::table($this->getUsersTable())->where('id', $id->value())->first();
 
         if (! $eloquentUser) {
             return null;
@@ -98,7 +98,7 @@ class EloquentUserRepository implements UserRepositoryInterface
         $user = $this->findById($id);
 
         if (! $user) {
-            throw new UserNotFoundException("User {$id->getValue()} not found");
+            throw new UserNotFoundException("User {$id->value()} not found");
         }
 
         return $user;
@@ -106,7 +106,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function findByUuid(Uuid $uuid): ?User
     {
-        $eloquentUser = DB::table($this->getUsersTable())->where('uuid', $uuid->getValue())->first();
+        $eloquentUser = DB::table($this->getUsersTable())->where('uuid', $uuid->value())->first();
 
         if (! $eloquentUser) {
             return null;
@@ -134,7 +134,7 @@ class EloquentUserRepository implements UserRepositoryInterface
         $user = $this->findByUuid($uuid);
 
         if (! $user) {
-            throw new UserNotFoundException("User with UUID {$uuid->getValue()} not found");
+            throw new UserNotFoundException("User with UUID {$uuid->value()} not found");
         }
 
         return $user;
@@ -142,7 +142,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function existsByEmail(Email $email): bool
     {
-        return DB::table($this->getUsersTable())->where('email', $email->getValue())->exists();
+        return DB::table($this->getUsersTable())->where('email', $email->value())->exists();
     }
 
     /** @return User[] */
@@ -171,9 +171,9 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function delete(UserId $id): bool
     {
         return DB::transaction(function () use ($id) {
-            DB::table($this->getRegistrosTable())->where('user_id', $id->getValue())->delete();
+            DB::table($this->getRegistrosTable())->where('user_id', $id->value())->delete();
 
-            return DB::table($this->getUsersTable())->where('id', $id->getValue())->delete() > 0;
+            return DB::table($this->getUsersTable())->where('id', $id->value())->delete() > 0;
         });
     }
 
@@ -191,7 +191,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function saveWithPassword(\App\DDD\User\Domain\Entity\User $user, \App\DDD\Authentication\Domain\ValueObjects\HashedPassword $password): User
     {
-        $user_id = $user->id() ? $user->id()->getValue() : null;
+        $user_id = $user->id() ? $user->id()->value() : null;
 
         DB::transaction(function () use ($user, $password, &$user_id) {
             $usersTable = $this->getUsersTable();
@@ -199,11 +199,11 @@ class EloquentUserRepository implements UserRepositoryInterface
             $now = now();
 
             $userData = [
-                'uuid' => $user->uuid()->getValue(),
-                'email' => $user->email()->getValue(),
+                'uuid' => $user->uuid()->value(),
+                'email' => $user->email()->value(),
                 'name' => $user->name(),
                 'is_active' => $user->isActive(),
-                'password' => $password->getValue(),
+                'password' => $password->value(),
                 'updated_at' => $now,
             ];
 
@@ -224,7 +224,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 ];
 
                 if ($registro->id()) {
-                    DB::table($registrosTable)->where('id', $registro->id()->getValue())->update($registroData);
+                    DB::table($registrosTable)->where('id', $registro->id()->value())->update($registroData);
                 } else {
                     $newId = DB::table($registrosTable)->insertGetId($registroData);
                     $registro->setId(new TimeEntryId($newId));
@@ -239,7 +239,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function findTodayRegistrosByUserId(UserId $id): array
     {
         return DB::table($this->getRegistrosTable())
-            ->where('user_id', $id->getValue())
+            ->where('user_id', $id->value())
             ->whereDate('entrada', today())
             ->get()
             ->map(fn ($r) => (array) $r)

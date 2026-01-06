@@ -2,30 +2,40 @@
 
 namespace App\DDD\Shared\Domain\ValueObject;
 
-abstract class IntValueObject
+use InvalidArgumentException;
+use MichaelRubel\ValueObjects\ValueObject;
+
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @method static static make(int $value)
+ * @method static static from(int $value)
+ * @method static static makeOrNull(int|null $value)
+ *
+ * @extends ValueObject<TKey, TValue>
+ */
+abstract class IntValueObject extends ValueObject
 {
-    public function __construct(
-        protected int $value
-    ) {
-        $this->validate($value);
+    protected int $value;
+
+    public function __construct(int $value)
+    {
+        if (isset($this->value)) {
+            throw new InvalidArgumentException(static::IMMUTABLE_MESSAGE);
+        }
+
+        $this->value = $value;
+
+        $this->validate();
     }
 
-    public function getValue(): int
+    public function value(): int
     {
         return $this->value;
     }
 
-    public function equals(IntValueObject $other): bool
-    {
-        return $this->value === $other->value;
-    }
-
-    public function __toString(): string
-    {
-        return (string) $this->value;
-    }
-
-    protected function validate(int $value): void
+    protected function validate(): void
     {
         // Override in child classes for specific validation
     }

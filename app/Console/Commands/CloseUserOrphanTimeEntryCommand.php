@@ -50,7 +50,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
             return Command::FAILURE;
         }
 
-        $this->info("Usuario encontrado: {$user->name()} ({$user->email()->getValue()})");
+        $this->info("Usuario encontrado: {$user->name()} ({$user->email()->value()})");
 
         $orphanEntries = DB::table('time_entries')
             ->join('users', 'time_entries.user_id', '=', 'users.id')

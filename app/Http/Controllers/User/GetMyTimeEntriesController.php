@@ -22,10 +22,10 @@ class GetMyTimeEntriesController extends Controller
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
 
-            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($authenticatedUser->id()->getValue());
+            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($authenticatedUser->id()->value());
             $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
 
-            $todayRegistrosQuery = new GetUserTodayRegistrosQuery($authenticatedUser->id()->getValue());
+            $todayRegistrosQuery = new GetUserTodayRegistrosQuery($authenticatedUser->id()->value());
             $todayRegistrosData = $this->queryBus->dispatch($todayRegistrosQuery);
 
             $todayRegistros = array_map(

@@ -15,7 +15,7 @@ final class DatabaseNotifier implements NotifierInterface
     public function send(User $user, Notification $notification): void
     {
         DB::table('notifications')->insert([
-            'user_id' => $user->id()->getValue(),
+            'user_id' => $user->id()->value(),
             'type' => $notification->type()->value,
             'title' => $notification->title(),
             'message' => $notification->message(),
