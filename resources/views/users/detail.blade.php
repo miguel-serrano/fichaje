@@ -10,6 +10,21 @@
     .switch label input[type=checkbox]:checked + .lever:after {
         background-color: #c2185b;
     }
+    /* Responsive para collapsible headers en móvil */
+    @media only screen and (max-width: 600px) {
+        .collapsible-header {
+            flex-wrap: wrap;
+            padding: 10px 15px;
+        }
+        .collapsible-header > span:first-of-type {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .collapsible-header .chip {
+            margin: 2px 4px 2px 0;
+            font-size: 0.85rem;
+        }
+    }
 </style>
 <div class="row">
     <div class="col s12">
@@ -204,22 +219,22 @@
     <div class="col s12">
         <div class="card">
             <div class="card-content">
-                <div class="row" style="margin-bottom: 10px;">
-                    <div class="col s12 m6">
-                        <span class="card-title">
-                            <i class="material-icons left">calendar_today</i>
-                            Resumen Diario
-                        </span>
-                        <p class="grey-text">Fichajes cerrados agrupados por día</p>
-                    </div>
-                    <div class="col s12 m6 right-align">
-                        <button onclick="expandAll()" class="btn-small waves-effect waves-light light-green">
-                            <i class="material-icons left">unfold_more</i>Expandir
-                        </button>
-                        <button onclick="collapseAll()" class="btn-small waves-effect waves-light light-green">
-                            <i class="material-icons left">unfold_less</i>Colapsar
-                        </button>
-                    </div>
+                <span class="card-title">
+                    <i class="material-icons left">calendar_today</i>
+                    Resumen Diario
+                </span>
+                <p class="grey-text">Fichajes cerrados agrupados por día</p>
+                <div style="margin: 15px 0; display: flex; gap: 8px;">
+                    <button onclick="expandAll()" class="btn-small waves-effect waves-light light-green">
+                        <i class="material-icons tiny hide-on-med-and-up">unfold_more</i>
+                        <span class="hide-on-small-only"><i class="material-icons left">unfold_more</i>Expandir</span>
+                        <span class="hide-on-med-and-up">Exp</span>
+                    </button>
+                    <button onclick="collapseAll()" class="btn-small waves-effect waves-light light-green">
+                        <i class="material-icons tiny hide-on-med-and-up">unfold_less</i>
+                        <span class="hide-on-small-only"><i class="material-icons left">unfold_less</i>Colapsar</span>
+                        <span class="hide-on-med-and-up">Col</span>
+                    </button>
                 </div>
 
                 @if(count($dailyRegistros) > 0)
