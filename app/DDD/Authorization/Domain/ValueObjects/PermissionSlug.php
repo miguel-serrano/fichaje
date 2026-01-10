@@ -1,0 +1,34 @@
+<?php
+
+namespace App\DDD\Authorization\Domain\ValueObjects;
+
+use App\DDD\Shared\Domain\ValueObject\StringValueObject;
+
+final class PermissionSlug extends StringValueObject
+{
+    protected function validate(): void
+    {
+        if (empty($this->value)) {
+            throw new \InvalidArgumentException('Permission slug cannot be empty');
+        }
+
+        if (!preg_match('/^[a-z]+\.[a-z_]+$/', $this->value)) {
+            throw new \InvalidArgumentException('Permission slug must follow format: context.action (e.g., user.create, timetracking.view_all)');
+        }
+    }
+
+    public function equals(PermissionSlug $other): bool
+    {
+        return $this->value === $other->value();
+    }
+
+    public function context(): string
+    {
+        return explode('.', $this->value)[0];
+    }
+
+    public function action(): string
+    {
+        return explode('.', $this->value)[1];
+    }
+}

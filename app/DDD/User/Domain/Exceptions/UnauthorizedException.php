@@ -2,9 +2,7 @@
 
 namespace App\DDD\User\Domain\Exceptions;
 
-use Exception;
-
-class UnauthorizedException extends Exception
+class UnauthorizedException extends \Exception
 {
     public function __construct(string $message = 'No tienes permisos para realizar esta acción', int $code = 403, ?\Throwable $previous = null)
     {
@@ -39,5 +37,10 @@ class UnauthorizedException extends Exception
     public static function forList(): self
     {
         return new self('No tienes permisos para listar usuarios');
+    }
+
+    public static function forPermission(string $permissionSlug): self
+    {
+        return new self("No tienes el permiso necesario: {$permissionSlug}");
     }
 }

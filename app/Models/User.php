@@ -3,11 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -89,5 +90,58 @@ class User extends Authenticatable
     public function holidayRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(HolidayRequest::class);
+    }
+    
+    /**
+     * Get the roles for the user.
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_role')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user has a specific role.
+     */
+    public function hasRole(string $roleSlug): bool
+    {
+        return $this->roles()->where('slug', $roleSlug)->exists();
+    }
+
+    /**
+     * Check if user has a specific permission through any of their roles.
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        if ($this->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $this->roles()
+            ->whereHas('permissions', function ($query) use ($permissionSlug) {
+                $query->where('slug', $permissionSlug);
+            })
+            ->exists();
+    }
+
+    /**
+     * Assign a role to the user.
+     */
+    public function assignRole(string $roleSlug): void
+    {
+        $role = Role::where('slug', $roleSlug)->firstOrFail();
+        $this->roles()->syncWithoutDetaching([$role->id]);
+    }
+
+    /**
+     * Remove a role from the user.
+     */
+    public function removeRole(string $roleSlug): void
+    {
+        $role = Role::where('slug', $roleSlug)->first();
+        if ($role) {
+            $this->roles()->detach($role->id);
+        }
     }
 }

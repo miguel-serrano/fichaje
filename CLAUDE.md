@@ -217,6 +217,12 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Repositorios en Infrastructure usan `DB` facade con mapeo manual
 - Controladores thin: solo dispatching de commands/queries
 
+### Arquitectura DDD
+- Los nuevos usuarios se crean con `is_active = false` por defecto
+- El campo `is_admin` (boolean) determina si un usuario es administrador, NO usar `remember_token`
+- Al llamar a `User::fromPrimitives()`, el parámetro `isAdmin` es obligatorio (bool), no pasar null
+- **Bus**: Usar `$this->queryBus->dispatch()` y `$this->commandBus->dispatch()`, NO usar `ask()`
+
 ### Reglas de Dominio
 - Nuevos usuarios: `is_active = false` por defecto
 - `is_admin` (boolean) determina admin, NO usar `remember_token`

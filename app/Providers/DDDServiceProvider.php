@@ -26,6 +26,18 @@ use App\DDD\Holiday\Application\Handler\RejectHolidayRequestCommandHandler;
 use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
+use App\DDD\Authorization\Application\Command\AssignRoleToUserCommand;
+use App\DDD\Authorization\Application\Command\RemoveRoleFromUserCommand;
+use App\DDD\Authorization\Application\Handler\AssignRoleToUserCommandHandler;
+use App\DDD\Authorization\Application\Handler\GetAllPermissionsQueryHandler;
+use App\DDD\Authorization\Application\Handler\GetAllRolesQueryHandler;
+use App\DDD\Authorization\Application\Handler\GetUserPermissionsQueryHandler;
+use App\DDD\Authorization\Application\Handler\GetUserRolesQueryHandler;
+use App\DDD\Authorization\Application\Handler\RemoveRoleFromUserCommandHandler;
+use App\DDD\Authorization\Application\Query\GetAllPermissionsQuery;
+use App\DDD\Authorization\Application\Query\GetAllRolesQuery;
+use App\DDD\Authorization\Application\Query\GetUserPermissionsQuery;
+use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
 use App\DDD\Notification\Application\NotificationService;
 use App\DDD\Notification\Infrastructure\DatabaseNotifier;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
@@ -113,6 +125,9 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(CreateHolidayRequestCommand::class, CreateHolidayRequestCommandHandler::class);
         $tacticianBus->addHandler(ApproveHolidayRequestCommand::class, ApproveHolidayRequestCommandHandler::class);
         $tacticianBus->addHandler(RejectHolidayRequestCommand::class, RejectHolidayRequestCommandHandler::class);
+        // Authorization Commands
+        $tacticianBus->addHandler(AssignRoleToUserCommand::class, AssignRoleToUserCommandHandler::class);
+        $tacticianBus->addHandler(RemoveRoleFromUserCommand::class, RemoveRoleFromUserCommandHandler::class);
     }
 
     private function mapQueries(TacticianCommandBusInterface $tacticianBus): void
@@ -134,5 +149,10 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(GetUserHolidaysQuery::class, GetUserHolidaysQueryHandler::class);
         $tacticianBus->addHandler(GetPendingHolidaysQuery::class, GetPendingHolidaysQueryHandler::class);
         $tacticianBus->addHandler(GetApprovedHolidaysQuery::class, GetApprovedHolidaysQueryHandler::class);
+        // Authorization Queries
+        $tacticianBus->addHandler(GetUserRolesQuery::class, GetUserRolesQueryHandler::class);
+        $tacticianBus->addHandler(GetUserPermissionsQuery::class, GetUserPermissionsQueryHandler::class);
+        $tacticianBus->addHandler(GetAllRolesQuery::class, GetAllRolesQueryHandler::class);
+        $tacticianBus->addHandler(GetAllPermissionsQuery::class, GetAllPermissionsQueryHandler::class);
     }
 }
