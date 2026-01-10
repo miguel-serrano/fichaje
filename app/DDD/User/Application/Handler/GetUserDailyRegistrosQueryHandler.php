@@ -13,7 +13,8 @@ class GetUserDailyRegistrosQueryHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeTrackingService $timeTrackingService,
-    ) {}
+    ) {
+    }
 
     public function handle(GetUserDailyRegistrosQuery $query): array
     {
@@ -46,7 +47,7 @@ class GetUserDailyRegistrosQueryHandler
 
             $segundosTrabajados = ($duracion->h * 3600) + ($duracion->i * 60) + $duracion->s;
 
-            if (! isset($registrosPorDia[$fecha])) {
+            if (!isset($registrosPorDia[$fecha])) {
                 $registrosPorDia[$fecha] = [
                     'fecha' => $fecha,
                     'fecha_formateada' => date('d/m/Y', strtotime($fecha)),
@@ -74,7 +75,7 @@ class GetUserDailyRegistrosQueryHandler
             $entrada = new \DateTime($registro->entrada);
             $segundosTrabajados = time() - $entrada->getTimestamp();
 
-            if (! isset($registrosPorDia[$fecha])) {
+            if (!isset($registrosPorDia[$fecha])) {
                 $registrosPorDia[$fecha] = [
                     'fecha' => $fecha,
                     'fecha_formateada' => date('d/m/Y', strtotime($fecha)),
@@ -106,7 +107,7 @@ class GetUserDailyRegistrosQueryHandler
         $mesActual = date('Y-m');
 
         foreach ($registrosPorDia as $dia) {
-            if (strpos($dia['fecha'], $mesActual) === 0) {
+            if (0 === strpos($dia['fecha'], $mesActual)) {
                 $totalSegundosMes += $dia['total_segundos'];
             }
         }

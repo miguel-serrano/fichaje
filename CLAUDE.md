@@ -1263,3 +1263,46 @@ public function register(): void
 ## Documentación Oficial
 
 https://laravel.com/docs/10.x/telescope
+
+
+# Git Hooks
+
+## Pre-commit Hook (PHP-CS-Fixer Symfony)
+
+El proyecto tiene configurado un hook de pre-commit que aplica automáticamente las reglas de codificación de Symfony a los archivos PHP.
+
+### Ubicación
+`.git/hooks/pre-commit`
+
+### Comportamiento
+- Se ejecuta automáticamente antes de cada `git commit`
+- Formatea archivos PHP en `app/`, `config/`, `routes/`
+- Aplica reglas `@Symfony` (PSR-1, PSR-2, PSR-4, PSR-12)
+- Re-añade los archivos formateados al commit
+
+### Reglas Aplicadas
+- **Spacing**: Espacio después de comas, alrededor de operadores binarios
+- **Yoda conditions**: `'value' === $var`
+- **Identical comparison**: `===` y `!==`
+- **Braces**: Siempre en estructuras de control
+- **Arrays**: Coma trailing en arrays multilinea
+- **Return statements**: Línea en blanco antes de `return`
+- **Imports**: `use` para cada clase
+
+### Dependencia
+Requiere `friendsofphp/php-cs-fixer` instalado:
+```bash
+vendor/bin/sail composer require --dev friendsofphp/php-cs-fixer
+```
+
+### Ejecutar Manualmente
+```bash
+# Formatear app/
+vendor/bin/sail php vendor/bin/php-cs-fixer fix app/ --rules=@Symfony --verbose
+
+# Solo verificar sin cambiar
+vendor/bin/sail php vendor/bin/php-cs-fixer fix app/ --rules=@Symfony --dry-run --diff
+```
+
+### Comando Claude
+Disponible el comando `/php-fixer-symfony` para ejecutar el fixer manualmente.
