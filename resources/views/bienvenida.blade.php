@@ -56,11 +56,6 @@
                     Estos límites se ampliarán progresivamente conforme la aplicación evolucione hacia su versión estable.
                 </p>
 
-                <p class="grey-text text-lighten-1" style="font-size: 13px; margin-bottom: 25px;">
-                    <i class="material-icons tiny" style="vertical-align: middle;">verified</i>
-                    {{ \App\Helpers\TestCounter::count() }} tests y subiendo
-                </p>
-
                 @if(!auth()->user()->accepted_terms)
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <div class="switch">
