@@ -22,7 +22,7 @@
         <div class="nav-wrapper">
             <div class="container">
                 <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="brand-logo" style="display: flex; align-items: center;">
-                    <i class="material-icons left">access_time</i>TimeTrack<sup style="font-size: 12px; margin-left: 4px; opacity: 0.8;">beta</sup><span class="badge black" style="margin-left: 8px;position: relative;top: 1px;font-size: 12px;color: white;">{{ \App\Helpers\TestCounter::count() }}</span>
+                    <i class="material-icons left">access_time</i>TimeTrack<sup style="font-size: 12px; margin-left: 4px; opacity: 0.8;">beta</sup>
                 </a>
                 @auth
                 <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
