@@ -22,3 +22,4 @@ custom.txt
 mysql-schema.sql
 *.md
 /config/telescope.php
+CLAUDE.md
