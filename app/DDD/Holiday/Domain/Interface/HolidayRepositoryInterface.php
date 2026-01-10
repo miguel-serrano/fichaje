@@ -30,6 +30,11 @@ interface HolidayRepositoryInterface
     /**
      * @return HolidayRequest[]
      */
+    public function findApproved(): array;
+
+    /**
+     * @return HolidayRequest[]
+     */
     public function findAll(): array;
 
     public function hasOverlapping(UserId $userId, DateRange $range, ?HolidayRequestId $excludeId = null): bool;

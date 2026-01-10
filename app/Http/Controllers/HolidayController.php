@@ -19,12 +19,13 @@ class HolidayController extends Controller
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private QueryBusInterface $queryBus
-    ) {}
+        private QueryBusInterface $queryBus,
+    ) {
+    }
 
     public function index(): View
     {
-        $holidays = $this->queryBus->ask(
+        $holidays = $this->queryBus->dispatch(
             new GetUserHolidaysQuery(Auth::id())
         );
 

@@ -50,7 +50,7 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
             ->where('id', $id->value())
             ->first();
 
-        if (! $record) {
+        if (!$record) {
             return null;
         }
 
@@ -61,7 +61,7 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
     {
         $request = $this->findById($id);
 
-        if (! $request) {
+        if (!$request) {
             throw HolidayRequestNotFoundException::withId($id->value());
         }
 
@@ -89,6 +89,19 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
         $records = DB::table($this->getTable())
             ->where('status', 'pending')
             ->orderBy('created_at', 'asc')
+            ->get();
+
+        return $records->map(fn ($record) => $this->mapToEntity($record))->toArray();
+    }
+
+    /**
+     * @return HolidayRequest[]
+     */
+    public function findApproved(): array
+    {
+        $records = DB::table($this->getTable())
+            ->where('status', 'approved')
+            ->orderBy('start_date', 'asc')
             ->get();
 
         return $records->map(fn ($record) => $this->mapToEntity($record))->toArray();
