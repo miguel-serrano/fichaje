@@ -14,6 +14,16 @@ use App\DDD\Authentication\Domain\Services\AuthenticationService;
 use App\DDD\Authentication\Domain\Services\PasswordHashingService;
 use App\DDD\Authentication\Infrastructure\LaravelAuthenticationService;
 use App\DDD\Authentication\Infrastructure\LaravelPasswordHashingService;
+use App\DDD\Holiday\Application\Command\ApproveHolidayRequestCommand;
+use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
+use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
+use App\DDD\Holiday\Application\Handler\ApproveHolidayRequestCommandHandler;
+use App\DDD\Holiday\Application\Handler\CreateHolidayRequestCommandHandler;
+use App\DDD\Holiday\Application\Handler\GetPendingHolidaysQueryHandler;
+use App\DDD\Holiday\Application\Handler\GetUserHolidaysQueryHandler;
+use App\DDD\Holiday\Application\Handler\RejectHolidayRequestCommandHandler;
+use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
+use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
 use App\DDD\Notification\Application\NotificationService;
 use App\DDD\Notification\Infrastructure\DatabaseNotifier;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
@@ -96,6 +106,11 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(LoginCommand::class, LoginCommandHandler::class);
         $tacticianBus->addHandler(RegisterCommand::class, RegisterCommandHandler::class);
         $tacticianBus->addHandler(LogoutCommand::class, LogoutCommandHandler::class);
+
+        // Holiday Commands
+        $tacticianBus->addHandler(CreateHolidayRequestCommand::class, CreateHolidayRequestCommandHandler::class);
+        $tacticianBus->addHandler(ApproveHolidayRequestCommand::class, ApproveHolidayRequestCommandHandler::class);
+        $tacticianBus->addHandler(RejectHolidayRequestCommand::class, RejectHolidayRequestCommandHandler::class);
     }
 
     private function mapQueries(TacticianCommandBusInterface $tacticianBus): void
@@ -112,5 +127,9 @@ class DDDServiceProvider extends ServiceProvider
 
         // Authentication Queries
         $tacticianBus->addHandler(GetAuthenticatedUserQuery::class, GetAuthenticatedUserQueryHandler::class);
+
+        // Holiday Queries
+        $tacticianBus->addHandler(GetUserHolidaysQuery::class, GetUserHolidaysQueryHandler::class);
+        $tacticianBus->addHandler(GetPendingHolidaysQuery::class, GetPendingHolidaysQueryHandler::class);
     }
 }

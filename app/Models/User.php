@@ -80,4 +80,12 @@ class User extends Authenticatable
     {
         return $this->hasOne(TimeEntry::class)->whereNull('salida');
     }
+
+    /**
+     * Get the holiday requests for the user.
+     */
+    public function holidayRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(HolidayRequest::class);
+    }
 }

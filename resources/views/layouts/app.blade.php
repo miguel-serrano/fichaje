@@ -45,6 +45,18 @@
                             <i class="material-icons left">timer</i>Fichar
                         </a>
                     </li>
+                    <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                        <a href="{{ route('holidays.index') }}">
+                            <i class="material-icons left">beach_access</i>Vacaciones
+                        </a>
+                    </li>
+                    @if(auth()->user()->is_admin)
+                        <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.holidays.index') }}">
+                                <i class="material-icons left">event_available</i>Gestionar Vacaciones
+                            </a>
+                        </li>
+                    @endif
                     @php
                         $unreadNotifications = \App\Models\Notification::where('user_id', auth()->id())
                             ->whereNull('read_at')
@@ -135,6 +147,18 @@
                 <i class="material-icons">timer</i>Fichar
             </a>
         </li>
+        <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+            <a href="{{ route('holidays.index') }}">
+                <i class="material-icons">beach_access</i>Vacaciones
+            </a>
+        </li>
+        @if(auth()->user()->is_admin)
+            <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.holidays.index') }}">
+                    <i class="material-icons">event_available</i>Gestionar Vacaciones
+                </a>
+            </li>
+        @endif
         <li><div class="divider"></div></li>
         <li>
             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">

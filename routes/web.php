@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\HolidayAdminController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\BienvenidoController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RegistroHorario\RegistroHorarioController;
 use App\Http\Controllers\User\DeleteUserController;
@@ -38,7 +40,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/user/{id}', ShowUserController::class)->name('user.show');
         Route::patch('/user/{id}/toggle-active', ToggleUserActiveController::class)->name('user.toggle-active');
         Route::delete('/user/{id}', DeleteUserController::class)->name('user.delete');
+
+        Route::get('/admin/holidays', [HolidayAdminController::class, 'index'])->name('admin.holidays.index');
+        Route::post('/admin/holidays/{id}/approve', [HolidayAdminController::class, 'approve'])->name('admin.holidays.approve');
+        Route::post('/admin/holidays/{id}/reject', [HolidayAdminController::class, 'reject'])->name('admin.holidays.reject');
     });
+
+    Route::get('/holidays', [HolidayController::class, 'index'])->name('holidays.index');
+    Route::post('/holidays', [HolidayController::class, 'store'])->name('holidays.store');
 
     Route::middleware('active')->group(function () {
         Route::get('/registro-horario', [RegistroHorarioController::class, 'index'])->name('registro_horario.index');

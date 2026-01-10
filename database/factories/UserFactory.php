@@ -34,4 +34,14 @@ class UserFactory extends Factory
             'is_active' => false,
         ]);
     }
+
+    /**
+     * Indicate that the user should be an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_admin' => true,
+        ]);
+    }
 }
