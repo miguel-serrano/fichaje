@@ -19,9 +19,11 @@ use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
 use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
 use App\DDD\Holiday\Application\Handler\ApproveHolidayRequestCommandHandler;
 use App\DDD\Holiday\Application\Handler\CreateHolidayRequestCommandHandler;
+use App\DDD\Holiday\Application\Handler\GetApprovedHolidaysQueryHandler;
 use App\DDD\Holiday\Application\Handler\GetPendingHolidaysQueryHandler;
 use App\DDD\Holiday\Application\Handler\GetUserHolidaysQueryHandler;
 use App\DDD\Holiday\Application\Handler\RejectHolidayRequestCommandHandler;
+use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
 use App\DDD\Notification\Application\NotificationService;
@@ -131,5 +133,6 @@ class DDDServiceProvider extends ServiceProvider
         // Holiday Queries
         $tacticianBus->addHandler(GetUserHolidaysQuery::class, GetUserHolidaysQueryHandler::class);
         $tacticianBus->addHandler(GetPendingHolidaysQuery::class, GetPendingHolidaysQueryHandler::class);
+        $tacticianBus->addHandler(GetApprovedHolidaysQuery::class, GetApprovedHolidaysQueryHandler::class);
     }
 }
