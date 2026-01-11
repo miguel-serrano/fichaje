@@ -3,6 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
@@ -71,7 +77,7 @@ class User extends Authenticatable
     /**
      * Get the time entries for the user.
      */
-    public function timeEntries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function timeEntries(): HasMany
     {
         return $this->hasMany(TimeEntry::class);
     }
@@ -79,7 +85,7 @@ class User extends Authenticatable
     /**
      * Get the open time entry for the user.
      */
-    public function openTimeEntry(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function openTimeEntry(): HasOne
     {
         return $this->hasOne(TimeEntry::class)->whereNull('salida');
     }
@@ -97,8 +103,7 @@ class User extends Authenticatable
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'user_role')
-            ->withTimestamps();
+        return $this->belongsToMany(Role::class, 'user_role')->withTimestamps();
     }
 
     /**

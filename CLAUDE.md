@@ -238,8 +238,29 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Usuarios inactivos → `/bienvenido`
 
 ### Tests
+<<<<<<< HEAD
 - Al modificar `User::fromPrimitives()`, actualizar TODOS los tests
 - Usar factories con estados personalizados
+=======
+- Al modificar la firma de `User::fromPrimitives()`, actualizar TODOS los tests que lo usan
+- Verificar que los tests reflejan el comportamiento actual (ej: redirecciones a `bienvenido` en lugar de `home`)
+- El contador de tests usa `TestCounter::count()` que escanea archivos `*Test.php`
+
+### Rutas y Redirecciones
+- Post-registro redirige a `/bienvenido`, no a `/registro-horario`
+- Usuarios inactivos que intentan acceder a Fichar son redirigidos a `/bienvenido`
+- La ruta `home` ya no existe, usar `bienvenido`
+
+### Imports de Clases
+- Usar siempre `use` para importar clases en lugar de namespaces completos inline
+- Ejemplo correcto: `use Illuminate\Database\Eloquent\Relations\BelongsToMany;` y luego `BelongsToMany` en el tipo de retorno
+- Ejemplo incorrecto: `\Illuminate\Database\Eloquent\Relations\BelongsToMany` directamente en el código
+
+### Limpieza de Código
+- Buscar y eliminar archivos huérfanos (Value Objects, Exceptions, etc. no usados)
+- Eliminar imports no utilizados
+- Al cambiar arquitectura (ej: remember_token → is_admin), buscar TODAS las referencias
+>>>>>>> 5930ce8 (minor fix)
 
 ### Documentación de Ramas
 - Al finalizar funcionalidad, documentar en `.claude/code/{nombre-rama}.md`
