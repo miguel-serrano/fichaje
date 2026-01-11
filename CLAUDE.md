@@ -8,14 +8,14 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 ## Foundational Context
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
-- php - 8.2.29
-- laravel/framework (LARAVEL) - v10
+- php - 8.4
+- laravel/framework (LARAVEL) - v11
 - laravel/prompts (PROMPTS) - v0
 - laravel/sanctum (SANCTUM) - v3
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
-- phpunit/phpunit (PHPUNIT) - v10
+- phpunit/phpunit (PHPUNIT) - v11
 
 ## Conventions
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, naming.
@@ -113,6 +113,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ## Laravel Sail
 
 - This project runs inside Laravel Sail's Docker containers. You MUST execute all commands through Sail.
+- Cuando ejecutes un comando de consola útil o relevante, añádelo a `.claude/docs/comandosTerminal.md` si no existe ya en ese archivo.
 - Start services using `vendor/bin/sail up -d` and stop them with `vendor/bin/sail stop`.
 - Open the application in the browser by running `vendor/bin/sail open`.
 - Always prefix PHP, Artisan, Composer, and Node commands** with `vendor/bin/sail`. Examples:
@@ -148,6 +149,11 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Always create Form Request classes for validation rather than inline validation in controllers. Include both validation rules and custom error messages.
 - Check sibling Form Requests to see if the application uses array or string based validation rules.
 
+### Imports de Clases
+- Usar siempre `use` para importar clases en lugar de namespaces completos inline
+- Ejemplo correcto: `use Illuminate\Database\Eloquent\Relations\BelongsToMany;` y luego `BelongsToMany` en el tipo de retorno
+- Ejemplo incorrecto: `\Illuminate\Database\Eloquent\Relations\BelongsToMany` directamente en el código
+
 ### Queues
 - Use queued jobs for time-consuming operations with the `ShouldQueue` interface.
 
@@ -169,18 +175,18 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `vendor/bin/sail npm run build` or ask the user to run `vendor/bin/sail npm run dev` or `vendor/bin/sail composer run dev`.
 
 
-=== laravel/v10 rules ===
+=== laravel/v11 rules ===
 
-## Laravel 10
+## Laravel 11
 
 - Use the `search-docs` tool to get version specific documentation.
-- Middleware typically live in `app/Http/Middleware/` and service providers in `app/Providers/`.
-- Laravel 10 has a `bootstrap/app.php` file that creates the application instance and binds kernel contracts, but does not use it for application configuration like Laravel 11:
-    - Middleware registration is in `app/Http/Kernel.php`
-    - Exception handling is in `app/Exceptions/Handler.php`
-    - Console commands and schedule registration is in `app/Console/Kernel.php`
-    - Rate limits likely exist in `RouteServiceProvider` or `app/Http/Kernel.php`
-- When using Eloquent model casts, you must use `protected $casts = [];` and not the `casts()` method. The `casts()` method isn't available on models in Laravel 10.
+- Laravel 11 uses `bootstrap/app.php` for application configuration:
+    - Middleware registration via `->withMiddleware()` in bootstrap
+    - Exception handling via `->withExceptions()` in bootstrap
+    - Console commands via `->withCommands()` in bootstrap
+    - Rate limits configured in bootstrap or service providers
+- Service providers live in `app/Providers/`
+- When using Eloquent model casts, you can use either `protected $casts = []` array or the `casts()` method.
 
 
 === pint/core rules ===
@@ -207,6 +213,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - To run all tests: `vendor/bin/sail artisan test`.
 - To run all tests in a file: `vendor/bin/sail artisan test tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `vendor/bin/sail artisan test --filter=testName` (recommended after making a change to a related file).
+<<<<<<< HEAD
 </laravel-boost-guidelines>
 
 ## Convenciones del Proyecto TimeTrack
@@ -298,3 +305,5 @@ app/DDD/
 - **Debugging**: `/telescope`
 - **Pre-commit hook**: php-cs-fixer con reglas `@Symfony`
 - **Skill disponible**: `/php-fixer-symfony`
+=======
+>>>>>>> 9a36fbf (fix docu)

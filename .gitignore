@@ -21,5 +21,6 @@ backup.sql
 custom.txt
 mysql-schema.sql
 *.md
-/config/telescope.php
+config/telescope.php
 CLAUDE.md
+

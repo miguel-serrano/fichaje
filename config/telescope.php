@@ -4,7 +4,6 @@ use Laravel\Telescope\Http\Middleware\Authorize;
 use Laravel\Telescope\Watchers;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Telescope Master Switch
@@ -16,7 +15,7 @@ return [
     |
     */
 
-    'enabled' => env('TELESCOPE_ENABLED', false),
+    'enabled' => env('TELESCOPE_ENABLED', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -120,7 +119,6 @@ return [
     ],
 
     'ignore_commands' => [
-        //
     ],
 
     /*
