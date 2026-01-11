@@ -7,13 +7,16 @@ use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Illuminate\Support\Facades\DB;
+use App\Models\TimeEntry as TimeEntryModel;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class GetUserDailyRegistrosQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeTrackingService $timeTrackingService,
+        private ConnectionInterface $connection,
     ) {
     }
 
@@ -29,14 +32,14 @@ class GetUserDailyRegistrosQueryHandler
         $hoy = date('Y-m-d');
 
         // Obtener registros cerrados
-        $registrosCerrados = DB::table('time_entries')
+        $registrosCerrados = $this->timeEntriesQuery()
             ->where('user_id', $userId)
             ->whereNotNull('salida')
             ->orderBy('entrada', 'desc')
             ->get();
 
         // Obtener registros abiertos de hoy
-        $registrosAbiertos = DB::table('time_entries')
+        $registrosAbiertos = $this->timeEntriesQuery()
             ->where('user_id', $userId)
             ->whereNull('salida')
             ->whereDate('entrada', $hoy)
@@ -127,5 +130,10 @@ class GetUserDailyRegistrosQueryHandler
                 'mes' => TimeFormatter::formatMonth(date('Y-m')),
             ],
         ];
+    }
+
+    private function timeEntriesQuery(): Builder
+    {
+        return $this->connection->table(TimeEntryModel::tableName());
     }
 }

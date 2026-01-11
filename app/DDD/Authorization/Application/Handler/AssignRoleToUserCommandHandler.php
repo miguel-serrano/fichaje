@@ -9,7 +9,8 @@ use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleSlug;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Illuminate\Support\Facades\DB;
+use App\Models\UserRole;
+use Illuminate\Database\ConnectionInterface;
 
 class AssignRoleToUserCommandHandler
 {
@@ -17,6 +18,7 @@ class AssignRoleToUserCommandHandler
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepository,
         private PermissionCheckerInterface $permissionChecker,
+        private ConnectionInterface $connection,
     ) {
     }
 
@@ -30,7 +32,7 @@ class AssignRoleToUserCommandHandler
 
         $role = $this->roleRepository->findBySlugOrFail(new RoleSlug($command->roleSlug));
 
-        DB::table('user_role')->updateOrInsert(
+        $this->connection->table(UserRole::tableName())->updateOrInsert(
             ['user_id' => $command->targetUserId, 'role_id' => $role->id()->value()],
             ['created_at' => now(), 'updated_at' => now()]
         );

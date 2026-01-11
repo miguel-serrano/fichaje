@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasTableName;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
+    use HasTableName;
+
     /**
      * @var array<int, string>
      */

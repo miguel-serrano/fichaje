@@ -5,12 +5,14 @@ namespace App\DDD\Authorization\Application\Handler;
 use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
 use App\DDD\Authorization\Domain\Entity\Role;
 use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
-use Illuminate\Support\Facades\DB;
+use App\Models\UserRole;
+use Illuminate\Database\ConnectionInterface;
 
 class GetUserRolesQueryHandler
 {
     public function __construct(
         private RoleRepositoryInterface $roleRepository,
+        private ConnectionInterface $connection,
     ) {
     }
 
@@ -19,7 +21,7 @@ class GetUserRolesQueryHandler
      */
     public function handle(GetUserRolesQuery $query): array
     {
-        $roleIds = DB::table('user_role')
+        $roleIds = $this->connection->table(UserRole::tableName())
             ->where('user_id', $query->userId)
             ->pluck('role_id')
             ->toArray();

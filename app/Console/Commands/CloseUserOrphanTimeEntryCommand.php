@@ -8,9 +8,12 @@ use App\DDD\Notification\Domain\Notification;
 use App\DDD\Notification\Domain\NotificationType;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
+use App\Models\TimeEntry as TimeEntryModel;
+use App\Models\User as UserModel;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Log;
 
 class CloseUserOrphanTimeEntryCommand extends Command
@@ -31,13 +34,17 @@ class CloseUserOrphanTimeEntryCommand extends Command
      */
     protected $description = 'Cierra fichajes huérfanos de un usuario específico';
 
+    private ConnectionInterface $connection;
+
     /**
      * Execute the console command.
      */
     public function handle(
         UserRepositoryInterface $userRepository,
         NotificationService $notificationService,
+        ConnectionInterface $connection,
     ): int {
+        $this->connection = $connection;
         $uuid = $this->argument('uuid');
 
         $this->info("Buscando fichajes huérfanos para usuario: {$uuid}");
@@ -52,11 +59,14 @@ class CloseUserOrphanTimeEntryCommand extends Command
 
         $this->info("Usuario encontrado: {$user->name()} ({$user->email()->value()})");
 
-        $orphanEntries = DB::table('time_entries')
-            ->join('users', 'time_entries.user_id', '=', 'users.id')
-            ->where('users.uuid', $uuid)
-            ->whereNull('time_entries.salida')
-            ->select('time_entries.*')
+        $timeEntriesTable = TimeEntryModel::tableName();
+        $usersTable = UserModel::tableName();
+
+        $orphanEntries = $this->connection->table($timeEntriesTable)
+            ->join($usersTable, "{$timeEntriesTable}.user_id", '=', "{$usersTable}.id")
+            ->where("{$usersTable}.uuid", $uuid)
+            ->whereNull("{$timeEntriesTable}.salida")
+            ->select("{$timeEntriesTable}.*")
             ->get();
 
         if ($orphanEntries->isEmpty()) {
@@ -96,7 +106,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
                 }
             }
 
-            DB::table('time_entries')
+            $this->timeEntriesQuery()
                 ->where('id', $entry->id)
                 ->update([
                     'salida' => $salida,
@@ -138,7 +148,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
 
     private function getWorkedSecondsByUserAndDate(int $userId, string $date, ?int $excludeEntryId = null): int
     {
-        $query = DB::table('time_entries')
+        $query = $this->timeEntriesQuery()
             ->where('user_id', $userId)
             ->whereDate('entrada', $date)
             ->whereNotNull('salida');
@@ -157,6 +167,11 @@ class CloseUserOrphanTimeEntryCommand extends Command
         }
 
         return $totalSeconds;
+    }
+
+    private function timeEntriesQuery(): Builder
+    {
+        return $this->connection->table(TimeEntryModel::tableName());
     }
 
     /**

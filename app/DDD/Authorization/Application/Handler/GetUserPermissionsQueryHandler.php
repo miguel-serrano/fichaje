@@ -3,34 +3,48 @@
 namespace App\DDD\Authorization\Application\Handler;
 
 use App\DDD\Authorization\Application\Query\GetUserPermissionsQuery;
-use Illuminate\Support\Facades\DB;
+use App\Models\Permission as PermissionModel;
+use App\Models\Role as RoleModel;
+use App\Models\RolePermission;
+use App\Models\UserRole;
+use Illuminate\Database\ConnectionInterface;
 
 class GetUserPermissionsQueryHandler
 {
+    public function __construct(
+        private ConnectionInterface $connection,
+    ) {
+    }
+
     /**
      * @return string[]
      */
     public function handle(GetUserPermissionsQuery $query): array
     {
+        $userRoleTable = UserRole::tableName();
+        $rolesTable = RoleModel::tableName();
+        $rolePermissionTable = RolePermission::tableName();
+        $permissionsTable = PermissionModel::tableName();
+
         // Check if user has super_admin role
-        $hasSuperAdmin = DB::table('user_role')
-            ->join('roles', 'user_role.role_id', '=', 'roles.id')
-            ->where('user_role.user_id', $query->userId)
-            ->where('roles.slug', 'super_admin')
+        $hasSuperAdmin = $this->connection->table($userRoleTable)
+            ->join($rolesTable, "{$userRoleTable}.role_id", '=', "{$rolesTable}.id")
+            ->where("{$userRoleTable}.user_id", $query->userId)
+            ->where("{$rolesTable}.slug", 'super_admin')
             ->exists();
 
         if ($hasSuperAdmin) {
-            return DB::table('permissions')
+            return $this->connection->table($permissionsTable)
                 ->pluck('slug')
                 ->toArray();
         }
 
-        return DB::table('user_role')
-            ->join('role_permission', 'user_role.role_id', '=', 'role_permission.role_id')
-            ->join('permissions', 'role_permission.permission_id', '=', 'permissions.id')
-            ->where('user_role.user_id', $query->userId)
+        return $this->connection->table($userRoleTable)
+            ->join($rolePermissionTable, "{$userRoleTable}.role_id", '=', "{$rolePermissionTable}.role_id")
+            ->join($permissionsTable, "{$rolePermissionTable}.permission_id", '=', "{$permissionsTable}.id")
+            ->where("{$userRoleTable}.user_id", $query->userId)
             ->distinct()
-            ->pluck('permissions.slug')
+            ->pluck("{$permissionsTable}.slug")
             ->toArray();
     }
 }

@@ -9,7 +9,8 @@ use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Illuminate\Support\Facades\DB;
+use App\Models\Role as RoleModel;
+use Illuminate\Database\ConnectionInterface;
 
 class UpdateRoleCommandHandler
 {
@@ -17,6 +18,7 @@ class UpdateRoleCommandHandler
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepository,
         private PermissionCheckerInterface $permissionChecker,
+        private ConnectionInterface $connection,
     ) {
     }
 
@@ -33,7 +35,7 @@ class UpdateRoleCommandHandler
 
         $role = $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
 
-        DB::table('roles')
+        $this->connection->table(RoleModel::tableName())
             ->where('id', $command->roleId)
             ->update([
                 'name' => $command->name,

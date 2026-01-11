@@ -9,7 +9,8 @@ use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Illuminate\Support\Facades\DB;
+use App\Models\Permission as PermissionModel;
+use Illuminate\Database\ConnectionInterface;
 
 class UpdatePermissionCommandHandler
 {
@@ -17,6 +18,7 @@ class UpdatePermissionCommandHandler
         private UserRepositoryInterface $userRepository,
         private PermissionRepositoryInterface $permissionRepository,
         private PermissionCheckerInterface $permissionChecker,
+        private ConnectionInterface $connection,
     ) {
     }
 
@@ -33,7 +35,7 @@ class UpdatePermissionCommandHandler
 
         $this->permissionRepository->findByIdOrFail(new PermissionId($command->permissionId));
 
-        DB::table('permissions')
+        $this->connection->table(PermissionModel::tableName())
             ->where('id', $command->permissionId)
             ->update([
                 'name' => $command->name,

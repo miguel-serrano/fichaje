@@ -8,13 +8,19 @@ use App\DDD\Notification\Domain\Channel;
 use App\DDD\Notification\Domain\Interface\NotifierInterface;
 use App\DDD\Notification\Domain\Notification;
 use App\DDD\User\Domain\Entity\User;
-use Illuminate\Support\Facades\DB;
+use App\Models\Notification as NotificationModel;
+use Illuminate\Database\ConnectionInterface;
 
 final class DatabaseNotifier implements NotifierInterface
 {
+    public function __construct(
+        private ConnectionInterface $connection,
+    ) {
+    }
+
     public function send(User $user, Notification $notification): void
     {
-        DB::table('notifications')->insert([
+        $this->connection->table(NotificationModel::tableName())->insert([
             'user_id' => $user->id()->value(),
             'type' => $notification->type()->value,
             'title' => $notification->title(),
