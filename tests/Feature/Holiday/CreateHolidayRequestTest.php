@@ -5,18 +5,46 @@ declare(strict_types=1);
 namespace Tests\Feature\Holiday;
 
 use App\Models\HolidayRequest;
-use App\Models\Notification;
+use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Tests\TestCase;
 
 class CreateHolidayRequestTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
 
-    public function testUserCanViewHolidaysPage(): void
+        // Ejecutar seeders de roles y permisos
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
+    }
+
+    private function assignEmployeeRole(User $user): void
+    {
+        $employeeRole = Role::where('slug', 'employee')->first();
+        if ($employeeRole) {
+            $user->roles()->attach($employeeRole->id);
+        }
+    }
+
+    private function assignSuperAdminRole(User $user): void
+    {
+        $superAdminRole = Role::where('slug', 'super_admin')->first();
+        if ($superAdminRole) {
+            $user->roles()->attach($superAdminRole->id);
+        }
+    }
+
+    public function test_user_can_view_holidays_page(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
 
         $response = $this->actingAs($user)->get(route('holidays.index'));
 
@@ -24,10 +52,12 @@ class CreateHolidayRequestTest extends TestCase
         $response->assertViewIs('holidays.index');
     }
 
-    public function testUserCanCreateValidHolidayRequest(): void
+    public function test_user_can_create_valid_holiday_request(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
 
         $startDate = now()->addDays(1)->format('Y-m-d');
         $endDate = now()->addDays(5)->format('Y-m-d');
@@ -48,9 +78,10 @@ class CreateHolidayRequestTest extends TestCase
         ]);
     }
 
-    public function testUserCannotCreateHolidayWithEndDateBeforeStartDate(): void
+    public function test_user_cannot_create_holiday_with_end_date_before_start_date(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
 
         $startDate = now()->addDays(5)->format('Y-m-d');
         $endDate = now()->addDays(1)->format('Y-m-d');
@@ -67,9 +98,10 @@ class CreateHolidayRequestTest extends TestCase
         ]);
     }
 
-    public function testUserCannotCreateHolidayWithStartDateInPast(): void
+    public function test_user_cannot_create_holiday_with_start_date_in_past(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
 
         $startDate = now()->subDays(1)->format('Y-m-d');
         $endDate = now()->addDays(5)->format('Y-m-d');
@@ -86,10 +118,12 @@ class CreateHolidayRequestTest extends TestCase
         ]);
     }
 
-    public function testUserCannotCreateOverlappingHolidayRequest(): void
+    public function test_user_cannot_create_overlapping_holiday_request(): void
     {
         $user = User::factory()->create();
-        User::factory()->admin()->create();
+        $this->assignEmployeeRole($user);
+        $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
 
         $startDate = now()->addDays(1)->format('Y-m-d');
         $endDate = now()->addDays(10)->format('Y-m-d');
@@ -115,9 +149,10 @@ class CreateHolidayRequestTest extends TestCase
         $this->assertDatabaseCount('holiday_requests', 1);
     }
 
-    public function testUserCanSeePreviousHolidayRequests(): void
+    public function test_user_can_see_previous_holiday_requests(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
 
         HolidayRequest::factory()->count(3)->create([
             'user_id' => $user->id,
@@ -127,14 +162,16 @@ class CreateHolidayRequestTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewHas('holidays', function ($holidays) {
-            return 3 === count($holidays);
+            return count($holidays) === 3;
         });
     }
 
-    public function testAdminReceivesNotificationWhenHolidayRequested(): void
+    public function test_admin_receives_notification_when_holiday_requested(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
 
         $startDate = now()->addDays(1)->format('Y-m-d');
         $endDate = now()->addDays(5)->format('Y-m-d');
@@ -150,7 +187,7 @@ class CreateHolidayRequestTest extends TestCase
         ]);
     }
 
-    public function testGuestCannotAccessHolidaysPage(): void
+    public function test_guest_cannot_access_holidays_page(): void
     {
         $response = $this->get(route('holidays.index'));
 

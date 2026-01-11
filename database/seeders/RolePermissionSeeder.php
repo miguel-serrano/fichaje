@@ -28,9 +28,12 @@ class RolePermissionSeeder extends Seeder
         // Admin
         $adminPermissions = [
             'user.view', 'user.create', 'user.update', 'user.delete', 'user.toggle_active',
-            'timetracking.view_all', 'timetracking.edit_any', 'timetracking.delete_any', 'timetracking.reports',
+            'timetracking.view_own', 'timetracking.view_all', 'timetracking.clockin', 'timetracking.clockout',
+            'timetracking.edit_any', 'timetracking.delete_any', 'timetracking.reports',
             'holiday.view_pending', 'holiday.view_approved', 'holiday.approve', 'holiday.reject',
             'authorization.assign_roles',
+            'authentication.login', 'authentication.logout', 'authentication.reset_password', 'authentication.impersonate',
+            'notification.view_own', 'notification.view_all', 'notification.send', 'notification.mark_read', 'notification.delete',
         ];
         foreach ($adminPermissions as $slug) {
             if (isset($permissions[$slug])) {
@@ -49,6 +52,8 @@ class RolePermissionSeeder extends Seeder
             'timetracking.view_own', 'timetracking.clockin', 'timetracking.clockout',
             'timetracking.view_all', 'timetracking.reports',
             'holiday.request', 'holiday.view_own', 'holiday.view_pending', 'holiday.view_approved', 'holiday.approve', 'holiday.reject',
+            'authentication.login', 'authentication.logout', 'authentication.reset_password',
+            'notification.view_own', 'notification.mark_read',
         ];
         foreach ($supervisorPermissions as $slug) {
             if (isset($permissions[$slug])) {
@@ -64,8 +69,10 @@ class RolePermissionSeeder extends Seeder
         // Employee
         $employeePermissions = [
             'user.view_own', 'user.update_own',
-            'timetracking.view_own', 'timetracking.clockin', 'timetracking.clockout',
-            'holiday.request', 'holiday.view_own',
+            'timetracking.view_own',
+            'holiday.view_own',
+            'authentication.login', 'authentication.logout', 'authentication.reset_password',
+            'notification.view_own', 'notification.mark_read',
         ];
         foreach ($employeePermissions as $slug) {
             if (isset($permissions[$slug])) {

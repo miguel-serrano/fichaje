@@ -34,20 +34,27 @@
 
                 <div class="row" style="margin-top: 30px;">
                     <div class="col s12">
-                        <form method="POST" action="{{ route('registro_horario.entrada') }}">
-                            @csrf
-                            <button
-                                type="submit"
-                                @if($tieneRegistroAbierto) disabled @endif
-                                class="btn waves-effect waves-light light-green {{ $tieneRegistroAbierto ? 'disabled' : '' }}"
-                            >
-                                <i class="material-icons left">input</i>Fichar Entrada
-                            </button>
-                        </form>
-                        @if($tieneRegistroAbierto)
-                            <p style="margin-top: 15px;" class="grey-text">
-                                Tienes un fichaje abierto. Puedes cerrarlo desde <a href="{{ route('user.me') }}" class="light-green-text">tu página de fichajes</a>.
-                            </p>
+                        @if($canClockIn)
+                            <form method="POST" action="{{ route('registro_horario.entrada') }}">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    @if($tieneRegistroAbierto) disabled @endif
+                                    class="btn waves-effect waves-light light-green {{ $tieneRegistroAbierto ? 'disabled' : '' }}"
+                                >
+                                    <i class="material-icons left">input</i>Fichar Entrada
+                                </button>
+                            </form>
+                            @if($tieneRegistroAbierto)
+                                <p style="margin-top: 15px;" class="grey-text">
+                                    Tienes un fichaje abierto. Puedes cerrarlo desde <a href="{{ route('user.me') }}" class="light-green-text">tu página de fichajes</a>.
+                                </p>
+                            @endif
+                        @else
+                            <div class="card-panel amber lighten-4">
+                                <i class="material-icons left amber-text text-darken-3">warning</i>
+                                <span class="amber-text text-darken-4">No tienes permisos para fichar. Contacta con tu administrador.</span>
+                            </div>
                         @endif
                     </div>
                 </div>

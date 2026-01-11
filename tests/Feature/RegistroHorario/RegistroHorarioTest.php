@@ -3,26 +3,45 @@
 namespace Tests\Feature\RegistroHorario;
 
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\Models\Role;
+use App\Models\User;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class RegistroHorarioTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
 
-    private \App\Models\User $authenticatedUser;
+    private User $authenticatedUser;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
+        // Ejecutar seeders de roles y permisos
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
+
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
-        $this->authenticatedUser = \App\Models\User::create([
-            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+        $this->authenticatedUser = User::create([
+            'uuid' => Str::orderedUuid(),
             'name' => 'Test User',
             'email' => 'testuser@test.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => Hash::make('password123'),
             'is_active' => true,
         ]);
+
+        // Asignar rol employee para tener permisos de fichar
+        $employeeRole = Role::where('slug', 'employee')->first();
+        if ($employeeRole) {
+            $this->authenticatedUser->roles()->attach($employeeRole->id);
+        }
 
         $this->actingAs($this->authenticatedUser);
     }
@@ -228,7 +247,9 @@ class RegistroHorarioTest extends TestCase
 
     public function test_admin_can_exceed_daily_time_entry_limit(): void
     {
-        // Hacer al usuario admin
+        // Hacer al usuario super_admin (tiene todos los permisos)
+        $superAdminRole = Role::where('slug', 'super_admin')->first();
+        $this->authenticatedUser->roles()->sync([$superAdminRole->id]);
         $this->authenticatedUser->is_admin = true;
         $this->authenticatedUser->save();
 

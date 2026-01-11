@@ -9,6 +9,7 @@ use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
 use App\DDD\Holiday\Domain\Exceptions\InvalidHolidayDateRangeException;
 use App\DDD\Holiday\Domain\Exceptions\OverlappingHolidayException;
+use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
@@ -35,7 +36,7 @@ class HolidayController extends Controller
         );
 
         $user = $this->userRepository->findByIdOrFail(new UserId(Auth::id()));
-        $canRequestHoliday = $this->permissionChecker->hasPermission($user, 'holiday.create');
+        $canRequestHoliday = $this->permissionChecker->hasPermission($user, HolidayPermission::Request->value);
 
         return view('holidays.index', [
             'holidays' => $holidays,
@@ -47,7 +48,7 @@ class HolidayController extends Controller
     {
         $user = $this->userRepository->findByIdOrFail(new UserId(Auth::id()));
 
-        if (!$this->permissionChecker->hasPermission($user, 'holiday.create')) {
+        if (!$this->permissionChecker->hasPermission($user, HolidayPermission::Request->value)) {
             return redirect()
                 ->route('holidays.index')
                 ->with('error', 'No tienes permisos para solicitar vacaciones.');

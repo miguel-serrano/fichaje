@@ -41,6 +41,20 @@ class PermissionSeeder extends Seeder
             ['name' => 'Gestionar roles', 'slug' => 'authorization.manage_roles', 'bounded_context' => 'Authorization', 'description' => 'Crear, editar, eliminar roles', 'is_system' => true],
             ['name' => 'Gestionar permisos', 'slug' => 'authorization.manage_permissions', 'bounded_context' => 'Authorization', 'description' => 'Asignar permisos a roles', 'is_system' => true],
             ['name' => 'Asignar roles', 'slug' => 'authorization.assign_roles', 'bounded_context' => 'Authorization', 'description' => 'Asignar roles a usuarios', 'is_system' => true],
+
+            // Authentication context
+            ['name' => 'Iniciar sesión', 'slug' => 'authentication.login', 'bounded_context' => 'Authentication', 'description' => 'Permitir inicio de sesión', 'is_system' => true],
+            ['name' => 'Cerrar sesión', 'slug' => 'authentication.logout', 'bounded_context' => 'Authentication', 'description' => 'Permitir cierre de sesión', 'is_system' => true],
+            ['name' => 'Registrarse', 'slug' => 'authentication.register', 'bounded_context' => 'Authentication', 'description' => 'Permitir registro de nuevos usuarios', 'is_system' => true],
+            ['name' => 'Restablecer contraseña', 'slug' => 'authentication.reset_password', 'bounded_context' => 'Authentication', 'description' => 'Permitir restablecimiento de contraseña', 'is_system' => true],
+            ['name' => 'Suplantar usuario', 'slug' => 'authentication.impersonate', 'bounded_context' => 'Authentication', 'description' => 'Iniciar sesión como otro usuario', 'is_system' => true],
+
+            // Notification context
+            ['name' => 'Ver notificaciones propias', 'slug' => 'notification.view_own', 'bounded_context' => 'Notification', 'description' => 'Ver sus propias notificaciones', 'is_system' => true],
+            ['name' => 'Ver todas las notificaciones', 'slug' => 'notification.view_all', 'bounded_context' => 'Notification', 'description' => 'Ver notificaciones de todos los usuarios', 'is_system' => true],
+            ['name' => 'Enviar notificaciones', 'slug' => 'notification.send', 'bounded_context' => 'Notification', 'description' => 'Enviar notificaciones a usuarios', 'is_system' => true],
+            ['name' => 'Marcar como leídas', 'slug' => 'notification.mark_read', 'bounded_context' => 'Notification', 'description' => 'Marcar notificaciones como leídas', 'is_system' => true],
+            ['name' => 'Eliminar notificaciones', 'slug' => 'notification.delete', 'bounded_context' => 'Notification', 'description' => 'Eliminar notificaciones', 'is_system' => true],
         ];
 
         $now = now();

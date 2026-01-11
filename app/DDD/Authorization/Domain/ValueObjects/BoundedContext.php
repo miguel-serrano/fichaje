@@ -8,5 +8,7 @@ enum BoundedContext: string
     case TimeTracking = 'TimeTracking';
     case Holiday = 'Holiday';
     case Authorization = 'Authorization';
+    case Authentication = 'Authentication';
+    case Notification = 'Notification';
     case System = 'System';
 }

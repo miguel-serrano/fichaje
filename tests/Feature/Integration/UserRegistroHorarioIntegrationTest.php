@@ -6,27 +6,46 @@ use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
+use App\Models\Role;
+use App\Models\User as EloquentUser;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class UserRegistroHorarioIntegrationTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
 
-    private \App\Models\User $authenticatedUser;
+    private EloquentUser $authenticatedUser;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
+        // Ejecutar seeders de roles y permisos
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
+
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
-        $this->authenticatedUser = \App\Models\User::create([
-            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+        $this->authenticatedUser = EloquentUser::create([
+            'uuid' => Str::orderedUuid(),
             'name' => 'Test User',
             'email' => 'user@test.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => Hash::make('password123'),
             'is_active' => true,
             'is_admin' => true,
         ]);
+
+        // Asignar rol super_admin
+        $superAdminRole = Role::where('slug', 'super_admin')->first();
+        if ($superAdminRole) {
+            $this->authenticatedUser->roles()->attach($superAdminRole->id);
+        }
 
         $this->actingAs($this->authenticatedUser);
     }

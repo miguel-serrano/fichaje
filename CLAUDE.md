@@ -219,61 +219,64 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - To run all tests: `vendor/bin/sail artisan test`.
 - To run all tests in a file: `vendor/bin/sail artisan test tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `vendor/bin/sail artisan test --filter=testName` (recommended after making a change to a related file).
-<<<<<<< HEAD
+
 </laravel-boost-guidelines>
 
 ## Convenciones del Proyecto TimeTrack
 
 ### Arquitectura DDD + CQRS
-- **Bounded Contexts**: `User`, `TimeTracking`, `Shared`
+- **Bounded Contexts**: `User`, `TimeTracking`, `Holiday`, `Authorization`, `Shared`
 - **Command Bus**: Laravel Tactician
 - Repositorios en Infrastructure usan `DB` facade con mapeo manual
 - Controladores thin: solo dispatching de commands/queries
 
-### Arquitectura DDD
-- Los nuevos usuarios se crean con `is_active = false` por defecto
-- El campo `is_admin` (boolean) determina si un usuario es administrador, NO usar `remember_token`
-- Al llamar a `User::fromPrimitives()`, el parámetro `isAdmin` es obligatorio (bool), no pasar null
-- **Bus**: Usar `$this->queryBus->dispatch()` y `$this->commandBus->dispatch()`, NO usar `ask()`
+### Estructura de Bounded Contexts
+- **IMPORTANTE**: Dentro de `app/DDD/{Context}/Domain/` todos los archivos deben estar en subcarpetas, NUNCA sueltos
+- Estructura obligatoria: `Entity/`, `ValueObjects/`, `Interface/`, `Exceptions/`, `Services/`, `Permission/`
+- Ejemplo correcto: `app/DDD/Holiday/Domain/Permission/HolidayPermission.php`
+- Ejemplo incorrecto: `app/DDD/Holiday/Domain/HolidayPermission.php`
+
+### Permisos por Bounded Context
+- Cada bounded context define sus permisos en un enum dentro de `Domain/Permission/`
+- Usar enums en lugar de strings mágicos: `HolidayPermission::Request->value` en vez de `'holiday.request'`
+- Enums disponibles:
+  - `App\DDD\User\Domain\Permission\UserPermission`
+  - `App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission`
+  - `App\DDD\Holiday\Domain\Permission\HolidayPermission`
+  - `App\DDD\Authorization\Domain\Permission\AuthorizationPermission`
+  - `App\DDD\Authentication\Domain\Permission\AuthenticationPermission`
+  - `App\DDD\Notification\Domain\Permission\NotificationPermission`
 
 ### Reglas de Dominio
 - Nuevos usuarios: `is_active = false` por defecto
 - `is_admin` (boolean) determina admin, NO usar `remember_token`
 - `User::fromPrimitives()`: parámetro `isAdmin` es obligatorio (bool), nunca null
+- **Bus**: Usar `$this->queryBus->dispatch()` y `$this->commandBus->dispatch()`, NO usar `ask()`
 
 ### Frontend
 - **Materialize CSS**, NO Tailwind
 - Navbar sticky: clase `navbar-fixed`
 - Formularios responsive: `col s12 l6 offset-l3`
 
-### Rutas
+### Rutas y Redirecciones
 - Post-registro redirige a `/bienvenido`, no a `/home`
 - Usuarios inactivos → `/bienvenido`
+- La ruta `home` ya no existe, usar `bienvenido`
 
 ### Tests
-<<<<<<< HEAD
-- Al modificar `User::fromPrimitives()`, actualizar TODOS los tests
-- Usar factories con estados personalizados
-=======
 - Al modificar la firma de `User::fromPrimitives()`, actualizar TODOS los tests que lo usan
-- Verificar que los tests reflejan el comportamiento actual (ej: redirecciones a `bienvenido` en lugar de `home`)
+- Verificar que los tests reflejan el comportamiento actual
 - El contador de tests usa `TestCounter::count()` que escanea archivos `*Test.php`
-
-### Rutas y Redirecciones
-- Post-registro redirige a `/bienvenido`, no a `/registro-horario`
-- Usuarios inactivos que intentan acceder a Fichar son redirigidos a `/bienvenido`
-- La ruta `home` ya no existe, usar `bienvenido`
 
 ### Imports de Clases
 - Usar siempre `use` para importar clases en lugar de namespaces completos inline
-- Ejemplo correcto: `use Illuminate\Database\Eloquent\Relations\BelongsToMany;` y luego `BelongsToMany` en el tipo de retorno
+- Ejemplo correcto: `use Illuminate\Database\Eloquent\Relations\BelongsToMany;`
 - Ejemplo incorrecto: `\Illuminate\Database\Eloquent\Relations\BelongsToMany` directamente en el código
 
 ### Limpieza de Código
 - Buscar y eliminar archivos huérfanos (Value Objects, Exceptions, etc. no usados)
 - Eliminar imports no utilizados
-- Al cambiar arquitectura (ej: remember_token → is_admin), buscar TODAS las referencias
->>>>>>> 5930ce8 (minor fix)
+- Al cambiar arquitectura, buscar TODAS las referencias
 
 ### Documentación de Ramas
 - Al finalizar funcionalidad, documentar en `.claude/code/{nombre-rama}.md`
@@ -286,13 +289,19 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ```sql
 users (id, uuid, name, email, is_active, is_admin, created_at, updated_at)
 time_entries (id, user_id, entrada, salida, created_at, updated_at)
+roles (id, name, slug, description, is_system, hierarchy, timestamps)
+permissions (id, name, slug, bounded_context, description, is_system, timestamps)
+role_permission (role_id, permission_id)
+user_role (user_id, role_id)
 ```
 
 ### Relaciones Eloquent
 ```php
 User::timeEntries()      // HasMany
 User::openTimeEntry()    // HasOne (entrada sin salida)
+User::roles()            // BelongsToMany
 TimeEntry::user()        // BelongsTo
+Role::permissions()      // BelongsToMany
 ```
 
 ### Estructura DDD
@@ -300,6 +309,8 @@ TimeEntry::user()        // BelongsTo
 app/DDD/
 ├── User/           # Gestión de usuarios
 ├── TimeTracking/   # Clock-in/out, cálculos de tiempo
+├── Holiday/        # Gestión de vacaciones
+├── Authorization/  # Roles y permisos
 └── Shared/         # Buses, value objects comunes
 ```
 
@@ -311,5 +322,3 @@ app/DDD/
 - **Debugging**: `/telescope`
 - **Pre-commit hook**: php-cs-fixer con reglas `@Symfony`
 - **Skill disponible**: `/php-fixer-symfony`
-=======
->>>>>>> 9a36fbf (fix docu)

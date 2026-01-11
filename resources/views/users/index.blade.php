@@ -36,7 +36,7 @@
                                 <tbody>
                                     @foreach($users as $user)
                                     <tr>
-                                        <td>{{ $user['name'] }}</td>
+                                        <td><a href="{{ route('user.show', $user['id']) }}" class="blue-text">{{ $user['name'] }}</a></td>
                                         <td class="grey-text">{{ $user['email'] }}</td>
                                         <td><code class="grey-text" style="font-size: 0.85rem;">{{ $user['uuid'] }}</code></td>
                                         <td>
@@ -47,6 +47,9 @@
                                             @endif
                                         </td>
                                         <td class="right-align">
+                                            <a href="{{ route('user.show', $user['id']) }}" class="btn-small waves-effect waves-light blue">
+                                                <i class="material-icons left">visibility</i>Ver
+                                            </a>
                                             @if($isAdmin)
                                                 <form action="{{ route('user.toggle-active', $user['id']) }}" method="POST" style="display: inline;">
                                                     @csrf

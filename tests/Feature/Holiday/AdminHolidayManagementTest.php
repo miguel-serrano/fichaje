@@ -5,17 +5,46 @@ declare(strict_types=1);
 namespace Tests\Feature\Holiday;
 
 use App\Models\HolidayRequest;
+use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Tests\TestCase;
 
 class AdminHolidayManagementTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
+        // Ejecutar seeders de roles y permisos
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
+    }
+
+    private function assignSuperAdminRole(User $user): void
+    {
+        $superAdminRole = Role::where('slug', 'super_admin')->first();
+        if ($superAdminRole) {
+            $user->roles()->attach($superAdminRole->id);
+        }
+    }
+
+    private function assignEmployeeRole(User $user): void
+    {
+        $employeeRole = Role::where('slug', 'employee')->first();
+        if ($employeeRole) {
+            $user->roles()->attach($employeeRole->id);
+        }
+    }
 
     public function test_admin_can_view_pending_holidays(): void
     {
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
         $user = User::factory()->create();
 
         HolidayRequest::factory()->count(3)->create([
@@ -32,6 +61,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_non_admin_cannot_view_pending_holidays(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
 
         $response = $this->actingAs($user)->get(route('admin.holidays.index'));
 
@@ -41,6 +71,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_admin_can_approve_holiday_request(): void
     {
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
         $user = User::factory()->create();
 
         $holidayRequest = HolidayRequest::factory()->create([
@@ -64,6 +95,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_admin_can_reject_holiday_request(): void
     {
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
         $user = User::factory()->create();
 
         $holidayRequest = HolidayRequest::factory()->create([
@@ -87,6 +119,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_non_admin_cannot_approve_holiday_request(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
         $otherUser = User::factory()->create();
 
         $holidayRequest = HolidayRequest::factory()->create([
@@ -109,6 +142,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_non_admin_cannot_reject_holiday_request(): void
     {
         $user = User::factory()->create();
+        $this->assignEmployeeRole($user);
         $otherUser = User::factory()->create();
 
         $holidayRequest = HolidayRequest::factory()->create([
@@ -131,6 +165,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_user_receives_notification_when_holiday_approved(): void
     {
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
         $user = User::factory()->create();
 
         $holidayRequest = HolidayRequest::factory()->create([
@@ -151,6 +186,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_user_receives_notification_when_holiday_rejected(): void
     {
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
         $user = User::factory()->create();
 
         $holidayRequest = HolidayRequest::factory()->create([
@@ -178,6 +214,7 @@ class AdminHolidayManagementTest extends TestCase
     public function test_admin_can_view_approved_holidays(): void
     {
         $admin = User::factory()->admin()->create();
+        $this->assignSuperAdminRole($admin);
         $user = User::factory()->create();
 
         HolidayRequest::factory()->count(2)->create([
