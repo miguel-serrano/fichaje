@@ -8,8 +8,6 @@ use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
-use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
-use App\DDD\User\Infrastructure\Services\UserAuthorizationService;
 use Tests\TestCase;
 
 class DeleteUserUseCaseTest extends TestCase
@@ -23,8 +21,8 @@ class DeleteUserUseCaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->userRepository = new EloquentUserRepository;
-        $this->authorizationService = app(UserAuthorizationService::class);
+        $this->userRepository = app(UserRepositoryInterface::class);
+        $this->authorizationService = app(UserAuthorizationServiceInterface::class);
         $this->handler = new DeleteUserCommandHandler(
             $this->userRepository,
             $this->authorizationService

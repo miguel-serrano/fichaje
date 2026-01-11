@@ -6,16 +6,21 @@ use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
+use App\Models\TimeEntry as TimeEntryModel;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
 {
-    private const TABLE = 'time_entries';
+    public function __construct(
+        private ConnectionInterface $connection,
+    ) {
+    }
 
     public function findById(TimeEntryId $id): ?TimeEntry
     {
-        $row = DB::table(self::TABLE)->find($id->value());
+        $row = $this->query()->where('id', $id->value())->first();
 
         if (!$row) {
             return null;
@@ -36,7 +41,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
         ];
 
         if ($timeEntry->id()) {
-            DB::table(self::TABLE)
+            $this->query()
                 ->where('id', $timeEntry->id()->value())
                 ->update($data);
 
@@ -44,7 +49,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
         }
 
         $data['created_at'] = now();
-        $id = DB::table(self::TABLE)->insertGetId($data);
+        $id = $this->query()->insertGetId($data);
         $timeEntry->setId(new TimeEntryId($id));
 
         return $timeEntry;
@@ -56,7 +61,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
             throw new \InvalidArgumentException('Cannot update a TimeEntry without an ID');
         }
 
-        DB::table(self::TABLE)
+        $this->query()
             ->where('id', $timeEntry->id()->value())
             ->update([
                 'user_id' => $timeEntry->userId()->value(),
@@ -71,17 +76,17 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
     /** @return TimeEntry[] */
     public function findOrphanEntries(): array
     {
-        $rows = DB::table(self::TABLE)
+        $rows = $this->query()
             ->whereNull('salida')
             ->whereDate('entrada', '<', today())
             ->get();
 
-        return $rows->map(fn ($row) => $this->toEntity($row))->all();
+        return $rows->map(fn (\stdClass $row) => $this->toEntity($row))->all();
     }
 
     public function getWorkedSecondsByUserAndDate(UserId $userId, Carbon $date, ?TimeEntryId $excludeEntryId = null): int
     {
-        $query = DB::table(self::TABLE)
+        $query = $this->query()
             ->where('user_id', $userId->value())
             ->whereDate('entrada', $date->toDateString())
             ->whereNotNull('salida');
@@ -104,7 +109,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
 
     public function closeWithAutoClosed(TimeEntryId $id, Carbon $closedAt, string $reason): void
     {
-        DB::table(self::TABLE)
+        $this->query()
             ->where('id', $id->value())
             ->update([
                 'salida' => $closedAt,
@@ -114,7 +119,12 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
             ]);
     }
 
-    private function toEntity(object $row): TimeEntry
+    private function query(): Builder
+    {
+        return $this->connection->table(TimeEntryModel::tableName());
+    }
+
+    private function toEntity(\stdClass $row): TimeEntry
     {
         return TimeEntry::fromPrimitives(
             $row->id,

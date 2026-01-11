@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasTableName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class TimeEntry extends Model
 {
     use HasFactory;
+    use HasTableName;
 
     protected $table = 'time_entries';
 

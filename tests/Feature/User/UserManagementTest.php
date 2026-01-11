@@ -3,8 +3,8 @@
 namespace Tests\Feature\User;
 
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -46,7 +46,7 @@ class UserManagementTest extends TestCase
     public function test_can_view_specific_user(): void
     {
         // Crear un usuario primero
-        $repository = new EloquentUserRepository;
+        $repository = app(UserRepositoryInterface::class);
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $repository->save($user);
 
@@ -60,7 +60,7 @@ class UserManagementTest extends TestCase
     public function test_can_delete_user(): void
     {
         // Crear un usuario primero
-        $repository = new EloquentUserRepository;
+        $repository = app(UserRepositoryInterface::class);
         $user = User::create(new Email('test@example.com'), 'Test User');
         $savedUser = $repository->save($user);
 
@@ -78,7 +78,7 @@ class UserManagementTest extends TestCase
     public function test_can_toggle_user_active_status(): void
     {
         // Crear un usuario (is_active = false por defecto)
-        $repository = new EloquentUserRepository;
+        $repository = app(UserRepositoryInterface::class);
         $user = User::create(new Email('toggle@example.com'), 'Toggle User');
         $savedUser = $repository->save($user);
 

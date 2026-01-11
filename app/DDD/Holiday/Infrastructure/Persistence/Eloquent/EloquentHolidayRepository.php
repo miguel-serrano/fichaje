@@ -10,13 +10,15 @@ use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Illuminate\Support\Facades\DB;
+use App\Models\HolidayRequest as HolidayRequestModel;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class EloquentHolidayRepository implements HolidayRepositoryInterface
 {
-    private function getTable(): string
-    {
-        return 'holiday_requests';
+    public function __construct(
+        private ConnectionInterface $connection,
+    ) {
     }
 
     public function save(HolidayRequest $request): HolidayRequest
@@ -30,7 +32,7 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
         ];
 
         if ($request->id()) {
-            DB::table($this->getTable())
+            $this->query()
                 ->where('id', $request->id()->value())
                 ->update($data);
 
@@ -38,7 +40,7 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
         }
 
         $data['created_at'] = now();
-        $id = DB::table($this->getTable())->insertGetId($data);
+        $id = $this->query()->insertGetId($data);
         $request->setId(new HolidayRequestId($id));
 
         return $this->findByIdOrFail(new HolidayRequestId($id));
@@ -46,15 +48,15 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
 
     public function findById(HolidayRequestId $id): ?HolidayRequest
     {
-        $record = DB::table($this->getTable())
+        $row = $this->query()
             ->where('id', $id->value())
             ->first();
 
-        if (!$record) {
+        if (!$row) {
             return null;
         }
 
-        return $this->mapToEntity($record);
+        return $this->mapToEntity($row);
     }
 
     public function findByIdOrFail(HolidayRequestId $id): HolidayRequest
@@ -73,12 +75,12 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findByUserId(UserId $userId): array
     {
-        $records = DB::table($this->getTable())
+        $rows = $this->query()
             ->where('user_id', $userId->value())
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return $records->map(fn ($record) => $this->mapToEntity($record))->toArray();
+        return $rows->map(fn (\stdClass $row) => $this->mapToEntity($row))->toArray();
     }
 
     /**
@@ -86,12 +88,12 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findPending(): array
     {
-        $records = DB::table($this->getTable())
+        $rows = $this->query()
             ->where('status', 'pending')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return $records->map(fn ($record) => $this->mapToEntity($record))->toArray();
+        return $rows->map(fn (\stdClass $row) => $this->mapToEntity($row))->toArray();
     }
 
     /**
@@ -99,12 +101,12 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findApproved(): array
     {
-        $records = DB::table($this->getTable())
+        $rows = $this->query()
             ->where('status', 'approved')
             ->orderBy('start_date', 'asc')
             ->get();
 
-        return $records->map(fn ($record) => $this->mapToEntity($record))->toArray();
+        return $rows->map(fn (\stdClass $row) => $this->mapToEntity($row))->toArray();
     }
 
     /**
@@ -112,16 +114,16 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findAll(): array
     {
-        $records = DB::table($this->getTable())
+        $rows = $this->query()
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return $records->map(fn ($record) => $this->mapToEntity($record))->toArray();
+        return $rows->map(fn (\stdClass $row) => $this->mapToEntity($row))->toArray();
     }
 
     public function hasOverlapping(UserId $userId, DateRange $range, ?HolidayRequestId $excludeId = null): bool
     {
-        $query = DB::table($this->getTable())
+        $query = $this->query()
             ->where('user_id', $userId->value())
             ->whereIn('status', ['pending', 'approved'])
             ->where(function ($q) use ($range) {
@@ -140,21 +142,26 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
 
     public function delete(HolidayRequestId $id): bool
     {
-        return DB::table($this->getTable())
+        return $this->query()
             ->where('id', $id->value())
             ->delete() > 0;
     }
 
-    private function mapToEntity(object $record): HolidayRequest
+    private function query(): Builder
+    {
+        return $this->connection->table(HolidayRequestModel::tableName());
+    }
+
+    private function mapToEntity(\stdClass $row): HolidayRequest
     {
         return HolidayRequest::fromPrimitives([
-            'id' => $record->id,
-            'user_id' => $record->user_id,
-            'start_date' => $record->start_date,
-            'end_date' => $record->end_date,
-            'status' => $record->status,
-            'created_at' => $record->created_at,
-            'updated_at' => $record->updated_at,
+            'id' => $row->id,
+            'user_id' => $row->user_id,
+            'start_date' => $row->start_date,
+            'end_date' => $row->end_date,
+            'status' => $row->status,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
     }
 }

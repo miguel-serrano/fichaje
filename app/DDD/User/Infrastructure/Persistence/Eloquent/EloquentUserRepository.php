@@ -2,6 +2,7 @@
 
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
+use App\DDD\Authentication\Domain\ValueObjects\HashedPassword;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
@@ -9,27 +10,25 @@ use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use Illuminate\Support\Facades\DB;
+use App\Models\Role as RoleModel;
+use App\Models\TimeEntry as TimeEntryModel;
+use App\Models\User as UserModel;
+use App\Models\UserRole;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
-    private function getUsersTable(): string
-    {
-        return 'users';
-    }
-
-    private function getRegistrosTable(): string
-    {
-        return 'time_entries';
+    public function __construct(
+        private ConnectionInterface $connection,
+    ) {
     }
 
     public function save(User $user): User
     {
-        $user_id = $user->id() ? $user->id()->value() : null;
+        $userId = $user->id() ? $user->id()->value() : null;
 
-        DB::transaction(function () use ($user, &$user_id) {
-            $usersTable = $this->getUsersTable();
-            $registrosTable = $this->getRegistrosTable();
+        $this->connection->transaction(function () use ($user, &$userId) {
             $now = now();
 
             $userData = [
@@ -40,16 +39,16 @@ class EloquentUserRepository implements UserRepositoryInterface
                 'updated_at' => $now,
             ];
 
-            if ($user_id) {
-                DB::table($usersTable)->where('id', $user_id)->update($userData);
+            if ($userId) {
+                $this->usersQuery()->where('id', $userId)->update($userData);
             } else {
                 $userData['created_at'] = $now;
-                $user_id = DB::table($usersTable)->insertGetId($userData);
+                $userId = $this->usersQuery()->insertGetId($userData);
             }
 
             foreach ($user->timeEntries() as $entry) {
                 $entryData = [
-                    'user_id' => $user_id,
+                    'user_id' => $userId,
                     'entrada' => $entry->startTime()->format('Y-m-d H:i:s'),
                     'salida' => $entry->endTime() ? $entry->endTime()->format('Y-m-d H:i:s') : null,
                     'auto_closed' => $entry->isAutoClosed(),
@@ -57,38 +56,38 @@ class EloquentUserRepository implements UserRepositoryInterface
                 ];
 
                 if ($entry->id()) {
-                    DB::table($registrosTable)->where('id', $entry->id()->value())->update($entryData);
+                    $this->timeEntriesQuery()->where('id', $entry->id()->value())->update($entryData);
                 } else {
-                    $newId = DB::table($registrosTable)->insertGetId($entryData);
+                    $newId = $this->timeEntriesQuery()->insertGetId($entryData);
                     $entry->setId(new TimeEntryId($newId));
                 }
             }
         });
 
-        return $this->findById(new UserId($user_id));
+        return $this->findById(new UserId($userId));
     }
 
     public function findById(UserId $id): ?User
     {
-        $eloquentUser = DB::table($this->getUsersTable())->where('id', $id->value())->first();
+        $row = $this->usersQuery()->where('id', $id->value())->first();
 
-        if (!$eloquentUser) {
+        if (!$row) {
             return null;
         }
 
-        $registrosHorarios = DB::table($this->getRegistrosTable())
-            ->where('user_id', $eloquentUser->id)
+        $timeEntries = $this->timeEntriesQuery()
+            ->where('user_id', $row->id)
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(fn (\stdClass $r) => (array) $r)
             ->toArray();
 
         return User::fromPrimitives(
-            $eloquentUser->id,
-            $eloquentUser->uuid,
-            $eloquentUser->email,
-            $eloquentUser->name,
-            $eloquentUser->is_active ?? true,
-            $registrosHorarios
+            $row->id,
+            $row->uuid,
+            $row->email,
+            $row->name,
+            $row->is_active ?? true,
+            $timeEntries
         );
     }
 
@@ -105,25 +104,25 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function findByUuid(Uuid $uuid): ?User
     {
-        $eloquentUser = DB::table($this->getUsersTable())->where('uuid', $uuid->value())->first();
+        $row = $this->usersQuery()->where('uuid', $uuid->value())->first();
 
-        if (!$eloquentUser) {
+        if (!$row) {
             return null;
         }
 
-        $registrosHorarios = DB::table($this->getRegistrosTable())
-            ->where('user_id', $eloquentUser->id)
+        $timeEntries = $this->timeEntriesQuery()
+            ->where('user_id', $row->id)
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(fn (\stdClass $r) => (array) $r)
             ->toArray();
 
         return User::fromPrimitives(
-            $eloquentUser->id,
-            $eloquentUser->uuid,
-            $eloquentUser->email,
-            $eloquentUser->name,
-            $eloquentUser->is_active ?? true,
-            $registrosHorarios
+            $row->id,
+            $row->uuid,
+            $row->email,
+            $row->name,
+            $row->is_active ?? true,
+            $timeEntries
         );
     }
 
@@ -140,52 +139,49 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function existsByEmail(Email $email): bool
     {
-        return DB::table($this->getUsersTable())->where('email', $email->value())->exists();
+        return $this->usersQuery()->where('email', $email->value())->exists();
     }
 
     /** @return User[] */
     public function findAll(): array
     {
-        return DB::table($this->getUsersTable())
-            ->get()
-            ->map(fn ($user) => User::fromPrimitives(
-                $user->id,
-                $user->uuid,
-                $user->email,
-                $user->name,
-                $user->is_active ?? true
-            ))
-            ->toArray();
+        $rows = $this->usersQuery()->get();
+
+        return $rows->map(fn (\stdClass $row) => User::fromPrimitives(
+            $row->id,
+            $row->uuid,
+            $row->email,
+            $row->name,
+            $row->is_active ?? true
+        ))->toArray();
     }
 
     public function delete(UserId $id): bool
     {
-        return DB::transaction(function () use ($id) {
-            DB::table($this->getRegistrosTable())->where('user_id', $id->value())->delete();
+        return $this->connection->transaction(function () use ($id) {
+            $this->timeEntriesQuery()->where('user_id', $id->value())->delete();
 
-            return DB::table($this->getUsersTable())->where('id', $id->value())->delete() > 0;
+            return $this->usersQuery()->where('id', $id->value())->delete() > 0;
         });
     }
 
     public function count(): int
     {
-        return DB::table($this->getUsersTable())->count();
+        return $this->usersQuery()->count();
     }
 
     public function countTodayRegistrations(): int
     {
-        return DB::table($this->getUsersTable())
+        return $this->usersQuery()
             ->whereDate('created_at', today())
             ->count();
     }
 
-    public function saveWithPassword(User $user, \App\DDD\Authentication\Domain\ValueObjects\HashedPassword $password): User
+    public function saveWithPassword(User $user, HashedPassword $password): User
     {
-        $user_id = $user->id() ? $user->id()->value() : null;
+        $userId = $user->id() ? $user->id()->value() : null;
 
-        DB::transaction(function () use ($user, $password, &$user_id) {
-            $usersTable = $this->getUsersTable();
-            $registrosTable = $this->getRegistrosTable();
+        $this->connection->transaction(function () use ($user, $password, &$userId) {
             $now = now();
 
             $userData = [
@@ -197,16 +193,16 @@ class EloquentUserRepository implements UserRepositoryInterface
                 'updated_at' => $now,
             ];
 
-            if ($user_id) {
-                DB::table($usersTable)->where('id', $user_id)->update($userData);
+            if ($userId) {
+                $this->usersQuery()->where('id', $userId)->update($userData);
             } else {
                 $userData['created_at'] = $now;
-                $user_id = DB::table($usersTable)->insertGetId($userData);
+                $userId = $this->usersQuery()->insertGetId($userData);
             }
 
             foreach ($user->timeEntries() as $entry) {
                 $entryData = [
-                    'user_id' => $user_id,
+                    'user_id' => $userId,
                     'entrada' => $entry->startTime()->format('Y-m-d H:i:s'),
                     'salida' => $entry->endTime() ? $entry->endTime()->format('Y-m-d H:i:s') : null,
                     'auto_closed' => $entry->isAutoClosed(),
@@ -214,45 +210,59 @@ class EloquentUserRepository implements UserRepositoryInterface
                 ];
 
                 if ($entry->id()) {
-                    DB::table($registrosTable)->where('id', $entry->id()->value())->update($entryData);
+                    $this->timeEntriesQuery()->where('id', $entry->id()->value())->update($entryData);
                 } else {
-                    $newId = DB::table($registrosTable)->insertGetId($entryData);
+                    $newId = $this->timeEntriesQuery()->insertGetId($entryData);
                     $entry->setId(new TimeEntryId($newId));
                 }
             }
         });
 
-        return $this->findById(new UserId($user_id));
+        return $this->findById(new UserId($userId));
     }
 
     /** @return array<array-key, mixed> */
     public function findTodayTimeEntriesByUserId(UserId $id): array
     {
-        return DB::table($this->getRegistrosTable())
+        return $this->timeEntriesQuery()
             ->where('user_id', $id->value())
             ->whereDate('entrada', today())
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(fn (\stdClass $r) => (array) $r)
             ->toArray();
     }
 
     /** @return User[] */
     public function findAdmins(): array
     {
-        return DB::table($this->getUsersTable())
-            ->join('user_role', 'users.id', '=', 'user_role.user_id')
-            ->join('roles', 'user_role.role_id', '=', 'roles.id')
-            ->whereIn('roles.slug', ['super_admin', 'admin'])
-            ->select('users.*')
+        $usersTable = UserModel::tableName();
+        $userRoleTable = UserRole::tableName();
+        $rolesTable = RoleModel::tableName();
+
+        $rows = $this->connection->table($usersTable)
+            ->join($userRoleTable, "{$usersTable}.id", '=', "{$userRoleTable}.user_id")
+            ->join($rolesTable, "{$userRoleTable}.role_id", '=', "{$rolesTable}.id")
+            ->whereIn("{$rolesTable}.slug", ['super_admin', 'admin'])
+            ->select("{$usersTable}.*")
             ->distinct()
-            ->get()
-            ->map(fn ($user) => User::fromPrimitives(
-                $user->id,
-                $user->uuid,
-                $user->email,
-                $user->name,
-                $user->is_active ?? true
-            ))
-            ->toArray();
+            ->get();
+
+        return $rows->map(fn (\stdClass $row) => User::fromPrimitives(
+            $row->id,
+            $row->uuid,
+            $row->email,
+            $row->name,
+            $row->is_active ?? true
+        ))->toArray();
+    }
+
+    private function usersQuery(): Builder
+    {
+        return $this->connection->table(UserModel::tableName());
+    }
+
+    private function timeEntriesQuery(): Builder
+    {
+        return $this->connection->table(TimeEntryModel::tableName());
     }
 }
