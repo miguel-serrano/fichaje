@@ -23,4 +23,5 @@ mysql-schema.sql
 *.md
 config/telescope.php
 CLAUDE.md
-
+proyecto_app.zip
+proyecto_public.zip
