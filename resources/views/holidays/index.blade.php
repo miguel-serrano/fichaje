@@ -3,6 +3,7 @@
 @section('title', 'Mis Vacaciones')
 
 @section('content')
+@if($canRequestHoliday)
 <div class="row">
     <div class="col s12">
         <div class="card">
@@ -42,6 +43,16 @@
         </div>
     </div>
 </div>
+@else
+<div class="row">
+    <div class="col s12">
+        <div class="card-panel amber lighten-4">
+            <i class="material-icons left amber-text text-darken-3">warning</i>
+            <span class="amber-text text-darken-4">No tienes permisos para solicitar vacaciones. Contacta con tu administrador.</span>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="row">
     <div class="col s12">

@@ -27,34 +27,6 @@ class PermissionChecker implements PermissionCheckerInterface
             ->exists();
     }
 
-    /**
-     * @param string[] $permissionSlugs
-     */
-    public function hasAnyPermission(User $user, array $permissionSlugs): bool
-    {
-        foreach ($permissionSlugs as $slug) {
-            if ($this->hasPermission($user, $slug)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param string[] $permissionSlugs
-     */
-    public function hasAllPermissions(User $user, array $permissionSlugs): bool
-    {
-        foreach ($permissionSlugs as $slug) {
-            if (!$this->hasPermission($user, $slug)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public function ensureHasPermission(User $user, string $permissionSlug): void
     {
         if (!$this->hasPermission($user, $permissionSlug)) {

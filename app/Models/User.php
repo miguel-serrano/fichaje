@@ -11,10 +11,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -93,11 +89,11 @@ class User extends Authenticatable
     /**
      * Get the holiday requests for the user.
      */
-    public function holidayRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function holidayRequests(): HasMany
     {
         return $this->hasMany(HolidayRequest::class);
     }
-    
+
     /**
      * Get the roles for the user.
      */

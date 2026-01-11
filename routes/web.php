@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\HolidayAdminController;
 use App\Http\Controllers\Admin\Permission\CreatePermissionController;
 use App\Http\Controllers\Admin\Permission\DeletePermissionController;
 use App\Http\Controllers\Admin\Permission\EditPermissionController;
