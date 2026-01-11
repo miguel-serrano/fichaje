@@ -208,6 +208,12 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Tests should test all of the happy paths, failure paths, and weird paths.
 - You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files, these are core to the application.
 
+### Protección de Datos
+- NUNCA borrar datos de ninguna tabla de la base de datos durante los tests
+- Los tests deben usar transacciones (trait `RefreshDatabase` con `--without-database-wipe` o `DatabaseTransactions`) para no afectar datos existentes
+- NO usar `migrate:fresh` ni truncar tablas en tests
+- Si un test necesita datos, usar factories para crear datos temporales que se revierten con la transacción
+
 ### Running Tests
 - Run the minimal number of tests, using an appropriate filter, before finalizing.
 - To run all tests: `vendor/bin/sail artisan test`.

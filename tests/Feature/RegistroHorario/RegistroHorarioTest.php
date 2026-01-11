@@ -3,12 +3,12 @@
 namespace Tests\Feature\RegistroHorario;
 
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class RegistroHorarioTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private UserRepositoryInterface $userRepository;
 
@@ -250,7 +250,8 @@ class RegistroHorarioTest extends TestCase
         $response->assertRedirect(route('user.me'));
         $response->assertSessionHas('success', 'Entrada registrada correctamente');
 
-        $this->assertDatabaseCount('time_entries', 9);
+        // Verificar que el admin tiene 9 registros (8 creados + 1 nuevo)
+        $this->assertEquals(9, \App\Models\TimeEntry::where('user_id', $this->authenticatedUser->id)->count());
     }
 
     public function test_daily_limit_resets_for_new_day(): void
