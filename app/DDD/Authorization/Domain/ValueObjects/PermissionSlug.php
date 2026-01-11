@@ -17,11 +17,6 @@ final class PermissionSlug extends StringValueObject
         }
     }
 
-    public function equals(PermissionSlug $other): bool
-    {
-        return $this->value === $other->value();
-    }
-
     public function context(): string
     {
         return explode('.', $this->value)[0];

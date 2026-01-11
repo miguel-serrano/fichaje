@@ -16,7 +16,7 @@
                         <p class="grey-text">Administra los permisos del sistema agrupados por contexto.</p>
                     </div>
                     <div class="col s12 m4 right-align">
-                        <a href="#modal-create-permission" class="btn waves-effect waves-light light-green modal-trigger">
+                        <a href="{{ route('admin.permissions.create') }}" class="btn waves-effect waves-light light-green">
                             <i class="material-icons left">add</i>Nuevo Permiso
                         </a>
                     </div>
@@ -59,7 +59,7 @@
                                         </td>
                                         <td class="right-align">
                                             @if(!$permission['is_system'])
-                                                <a href="#modal-edit-permission-{{ $permission['id'] }}" class="btn-small waves-effect waves-light blue modal-trigger">
+                                                <a href="{{ route('admin.permissions.edit', $permission['id']) }}" class="btn-small waves-effect waves-light blue">
                                                     <i class="material-icons">edit</i>
                                                 </a>
                                                 <form action="{{ route('admin.permissions.destroy', $permission['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar este permiso?');">
@@ -74,43 +74,6 @@
                                             @endif
                                         </td>
                                     </tr>
-
-                                    @if(!$permission['is_system'])
-                                    <!-- Modal Edit Permission -->
-                                    <div id="modal-edit-permission-{{ $permission['id'] }}" class="modal">
-                                        <form action="{{ route('admin.permissions.update', $permission['id']) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="modal-content">
-                                                <h5>Editar Permiso</h5>
-                                                <p class="grey-text">Modifica el permiso <strong>{{ $permission['slug'] }}</strong></p>
-
-                                                <div class="row">
-                                                    <div class="input-field col s12">
-                                                        <input id="edit-name-{{ $permission['id'] }}" name="name" type="text"
-                                                               value="{{ $permission['name'] }}" required>
-                                                        <label for="edit-name-{{ $permission['id'] }}" class="active">Nombre *</label>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="input-field col s12">
-                                                        <textarea id="edit-description-{{ $permission['id'] }}" name="description"
-                                                                  class="materialize-textarea">{{ $permission['description'] }}</textarea>
-                                                        <label for="edit-description-{{ $permission['id'] }}" class="active">Descripción</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-                                                <button type="submit" class="waves-effect waves-light btn light-green">
-                                                    <i class="material-icons left">save</i>Guardar
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    @endif
-
                                     @endforeach
                                 </tbody>
                             </table>
@@ -129,58 +92,6 @@
         </div>
     </div>
 </div>
-
-<!-- Modal Create Permission -->
-<div id="modal-create-permission" class="modal">
-    <form action="{{ route('admin.permissions.store') }}" method="POST">
-        @csrf
-        <div class="modal-content">
-            <h5>Crear Nuevo Permiso</h5>
-            <p class="grey-text">Define un nuevo permiso para el sistema.</p>
-
-            <div class="row">
-                <div class="input-field col s12">
-                    <input id="create-name" name="name" type="text" required>
-                    <label for="create-name">Nombre *</label>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="input-field col s12">
-                    <input id="create-slug" name="slug" type="text" required pattern="^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$">
-                    <label for="create-slug">Slug *</label>
-                    <span class="helper-text">Formato: contexto.accion (ej: user.view, holiday.approve)</span>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="input-field col s12">
-                    <select id="create-bounded_context" name="bounded_context" required>
-                        <option value="" disabled selected>Selecciona un contexto</option>
-                        @foreach($contexts as $context)
-                            <option value="{{ $context }}">{{ $context }}</option>
-                        @endforeach
-                    </select>
-                    <label for="create-bounded_context">Contexto *</label>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="input-field col s12">
-                    <textarea id="create-description" name="description" class="materialize-textarea"></textarea>
-                    <label for="create-description">Descripción</label>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-            <button type="submit" class="waves-effect waves-light btn light-green">
-                <i class="material-icons left">save</i>Crear
-            </button>
-        </div>
-    </form>
-</div>
-
 @endsection
 
 @section('scripts')
@@ -190,12 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
     M.Collapsible.init(collapsibles, {
         accordion: false
     });
-
-    var modals = document.querySelectorAll('.modal');
-    M.Modal.init(modals);
-
-    var selects = document.querySelectorAll('select');
-    M.FormSelect.init(selects);
 });
 </script>
 @endsection

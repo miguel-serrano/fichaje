@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\Permission\CreatePermissionController;
 use App\Http\Controllers\Admin\Permission\DeletePermissionController;
+use App\Http\Controllers\Admin\Permission\EditPermissionController;
 use App\Http\Controllers\Admin\Permission\ListPermissionsController;
 use App\Http\Controllers\Admin\Permission\StorePermissionController;
 use App\Http\Controllers\Admin\Permission\UpdatePermissionController;
@@ -74,7 +76,9 @@ Route::middleware('auth')->group(function () {
         // Permission Management
         Route::prefix('admin/permissions')->name('admin.permissions.')->group(function () {
             Route::get('/', ListPermissionsController::class)->name('index');
+            Route::get('/create', CreatePermissionController::class)->name('create');
             Route::post('/', StorePermissionController::class)->name('store');
+            Route::get('/{id}/edit', EditPermissionController::class)->name('edit');
             Route::put('/{id}', UpdatePermissionController::class)->name('update');
             Route::delete('/{id}', DeletePermissionController::class)->name('destroy');
         });

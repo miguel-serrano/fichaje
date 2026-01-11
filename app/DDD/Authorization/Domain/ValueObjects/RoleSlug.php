@@ -16,9 +16,4 @@ final class RoleSlug extends StringValueObject
             throw new \InvalidArgumentException('Role slug must start with a letter and contain only lowercase letters, numbers, and underscores');
         }
     }
-
-    public function equals(RoleSlug $other): bool
-    {
-        return $this->value === $other->value();
-    }
 }
