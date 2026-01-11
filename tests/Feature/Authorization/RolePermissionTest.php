@@ -5,13 +5,10 @@ namespace Tests\Feature\Authorization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class RolePermissionTest extends TestCase
 {
-    use DatabaseTransactions;
-
     protected function setUp(): void
     {
         parent::setUp();

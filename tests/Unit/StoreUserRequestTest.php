@@ -4,14 +4,11 @@ namespace Tests\Unit;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class StoreUserRequestTest extends TestCase
 {
-    use DatabaseTransactions;
-
     public function test_validates_required_fields(): void
     {
         $request = new StoreUserRequest;

@@ -10,13 +10,10 @@ use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use App\DDD\User\Infrastructure\Services\UserAuthorizationService;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class GetUserByIdUseCaseTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private UserRepositoryInterface $userRepository;
 
     private UserAuthorizationServiceInterface $authorizationService;

@@ -3,13 +3,10 @@
 namespace Tests\Feature\RegistroHorario;
 
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class RegistroHorarioTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private UserRepositoryInterface $userRepository;
 
     private \App\Models\User $authenticatedUser;

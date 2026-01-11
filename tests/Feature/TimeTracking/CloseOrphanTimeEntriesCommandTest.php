@@ -5,15 +5,12 @@ namespace Tests\Feature\TimeTracking;
 use App\Models\Notification;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CloseOrphanTimeEntriesCommandTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private User $user;
 
     protected function setUp(): void

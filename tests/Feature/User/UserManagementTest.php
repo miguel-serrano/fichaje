@@ -5,13 +5,10 @@ namespace Tests\Feature\User;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private \App\Models\User $authenticatedUser;
 
     protected function setUp(): void

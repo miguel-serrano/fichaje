@@ -6,13 +6,10 @@ use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class UserRegistroHorarioIntegrationTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private UserRepositoryInterface $userRepository;
 
     private \App\Models\User $authenticatedUser;
