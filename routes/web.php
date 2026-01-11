@@ -46,10 +46,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/holidays/{id}/reject', [HolidayAdminController::class, 'reject'])->name('admin.holidays.reject');
     });
 
-    Route::get('/holidays', [HolidayController::class, 'index'])->name('holidays.index');
-    Route::post('/holidays', [HolidayController::class, 'store'])->name('holidays.store');
-
     Route::middleware('active')->group(function () {
+        Route::get('/holidays', [HolidayController::class, 'index'])->name('holidays.index');
+        Route::post('/holidays', [HolidayController::class, 'store'])->name('holidays.store');
+
         Route::get('/registro-horario', [RegistroHorarioController::class, 'index'])->name('registro_horario.index');
         Route::post('/registro-horario/entrada', [RegistroHorarioController::class, 'ficharEntrada'])->name('registro_horario.entrada');
         Route::post('/registro-horario/salida/{registroHorarioId?}', [RegistroHorarioController::class, 'ficharSalida'])->name('registro_horario.salida');
