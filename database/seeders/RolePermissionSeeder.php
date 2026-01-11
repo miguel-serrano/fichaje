@@ -69,8 +69,8 @@ class RolePermissionSeeder extends Seeder
         // Employee
         $employeePermissions = [
             'user.view_own', 'user.update_own',
-            'timetracking.view_own',
-            'holiday.view_own',
+            'timetracking.view_own', 'timetracking.clockin', 'timetracking.clockout',
+            'holiday.request', 'holiday.view_own',
             'authentication.login', 'authentication.logout', 'authentication.reset_password',
             'notification.view_own', 'notification.mark_read',
         ];

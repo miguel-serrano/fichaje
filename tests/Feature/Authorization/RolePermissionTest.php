@@ -34,9 +34,13 @@ class RolePermissionTest extends TestCase
         $user->assignRole('employee');
 
         $this->assertTrue($user->hasRole('employee'));
+        // Employee puede fichar y pedir vacaciones
         $this->assertTrue($user->hasPermission('timetracking.clockin'));
         $this->assertTrue($user->hasPermission('timetracking.clockout'));
+        $this->assertTrue($user->hasPermission('holiday.request'));
         $this->assertTrue($user->hasPermission('user.view_own'));
+        $this->assertTrue($user->hasPermission('timetracking.view_own'));
+        // Pero no tiene permisos de administración
         $this->assertFalse($user->hasPermission('user.delete'));
         $this->assertFalse($user->hasPermission('authorization.manage_roles'));
     }
