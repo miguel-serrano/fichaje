@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Admin;
+
+use App\DDD\Holiday\Application\Command\ApproveHolidayRequestCommand;
+use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
+use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
+use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
+use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+
+class HolidayAdminController extends Controller
+{
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private QueryBusInterface $queryBus,
+        private UserRepositoryInterface $userRepository,
+    ) {
+    }
+
+    public function index(): View
+    {
+        $pendingHolidays = $this->queryBus->dispatch(
+            new GetPendingHolidaysQuery(Auth::id())
+        );
+
+        $approvedHolidays = $this->queryBus->dispatch(
+            new GetApprovedHolidaysQuery(Auth::id())
+        );
+
+        $pendingWithUsers = [];
+        foreach ($pendingHolidays as $holiday) {
+            $user = $this->userRepository->findById($holiday->userId());
+            $pendingWithUsers[] = [
+                'holiday' => $holiday,
+                'user' => $user,
+            ];
+        }
+
+        $approvedWithUsers = [];
+        foreach ($approvedHolidays as $holiday) {
+            $user = $this->userRepository->findById($holiday->userId());
+            $approvedWithUsers[] = [
+                'holiday' => $holiday,
+                'user' => $user,
+            ];
+        }
+
+        return view('admin.holidays.index', [
+            'pendingWithUsers' => $pendingWithUsers,
+            'approvedWithUsers' => $approvedWithUsers,
+        ]);
+    }
+
+    public function approve(int $id): RedirectResponse
+    {
+        $this->commandBus->dispatch(
+            new ApproveHolidayRequestCommand(Auth::id(), $id)
+        );
+
+        return redirect()
+            ->route('admin.holidays.index')
+            ->with('success', 'Solicitud de vacaciones aprobada.');
+    }
+
+    public function reject(int $id): RedirectResponse
+    {
+        $this->commandBus->dispatch(
+            new RejectHolidayRequestCommand(Auth::id(), $id)
+        );
+
+        return redirect()
+            ->route('admin.holidays.index')
+            ->with('success', 'Solicitud de vacaciones rechazada.');
+    }
+}

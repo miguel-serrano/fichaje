@@ -238,4 +238,21 @@ class EloquentUserRepository implements UserRepositoryInterface
             ->map(fn ($r) => (array) $r)
             ->toArray();
     }
+
+    /** @return User[] */
+    public function findAdmins(): array
+    {
+        return DB::table($this->getUsersTable())
+            ->where('is_admin', true)
+            ->get()
+            ->map(fn ($user) => User::fromPrimitives(
+                $user->id,
+                $user->uuid,
+                $user->email,
+                $user->name,
+                $user->is_active ?? true,
+                $user->is_admin ?? false
+            ))
+            ->toArray();
+    }
 }

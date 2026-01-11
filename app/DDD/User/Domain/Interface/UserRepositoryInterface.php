@@ -41,4 +41,7 @@ interface UserRepositoryInterface
 
     /** @return array<array-key, mixed> */
     public function findTodayTimeEntriesByUserId(UserId $id): array;
+
+    /** @return User[] */
+    public function findAdmins(): array;
 }

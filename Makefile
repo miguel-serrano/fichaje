@@ -1,4 +1,4 @@
-.PHONY: up down stop test test-filter build npm-dev npm-build migrate fresh pint
+.PHONY: up down stop test test-filter build npm-dev npm-build migrate fresh pint shell
 
 up:
 	vendor/bin/sail up -d
@@ -32,3 +32,6 @@ fresh:
 
 pint:
 	vendor/bin/sail bin pint --dirty
+
+shell:
+	vendor/bin/sail shell

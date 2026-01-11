@@ -11,7 +11,9 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens;
+    use HasFactory;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -79,5 +81,13 @@ class User extends Authenticatable
     public function openTimeEntry(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(TimeEntry::class)->whereNull('salida');
+    }
+
+    /**
+     * Get the holiday requests for the user.
+     */
+    public function holidayRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(HolidayRequest::class);
     }
 }
