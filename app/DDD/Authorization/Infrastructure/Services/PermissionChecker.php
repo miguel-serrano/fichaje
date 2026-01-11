@@ -2,13 +2,20 @@
 
 namespace App\DDD\Authorization\Infrastructure\Services;
 
+use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
+use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
-use Illuminate\Support\Facades\DB;
 
 class PermissionChecker implements PermissionCheckerInterface
 {
+    public function __construct(
+        private PermissionRepositoryInterface $permissionRepository,
+        private RoleRepositoryInterface $roleRepository,
+    ) {
+    }
+
     public function hasPermission(User $user, string $permissionSlug): bool
     {
         if ($this->isSuperAdmin($user)) {
@@ -19,12 +26,7 @@ class PermissionChecker implements PermissionCheckerInterface
             return false;
         }
 
-        return DB::table('user_role')
-            ->join('role_permission', 'user_role.role_id', '=', 'role_permission.role_id')
-            ->join('permissions', 'role_permission.permission_id', '=', 'permissions.id')
-            ->where('user_role.user_id', $user->id()->value())
-            ->where('permissions.slug', $permissionSlug)
-            ->exists();
+        return $this->permissionRepository->userHasPermission($user->id(), $permissionSlug);
     }
 
     public function ensureHasPermission(User $user, string $permissionSlug): void
@@ -40,11 +42,7 @@ class PermissionChecker implements PermissionCheckerInterface
             return false;
         }
 
-        return DB::table('user_role')
-            ->join('roles', 'user_role.role_id', '=', 'roles.id')
-            ->where('user_role.user_id', $user->id()->value())
-            ->where('roles.slug', $roleSlug)
-            ->exists();
+        return $this->roleRepository->userHasRole($user->id(), $roleSlug);
     }
 
     public function isSuperAdmin(User $user): bool

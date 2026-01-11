@@ -27,6 +27,7 @@ class GetPendingHolidaysQueryHandler
     public function handle(GetPendingHolidaysQuery $query): array
     {
         $user = $this->userRepository->findByIdOrFail(new UserId($query->authenticatedUserId));
+
         $this->permissionChecker->ensureHasPermission($user, HolidayPermission::ViewPending->value);
 
         return $this->holidayRepository->findPending();

@@ -227,8 +227,34 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ### Arquitectura DDD + CQRS
 - **Bounded Contexts**: `User`, `TimeTracking`, `Holiday`, `Authorization`, `Shared`
 - **Command Bus**: Laravel Tactician
-- Repositorios en Infrastructure usan `DB` facade con mapeo manual
 - Controladores thin: solo dispatching de commands/queries
+
+### Repositorios en Infrastructure
+- **NO usar facades** (`DB::`, `Auth::`, etc.) en repositorios
+- **Inyectar dependencias** via constructor: `ConnectionInterface` para base de datos
+- **Usar Query Builder** en lugar de métodos estáticos de modelos Eloquent:
+  ```php
+  // Correcto
+  public function __construct(private ConnectionInterface $connection) {}
+
+  private function query(): Builder
+  {
+      return $this->connection->table(Model::tableName());
+  }
+
+  public function findById(Id $id): ?Entity
+  {
+      $row = $this->query()->where('id', $id->value())->first();
+      return $row ? $this->toDomainEntity($row) : null;
+  }
+
+  // Incorrecto
+  $model = Model::find($id);
+  DB::table('users')->where(...);
+  ```
+- **Nombres de tablas**: Usar `Model::tableName()` (trait `HasTableName`) en lugar de strings hardcodeados
+- **Mapeo a dominio**: `toDomainEntity(stdClass $row)` recibe `stdClass`, no modelo Eloquent
+- **Modelos Pivot**: `UserRole`, `RolePermission` para tablas pivot con trait `HasTableName`
 
 ### Estructura de Bounded Contexts
 - **IMPORTANTE**: Dentro de `app/DDD/{Context}/Domain/` todos los archivos deben estar en subcarpetas, NUNCA sueltos

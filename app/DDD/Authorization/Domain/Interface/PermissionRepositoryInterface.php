@@ -6,9 +6,12 @@ use App\DDD\Authorization\Domain\Entity\Permission;
 use App\DDD\Authorization\Domain\ValueObjects\BoundedContext;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionId;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionSlug;
+use App\DDD\User\Domain\ValueObjects\UserId;
 
 interface PermissionRepositoryInterface
 {
+    public function userHasPermission(UserId $userId, string $permissionSlug): bool;
+
     public function save(Permission $permission): Permission;
 
     public function findById(PermissionId $id): ?Permission;

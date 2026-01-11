@@ -5,9 +5,12 @@ namespace App\DDD\Authorization\Domain\Interface;
 use App\DDD\Authorization\Domain\Entity\Role;
 use App\DDD\Authorization\Domain\ValueObjects\RoleId;
 use App\DDD\Authorization\Domain\ValueObjects\RoleSlug;
+use App\DDD\User\Domain\ValueObjects\UserId;
 
 interface RoleRepositoryInterface
 {
+    public function userHasRole(UserId $userId, string $roleSlug): bool;
+
     public function save(Role $role): Role;
 
     public function findById(RoleId $id): ?Role;

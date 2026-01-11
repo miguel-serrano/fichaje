@@ -8,10 +8,35 @@ use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
 use App\DDD\Authorization\Domain\ValueObjects\BoundedContext;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionId;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionSlug;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\Permission as PermissionModel;
+use App\Models\RolePermission;
+use App\Models\UserRole;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class EloquentPermissionRepository implements PermissionRepositoryInterface
 {
+    public function __construct(
+        private ConnectionInterface $connection,
+    ) {
+    }
+
+    public function userHasPermission(UserId $userId, string $permissionSlug): bool
+    {
+        $userRoleTable = UserRole::tableName();
+        $rolePermissionTable = RolePermission::tableName();
+        $permissionTable = PermissionModel::tableName();
+
+        $query = $this->connection->table($userRoleTable)
+            ->join($rolePermissionTable, "{$userRoleTable}.role_id", '=', "{$rolePermissionTable}.role_id")
+            ->join($permissionTable, "{$rolePermissionTable}.permission_id", '=', "{$permissionTable}.id")
+            ->where("{$userRoleTable}.user_id", $userId->value())
+            ->where("{$permissionTable}.slug", $permissionSlug);
+
+        return $query->exists();
+    }
+
     public function save(Permission $permission): Permission
     {
         $data = [
@@ -23,20 +48,21 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
         ];
 
         if ($permission->id()) {
-            PermissionModel::where('id', $permission->id()->value())->update($data);
-            $model = PermissionModel::find($permission->id()->value());
+            $this->query()->where('id', $permission->id()->value())->update($data);
+            $row = $this->query()->where('id', $permission->id()->value())->first();
         } else {
-            $model = PermissionModel::create($data);
+            $id = $this->query()->insertGetId($data);
+            $row = $this->query()->where('id', $id)->first();
         }
 
-        return $this->toDomainEntity($model);
+        return $this->toDomainEntity($row);
     }
 
     public function findById(PermissionId $id): ?Permission
     {
-        $model = PermissionModel::find($id->value());
+        $row = $this->query()->where('id', $id->value())->first();
 
-        return $model ? $this->toDomainEntity($model) : null;
+        return $row ? $this->toDomainEntity($row) : null;
     }
 
     public function findByIdOrFail(PermissionId $id): Permission
@@ -52,9 +78,9 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
 
     public function findBySlug(PermissionSlug $slug): ?Permission
     {
-        $model = PermissionModel::where('slug', $slug->value())->first();
+        $row = $this->query()->where('slug', $slug->value())->first();
 
-        return $model ? $this->toDomainEntity($model) : null;
+        return $row ? $this->toDomainEntity($row) : null;
     }
 
     public function findBySlugOrFail(PermissionSlug $slug): Permission
@@ -73,11 +99,12 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
      */
     public function findAll(): array
     {
-        return PermissionModel::orderBy('bounded_context')
+        $rows = $this->query()
+            ->orderBy('bounded_context')
             ->orderBy('slug')
-            ->get()
-            ->map(fn (PermissionModel $model) => $this->toDomainEntity($model))
-            ->toArray();
+            ->get();
+
+        return $rows->map(fn (\stdClass $row) => $this->toDomainEntity($row))->toArray();
     }
 
     /**
@@ -85,27 +112,33 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
      */
     public function findByBoundedContext(BoundedContext $context): array
     {
-        return PermissionModel::where('bounded_context', $context->value)
+        $rows = $this->query()
+            ->where('bounded_context', $context->value)
             ->orderBy('slug')
-            ->get()
-            ->map(fn (PermissionModel $model) => $this->toDomainEntity($model))
-            ->toArray();
+            ->get();
+
+        return $rows->map(fn (\stdClass $row) => $this->toDomainEntity($row))->toArray();
     }
 
     public function delete(PermissionId $id): bool
     {
-        return PermissionModel::destroy($id->value()) > 0;
+        return $this->query()->where('id', $id->value())->delete() > 0;
     }
 
-    private function toDomainEntity(PermissionModel $model): Permission
+    private function query(): Builder
+    {
+        return $this->connection->table(PermissionModel::tableName());
+    }
+
+    private function toDomainEntity(\stdClass $row): Permission
     {
         return Permission::fromPrimitives(
-            $model->id,
-            $model->name,
-            $model->slug,
-            $model->bounded_context,
-            $model->description,
-            $model->is_system
+            $row->id,
+            $row->name,
+            $row->slug,
+            $row->bounded_context,
+            $row->description,
+            (bool) $row->is_system
         );
     }
 }
