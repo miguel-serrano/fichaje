@@ -52,6 +52,9 @@
                 <p class="grey-text text-darken-3" style="margin-bottom: 15px;">
                     🌙 <strong>Cierre automático:</strong> Los fichajes abiertos se cerrarán automáticamente por la noche, computando un máximo de 8 horas diarias
                 </p>
+                <p class="grey-text text-darken-3" style="margin-bottom: 15px;">
+                    🏖️ <strong>Vacaciones:</strong> Pide tus días de vacaciones
+                </p>
                 <p class="grey-text text-darken-3" style="text-align: justify; margin-bottom: 15px;">
                     Estos límites se ampliarán progresivamente conforme la aplicación evolucione hacia su versión estable.
                 </p>

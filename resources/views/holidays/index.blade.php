@@ -16,19 +16,17 @@
                     <div class="row">
                         <div class="input-field col s12 m6">
                             <i class="material-icons prefix">today</i>
-                            <input type="date" id="start_date" name="start_date"
+                            <input type="text" id="start_date" name="start_date" class="datepicker"
                                    value="{{ old('start_date') }}"
-                                   min="{{ date('Y-m-d') }}"
                                    required>
-                            <label for="start_date" class="active">Fecha de inicio</label>
+                            <label for="start_date">Fecha de inicio</label>
                         </div>
                         <div class="input-field col s12 m6">
                             <i class="material-icons prefix">event</i>
-                            <input type="date" id="end_date" name="end_date"
+                            <input type="text" id="end_date" name="end_date" class="datepicker"
                                    value="{{ old('end_date') }}"
-                                   min="{{ date('Y-m-d') }}"
                                    required>
-                            <label for="end_date" class="active">Fecha de fin</label>
+                            <label for="end_date">Fecha de fin</label>
                         </div>
                     </div>
                     <div class="row">
@@ -90,14 +88,50 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var startDate = document.getElementById('start_date');
-    var endDate = document.getElementById('end_date');
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    startDate.addEventListener('change', function() {
-        endDate.min = this.value;
-        if (endDate.value && endDate.value < this.value) {
-            endDate.value = this.value;
+    var i18n = {
+        cancel: 'Cancelar',
+        clear: 'Limpiar',
+        done: 'Aceptar',
+        months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+        monthsShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        weekdays: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+        weekdaysShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+        weekdaysAbbrev: ['D', 'L', 'M', 'X', 'J', 'V', 'S']
+    };
+
+    var startDateElem = document.getElementById('start_date');
+    var endDateElem = document.getElementById('end_date');
+    var endDateInstance;
+
+    var startDateInstance = M.Datepicker.init(startDateElem, {
+        format: 'yyyy-mm-dd',
+        minDate: today,
+        autoClose: true,
+        showClearBtn: true,
+        i18n: i18n,
+        firstDay: 1,
+        onSelect: function(date) {
+            if (endDateInstance) {
+                endDateInstance.options.minDate = date;
+                var endDate = endDateInstance.date;
+                if (endDate && endDate < date) {
+                    endDateInstance.setDate(date);
+                    endDateElem.value = startDateElem.value;
+                }
+            }
         }
+    });
+
+    endDateInstance = M.Datepicker.init(endDateElem, {
+        format: 'yyyy-mm-dd',
+        minDate: today,
+        autoClose: true,
+        showClearBtn: true,
+        i18n: i18n,
+        firstDay: 1
     });
 });
 </script>
