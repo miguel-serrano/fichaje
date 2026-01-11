@@ -28,9 +28,19 @@
                 <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
                     @if(auth()->user()->is_admin)
-                        <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
+                        <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
                             <a href="{{ route('users.index') }}">
                                 <i class="material-icons left">people</i>Usuarios
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.roles.index') }}">
+                                <i class="material-icons left">security</i>Roles
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.permissions.index') }}">
+                                <i class="material-icons left">vpn_key</i>Permisos
                             </a>
                         </li>
                     @else
@@ -130,9 +140,19 @@
             </div>
         </li>
         @if(auth()->user()->is_admin)
-            <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
+            <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
                 <a href="{{ route('users.index') }}">
                     <i class="material-icons">people</i>Usuarios
+                </a>
+            </li>
+            <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.roles.index') }}">
+                    <i class="material-icons">security</i>Roles
+                </a>
+            </li>
+            <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.permissions.index') }}">
+                    <i class="material-icons">vpn_key</i>Permisos
                 </a>
             </li>
         @else

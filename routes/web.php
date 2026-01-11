@@ -1,6 +1,17 @@
 <?php
 
-use App\Http\Controllers\Admin\HolidayAdminController;
+use App\Http\Controllers\Admin\Permission\DeletePermissionController;
+use App\Http\Controllers\Admin\Permission\ListPermissionsController;
+use App\Http\Controllers\Admin\Permission\StorePermissionController;
+use App\Http\Controllers\Admin\Permission\UpdatePermissionController;
+use App\Http\Controllers\Admin\Role\CreateRoleController;
+use App\Http\Controllers\Admin\Role\DeleteRoleController;
+use App\Http\Controllers\Admin\Role\EditRoleController;
+use App\Http\Controllers\Admin\Role\ListRolesController;
+use App\Http\Controllers\Admin\Role\ShowRoleController;
+use App\Http\Controllers\Admin\Role\StoreRoleController;
+use App\Http\Controllers\Admin\Role\SyncPermissionsController;
+use App\Http\Controllers\Admin\Role\UpdateRoleController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\BienvenidoController;
 use App\Http\Controllers\HolidayController;
@@ -47,6 +58,26 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/holidays/{id}/reject', [HolidayAdminController::class, 'reject'])->name('admin.holidays.reject');
         Route::post('/user/{id}/roles', AssignRoleToUserController::class)->name('user.roles.assign');
         Route::delete('/user/{id}/roles/{roleSlug}', RemoveRoleFromUserController::class)->name('user.roles.remove');
+
+        // Role Management
+        Route::prefix('admin/roles')->name('admin.roles.')->group(function () {
+            Route::get('/', ListRolesController::class)->name('index');
+            Route::get('/create', CreateRoleController::class)->name('create');
+            Route::post('/', StoreRoleController::class)->name('store');
+            Route::get('/{id}', ShowRoleController::class)->name('show');
+            Route::get('/{id}/edit', EditRoleController::class)->name('edit');
+            Route::put('/{id}', UpdateRoleController::class)->name('update');
+            Route::delete('/{id}', DeleteRoleController::class)->name('destroy');
+            Route::put('/{id}/permissions', SyncPermissionsController::class)->name('permissions.sync');
+        });
+
+        // Permission Management
+        Route::prefix('admin/permissions')->name('admin.permissions.')->group(function () {
+            Route::get('/', ListPermissionsController::class)->name('index');
+            Route::post('/', StorePermissionController::class)->name('store');
+            Route::put('/{id}', UpdatePermissionController::class)->name('update');
+            Route::delete('/{id}', DeletePermissionController::class)->name('destroy');
+        });
     });
 
     Route::middleware('active')->group(function () {

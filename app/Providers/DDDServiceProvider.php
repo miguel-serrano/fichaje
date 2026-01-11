@@ -27,15 +27,33 @@ use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
 use App\DDD\Authorization\Application\Command\AssignRoleToUserCommand;
+use App\DDD\Authorization\Application\Command\CreatePermissionCommand;
+use App\DDD\Authorization\Application\Command\CreateRoleCommand;
+use App\DDD\Authorization\Application\Command\DeletePermissionCommand;
+use App\DDD\Authorization\Application\Command\DeleteRoleCommand;
 use App\DDD\Authorization\Application\Command\RemoveRoleFromUserCommand;
+use App\DDD\Authorization\Application\Command\SyncPermissionsToRoleCommand;
+use App\DDD\Authorization\Application\Command\UpdatePermissionCommand;
+use App\DDD\Authorization\Application\Command\UpdateRoleCommand;
 use App\DDD\Authorization\Application\Handler\AssignRoleToUserCommandHandler;
+use App\DDD\Authorization\Application\Handler\CreatePermissionCommandHandler;
+use App\DDD\Authorization\Application\Handler\CreateRoleCommandHandler;
+use App\DDD\Authorization\Application\Handler\DeletePermissionCommandHandler;
+use App\DDD\Authorization\Application\Handler\DeleteRoleCommandHandler;
 use App\DDD\Authorization\Application\Handler\GetAllPermissionsQueryHandler;
 use App\DDD\Authorization\Application\Handler\GetAllRolesQueryHandler;
+use App\DDD\Authorization\Application\Handler\GetPermissionByIdQueryHandler;
+use App\DDD\Authorization\Application\Handler\GetRoleByIdQueryHandler;
 use App\DDD\Authorization\Application\Handler\GetUserPermissionsQueryHandler;
 use App\DDD\Authorization\Application\Handler\GetUserRolesQueryHandler;
 use App\DDD\Authorization\Application\Handler\RemoveRoleFromUserCommandHandler;
+use App\DDD\Authorization\Application\Handler\SyncPermissionsToRoleCommandHandler;
+use App\DDD\Authorization\Application\Handler\UpdatePermissionCommandHandler;
+use App\DDD\Authorization\Application\Handler\UpdateRoleCommandHandler;
 use App\DDD\Authorization\Application\Query\GetAllPermissionsQuery;
 use App\DDD\Authorization\Application\Query\GetAllRolesQuery;
+use App\DDD\Authorization\Application\Query\GetPermissionByIdQuery;
+use App\DDD\Authorization\Application\Query\GetRoleByIdQuery;
 use App\DDD\Authorization\Application\Query\GetUserPermissionsQuery;
 use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
 use App\DDD\Notification\Application\NotificationService;
@@ -128,6 +146,13 @@ class DDDServiceProvider extends ServiceProvider
         // Authorization Commands
         $tacticianBus->addHandler(AssignRoleToUserCommand::class, AssignRoleToUserCommandHandler::class);
         $tacticianBus->addHandler(RemoveRoleFromUserCommand::class, RemoveRoleFromUserCommandHandler::class);
+        $tacticianBus->addHandler(CreateRoleCommand::class, CreateRoleCommandHandler::class);
+        $tacticianBus->addHandler(UpdateRoleCommand::class, UpdateRoleCommandHandler::class);
+        $tacticianBus->addHandler(DeleteRoleCommand::class, DeleteRoleCommandHandler::class);
+        $tacticianBus->addHandler(SyncPermissionsToRoleCommand::class, SyncPermissionsToRoleCommandHandler::class);
+        $tacticianBus->addHandler(CreatePermissionCommand::class, CreatePermissionCommandHandler::class);
+        $tacticianBus->addHandler(UpdatePermissionCommand::class, UpdatePermissionCommandHandler::class);
+        $tacticianBus->addHandler(DeletePermissionCommand::class, DeletePermissionCommandHandler::class);
     }
 
     private function mapQueries(TacticianCommandBusInterface $tacticianBus): void
@@ -154,5 +179,7 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(GetUserPermissionsQuery::class, GetUserPermissionsQueryHandler::class);
         $tacticianBus->addHandler(GetAllRolesQuery::class, GetAllRolesQueryHandler::class);
         $tacticianBus->addHandler(GetAllPermissionsQuery::class, GetAllPermissionsQueryHandler::class);
+        $tacticianBus->addHandler(GetRoleByIdQuery::class, GetRoleByIdQueryHandler::class);
+        $tacticianBus->addHandler(GetPermissionByIdQuery::class, GetPermissionByIdQueryHandler::class);
     }
 }
