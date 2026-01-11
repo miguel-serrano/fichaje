@@ -29,7 +29,7 @@ class CreateHolidayRequestTest extends TestCase
     {
         $employeeRole = Role::where('slug', 'employee')->first();
         if ($employeeRole) {
-            $user->roles()->attach($employeeRole->id);
+            $user->roles()->syncWithoutDetaching([$employeeRole->id]);
         }
     }
 
@@ -37,7 +37,7 @@ class CreateHolidayRequestTest extends TestCase
     {
         $superAdminRole = Role::where('slug', 'super_admin')->first();
         if ($superAdminRole) {
-            $user->roles()->attach($superAdminRole->id);
+            $user->roles()->syncWithoutDetaching([$superAdminRole->id]);
         }
     }
 

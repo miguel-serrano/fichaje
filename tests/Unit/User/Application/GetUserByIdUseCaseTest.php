@@ -33,14 +33,19 @@ class GetUserByIdUseCaseTest extends TestCase
 
     public function test_it_returns_user_as_array_when_user_exists(): void
     {
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $adminUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $adminUser->assignRole('super_admin');
 
         $targetUser = \App\Models\User::create([
             'uuid' => '123e4567-e89b-12d3-a456-426614174000',
@@ -63,14 +68,19 @@ class GetUserByIdUseCaseTest extends TestCase
 
     public function test_it_throws_exception_when_user_not_found(): void
     {
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $adminUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $adminUser->assignRole('super_admin');
 
         $userId = 999;
 
@@ -82,14 +92,19 @@ class GetUserByIdUseCaseTest extends TestCase
 
     public function test_it_returns_user_with_all_required_fields(): void
     {
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $adminUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $adminUser->assignRole('super_admin');
 
         $targetUser = \App\Models\User::create([
             'uuid' => '223e4567-e89b-12d3-a456-426614174001',

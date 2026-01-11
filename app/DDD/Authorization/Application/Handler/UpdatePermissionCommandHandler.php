@@ -4,6 +4,7 @@ namespace App\DDD\Authorization\Application\Handler;
 
 use App\DDD\Authorization\Application\Command\UpdatePermissionCommand;
 use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
+use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
@@ -28,7 +29,7 @@ class UpdatePermissionCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, 'authorization.manage_roles');
+        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::ManagePermissions->value);
 
         $this->permissionRepository->findByIdOrFail(new PermissionId($command->permissionId));
 

@@ -29,7 +29,6 @@ class User extends Authenticatable
         'email',
         'password',
         'is_active',
-        'is_admin',
         'accepted_terms',
         'remember_token',
     ];
@@ -51,7 +50,6 @@ class User extends Authenticatable
      */
     protected $casts = [
         'is_active' => 'boolean',
-        'is_admin' => 'boolean',
         'accepted_terms' => 'boolean',
         'uuid' => 'string',
     ];

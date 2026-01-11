@@ -44,6 +44,8 @@ use App\DDD\Authorization\Application\Query\GetPermissionByIdQuery;
 use App\DDD\Authorization\Application\Query\GetRoleByIdQuery;
 use App\DDD\Authorization\Application\Query\GetUserPermissionsQuery;
 use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
+use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Infrastructure\Services\PermissionChecker;
 use App\DDD\Holiday\Application\Command\ApproveHolidayRequestCommand;
 use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
 use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
@@ -99,6 +101,9 @@ class DDDServiceProvider extends ServiceProvider
 
         // Register User services
         $this->app->bind(UserAuthorizationServiceInterface::class, UserAuthorizationService::class);
+
+        // Register Authorization services
+        $this->app->singleton(PermissionCheckerInterface::class, PermissionChecker::class);
 
         // Register Authentication services
         $this->app->bind(AuthenticationService::class, LaravelAuthenticationService::class);

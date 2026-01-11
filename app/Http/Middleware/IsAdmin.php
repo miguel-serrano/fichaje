@@ -15,10 +15,9 @@ class IsAdmin
 
         $user = auth()->user();
 
-        // Check by role (new system) OR by is_admin field (legacy compatibility)
+        // Check by role only (is_admin field removed)
         $isAdmin = $user->hasRole('super_admin')
-            || $user->hasRole('admin')
-            || $user->is_admin;
+            || $user->hasRole('admin');
 
         if (!$isAdmin) {
             abort(403, 'No tienes permisos para acceder a esta pagina.');

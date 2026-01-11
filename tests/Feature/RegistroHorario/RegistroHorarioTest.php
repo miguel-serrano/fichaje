@@ -250,8 +250,6 @@ class RegistroHorarioTest extends TestCase
         // Hacer al usuario super_admin (tiene todos los permisos)
         $superAdminRole = Role::where('slug', 'super_admin')->first();
         $this->authenticatedUser->roles()->sync([$superAdminRole->id]);
-        $this->authenticatedUser->is_admin = true;
-        $this->authenticatedUser->save();
 
         // Crear 8 registros
         for ($i = 0; $i < 8; $i++) {

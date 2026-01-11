@@ -4,6 +4,7 @@ namespace App\DDD\Authorization\Application\Handler;
 
 use App\DDD\Authorization\Application\Command\SyncPermissionsToRoleCommand;
 use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
+use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
@@ -24,7 +25,7 @@ class SyncPermissionsToRoleCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, 'authorization.manage_roles');
+        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
 
         $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
 

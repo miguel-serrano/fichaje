@@ -5,6 +5,7 @@ namespace App\DDD\Authorization\Application\Handler;
 use App\DDD\Authorization\Application\Command\CreatePermissionCommand;
 use App\DDD\Authorization\Domain\Entity\Permission;
 use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
+use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\BoundedContext;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionName;
@@ -30,7 +31,7 @@ class CreatePermissionCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, 'authorization.manage_roles');
+        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::ManagePermissions->value);
 
         $permission = Permission::create(
             new PermissionName($command->name),

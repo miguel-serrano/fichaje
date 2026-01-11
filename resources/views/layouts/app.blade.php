@@ -27,7 +27,7 @@
                 @auth
                 <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
-                    @if(auth()->user()->is_admin)
+                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
                         <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
                             <a href="{{ route('users.index') }}">
                                 <i class="material-icons left">people</i>Usuarios
@@ -60,7 +60,7 @@
                             <i class="material-icons left">beach_access</i>Vacaciones
                         </a>
                     </li>
-                    @if(auth()->user()->is_admin)
+                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
                         <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
                             <a href="{{ route('admin.holidays.index') }}">
                                 <i class="material-icons left">event_available</i>Gestionar Vacaciones
@@ -139,7 +139,7 @@
                 <span class="white-text email">{{ auth()->user()->email }}</span>
             </div>
         </li>
-        @if(auth()->user()->is_admin)
+        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
             <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
                 <a href="{{ route('users.index') }}">
                     <i class="material-icons">people</i>Usuarios
@@ -172,7 +172,7 @@
                 <i class="material-icons">beach_access</i>Vacaciones
             </a>
         </li>
-        @if(auth()->user()->is_admin)
+        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
             <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.holidays.index') }}">
                     <i class="material-icons">event_available</i>Gestionar Vacaciones

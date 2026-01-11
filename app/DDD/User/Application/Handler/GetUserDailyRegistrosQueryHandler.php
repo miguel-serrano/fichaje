@@ -6,6 +6,7 @@ use App\DDD\Shared\Domain\Service\TimeFormatter;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use Illuminate\Support\Facades\DB;
 
 class GetUserDailyRegistrosQueryHandler
@@ -16,9 +17,15 @@ class GetUserDailyRegistrosQueryHandler
     ) {
     }
 
+    /**
+     * Note: Authorization is handled upstream by the controller's UserPolicy check.
+     * This handler only retrieves data for the given user ID.
+     */
     public function handle(GetUserDailyRegistrosQuery $query): array
     {
         $userId = $query->getUserId();
+        $this->userRepository->findByIdOrFail(new UserId($userId));
+
         $hoy = date('Y-m-d');
 
         // Obtener registros cerrados

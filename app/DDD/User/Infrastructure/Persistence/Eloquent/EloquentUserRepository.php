@@ -88,7 +88,6 @@ class EloquentUserRepository implements UserRepositoryInterface
             $eloquentUser->email,
             $eloquentUser->name,
             $eloquentUser->is_active ?? true,
-            $eloquentUser->is_admin ?? false,
             $registrosHorarios
         );
     }
@@ -124,7 +123,6 @@ class EloquentUserRepository implements UserRepositoryInterface
             $eloquentUser->email,
             $eloquentUser->name,
             $eloquentUser->is_active ?? true,
-            $eloquentUser->is_admin ?? false,
             $registrosHorarios
         );
     }
@@ -155,8 +153,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $user->uuid,
                 $user->email,
                 $user->name,
-                $user->is_active ?? true,
-                $user->is_admin ?? false
+                $user->is_active ?? true
             ))
             ->toArray();
     }
@@ -243,15 +240,18 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function findAdmins(): array
     {
         return DB::table($this->getUsersTable())
-            ->where('is_admin', true)
+            ->join('user_role', 'users.id', '=', 'user_role.user_id')
+            ->join('roles', 'user_role.role_id', '=', 'roles.id')
+            ->whereIn('roles.slug', ['super_admin', 'admin'])
+            ->select('users.*')
+            ->distinct()
             ->get()
             ->map(fn ($user) => User::fromPrimitives(
                 $user->id,
                 $user->uuid,
                 $user->email,
                 $user->name,
-                $user->is_active ?? true,
-                $user->is_admin ?? false
+                $user->is_active ?? true
             ))
             ->toArray();
     }

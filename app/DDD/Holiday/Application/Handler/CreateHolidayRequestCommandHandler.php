@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Application\Handler;
 
+use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
 use App\DDD\Holiday\Domain\Entity\HolidayRequest;
 use App\DDD\Holiday\Domain\Exceptions\OverlappingHolidayException;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
+use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Notification\Application\NotificationService;
 use App\DDD\Notification\Domain\Notification;
@@ -21,12 +23,16 @@ class CreateHolidayRequestCommandHandler
         private HolidayRepositoryInterface $holidayRepository,
         private UserRepositoryInterface $userRepository,
         private NotificationService $notificationService,
+        private PermissionCheckerInterface $permissionChecker,
     ) {
     }
 
     public function handle(CreateHolidayRequestCommand $command): HolidayRequest
     {
         $userId = new UserId($command->userId);
+        $user = $this->userRepository->findByIdOrFail($userId);
+        $this->permissionChecker->ensureHasPermission($user, HolidayPermission::Request->value);
+
         $dateRange = DateRange::fromStrings($command->startDate, $command->endDate);
 
         if ($this->holidayRepository->hasOverlapping($userId, $dateRange)) {

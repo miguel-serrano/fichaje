@@ -37,11 +37,16 @@ class UserFactory extends Factory
 
     /**
      * Indicate that the user should be an admin.
+     * Note: After creation, use $user->assignRole('super_admin') or $user->assignRole('admin')
+     * to grant admin permissions through the role system.
      */
     public function admin(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_admin' => true,
-        ]);
+        return $this->afterCreating(function (\App\Models\User $user) {
+            $superAdminRole = \App\Models\Role::where('slug', 'super_admin')->first();
+            if ($superAdminRole) {
+                $user->roles()->syncWithoutDetaching([$superAdminRole->id]);
+            }
+        });
     }
 }

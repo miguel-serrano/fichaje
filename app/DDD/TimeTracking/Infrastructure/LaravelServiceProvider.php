@@ -2,6 +2,8 @@
 
 namespace App\DDD\TimeTracking\Infrastructure;
 
+use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Notification\Application\NotificationService;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Infrastructure\Persistence\Eloquent\EloquentTimeEntryRepository;
@@ -21,7 +23,8 @@ class LaravelServiceProvider extends ServiceProvider
             return new TimeTrackingService(
                 $app->make(UserRepositoryInterface::class),
                 $app->make(TimeEntryRepositoryInterface::class),
-                $app->make(\App\DDD\Notification\Application\NotificationService::class)
+                $app->make(PermissionCheckerInterface::class),
+                $app->make(NotificationService::class)
             );
         });
     }

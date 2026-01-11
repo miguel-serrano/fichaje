@@ -33,15 +33,20 @@ class DeleteUserUseCaseTest extends TestCase
 
     public function test_it_deletes_a_user_successfully(): void
     {
-        // Create admin user
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
+        // Create admin user with super_admin role
         $adminUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $adminUser->assignRole('super_admin');
 
         // Create target user to delete
         $eloquentUser = \App\Models\User::create([
@@ -63,14 +68,19 @@ class DeleteUserUseCaseTest extends TestCase
 
     public function test_it_throws_exception_when_user_not_found(): void
     {
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $adminUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $adminUser->assignRole('super_admin');
 
         $userId = 999;
 
@@ -82,14 +92,19 @@ class DeleteUserUseCaseTest extends TestCase
 
     public function test_it_throws_exception_when_delete_fails(): void
     {
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $adminUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $adminUser->assignRole('super_admin');
 
         // Try to delete another admin - should fail authorization
         $targetAdminUser = \App\Models\User::create([
@@ -98,8 +113,8 @@ class DeleteUserUseCaseTest extends TestCase
             'email' => 'admin2@example.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $targetAdminUser->assignRole('super_admin');
 
         $this->expectException(UnauthorizedException::class);
 

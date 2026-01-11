@@ -19,7 +19,7 @@ class RolePermissionTest extends TestCase
 
     public function test_super_admin_has_all_permissions(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('super_admin');
 
         $this->assertTrue($user->hasRole('super_admin'));
@@ -30,7 +30,7 @@ class RolePermissionTest extends TestCase
 
     public function test_employee_has_limited_permissions(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('employee');
 
         $this->assertTrue($user->hasRole('employee'));
@@ -47,7 +47,7 @@ class RolePermissionTest extends TestCase
 
     public function test_user_can_have_multiple_roles(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('employee');
         $user->assignRole('supervisor');
 
@@ -59,7 +59,7 @@ class RolePermissionTest extends TestCase
 
     public function test_role_can_be_removed_from_user(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('employee');
         $user->assignRole('supervisor');
 
@@ -73,7 +73,7 @@ class RolePermissionTest extends TestCase
 
     public function test_admin_role_has_user_management_permissions(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('admin');
 
         $this->assertTrue($user->hasPermission('user.view'));
@@ -86,7 +86,7 @@ class RolePermissionTest extends TestCase
 
     public function test_supervisor_can_approve_holidays(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('supervisor');
 
         $this->assertTrue($user->hasPermission('holiday.approve'));
@@ -122,7 +122,7 @@ class RolePermissionTest extends TestCase
 
     public function test_is_admin_middleware_works_with_roles(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('admin');
 
         $this->actingAs($user);
@@ -134,7 +134,7 @@ class RolePermissionTest extends TestCase
 
     public function test_employee_cannot_access_admin_routes(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = User::factory()->create();
         $user->assignRole('employee');
 
         $this->actingAs($user);

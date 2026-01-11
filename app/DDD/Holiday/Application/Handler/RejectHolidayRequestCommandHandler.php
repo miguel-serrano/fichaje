@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Application\Handler;
 
+use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
 use App\DDD\Holiday\Domain\Entity\HolidayRequest;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
+use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
 use App\DDD\Notification\Application\NotificationService;
 use App\DDD\Notification\Domain\Notification;
 use App\DDD\Notification\Domain\NotificationType;
-use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
 
@@ -21,12 +22,14 @@ class RejectHolidayRequestCommandHandler
         private HolidayRepositoryInterface $holidayRepository,
         private UserRepositoryInterface $userRepository,
         private NotificationService $notificationService,
+        private PermissionCheckerInterface $permissionChecker,
     ) {
     }
 
     public function handle(RejectHolidayRequestCommand $command): HolidayRequest
     {
-        $this->ensureUserIsAdmin($command->authenticatedUserId);
+        $user = $this->userRepository->findByIdOrFail(new UserId($command->authenticatedUserId));
+        $this->permissionChecker->ensureHasPermission($user, HolidayPermission::Reject->value);
 
         $holidayRequest = $this->holidayRepository->findByIdOrFail(
             new HolidayRequestId($command->holidayRequestId)
@@ -38,15 +41,6 @@ class RejectHolidayRequestCommandHandler
         $this->notifyUser($holidayRequest);
 
         return $savedRequest;
-    }
-
-    private function ensureUserIsAdmin(int $userId): void
-    {
-        $user = $this->userRepository->findByIdOrFail(new UserId($userId));
-
-        if (!$user->isAdmin()) {
-            throw new UnauthorizedException('Solo los administradores pueden rechazar solicitudes de vacaciones');
-        }
     }
 
     private function notifyUser(HolidayRequest $holidayRequest): void

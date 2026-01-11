@@ -2,11 +2,14 @@
 
 namespace App\DDD\TimeTracking\Application\Service;
 
+use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Notification\Application\NotificationService;
 use App\DDD\Notification\Domain\Channel;
 use App\DDD\Notification\Domain\Notification;
 use App\DDD\Notification\Domain\NotificationType;
+use App\DDD\TimeTracking\Domain\Exceptions\DailyTimeEntryLimitExceededException;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
+use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
@@ -20,6 +23,7 @@ class TimeTrackingService
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
+        private PermissionCheckerInterface $permissionChecker,
         private ?NotificationService $notificationService = null,
     ) {
     }
@@ -32,9 +36,31 @@ class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
+        // Verificar límite diario (solo para usuarios no super_admin)
+        if (!$this->permissionChecker->isSuperAdmin($user)) {
+            $this->ensureDailyLimitNotExceeded($user);
+        }
+
         $user->clockIn();
 
         $this->userRepository->save($user);
+    }
+
+    private function ensureDailyLimitNotExceeded(User $user): void
+    {
+        $today = Carbon::today();
+        $todayEntries = 0;
+
+        foreach ($user->timeEntries() as $entry) {
+            $startTimeCarbon = Carbon::instance($entry->startTime());
+            if ($startTimeCarbon->isSameDay($today)) {
+                ++$todayEntries;
+            }
+        }
+
+        if ($todayEntries >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
+            throw new DailyTimeEntryLimitExceededException($todayEntries);
+        }
     }
 
     public function clockOut(string $userUuid, ?int $timeEntryId = null): void

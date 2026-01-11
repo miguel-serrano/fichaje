@@ -16,6 +16,11 @@ class UserManagementTest extends TestCase
         parent::setUp();
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
 
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         // Crear y autenticar un usuario admin para todos los tests
         $this->authenticatedUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
@@ -23,8 +28,8 @@ class UserManagementTest extends TestCase
             'email' => 'admin@test.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
+        $this->authenticatedUser->assignRole('super_admin');
 
         $this->actingAs($this->authenticatedUser);
     }

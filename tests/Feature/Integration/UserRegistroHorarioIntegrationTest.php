@@ -38,10 +38,9 @@ class UserRegistroHorarioIntegrationTest extends TestCase
             'email' => 'user@test.com',
             'password' => Hash::make('password123'),
             'is_active' => true,
-            'is_admin' => true,
         ]);
 
-        // Asignar rol super_admin
+        // Asignar rol super_admin para permisos de admin
         $superAdminRole = Role::where('slug', 'super_admin')->first();
         if ($superAdminRole) {
             $this->authenticatedUser->roles()->attach($superAdminRole->id);

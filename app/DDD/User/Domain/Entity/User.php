@@ -2,7 +2,6 @@
 
 namespace App\DDD\User\Domain\Entity;
 
-use App\DDD\TimeTracking\Domain\Exceptions\DailyTimeEntryLimitExceededException;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
@@ -10,7 +9,6 @@ use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use Carbon\Carbon;
 
 final class User
 {
@@ -24,8 +22,6 @@ final class User
 
     private bool $isActive;
 
-    private bool $isAdmin;
-
     /** @var TimeEntry[] */
     private array $timeEntries;
 
@@ -35,7 +31,6 @@ final class User
         Email $email,
         string $name,
         bool $isActive = true,
-        bool $isAdmin = false,
         array $timeEntries = [],
     ) {
         $this->id = $id;
@@ -43,7 +38,6 @@ final class User
         $this->email = $email;
         $this->name = $name;
         $this->isActive = $isActive;
-        $this->isAdmin = $isAdmin;
         $this->timeEntries = $timeEntries;
     }
 
@@ -58,7 +52,6 @@ final class User
         string $email,
         string $name,
         bool $isActive,
-        bool $isAdmin = false,
         array $timeEntries = [],
     ): self {
         $user = new self(
@@ -66,8 +59,7 @@ final class User
             new Uuid($uuid),
             new Email($email),
             $name,
-            $isActive,
-            $isAdmin
+            $isActive
         );
 
         foreach ($timeEntries as $entry) {
@@ -109,11 +101,6 @@ final class User
         return $this->isActive;
     }
 
-    public function isAdmin(): bool
-    {
-        return $this->isAdmin;
-    }
-
     public function deactivate(): void
     {
         $this->isActive = false;
@@ -152,32 +139,9 @@ final class User
             throw new UnsavedUserCannotClockInException();
         }
 
-        // Validate daily limit (only for non-admin users)
-        if (!$this->isAdmin()) {
-            $todayEntries = $this->countTodayEntries();
-            if ($todayEntries >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
-                throw new DailyTimeEntryLimitExceededException($todayEntries);
-            }
-        }
-
         $this->addTimeEntry(
             TimeEntry::create($this->id())
         );
-    }
-
-    private function countTodayEntries(): int
-    {
-        $today = Carbon::today();
-        $count = 0;
-
-        foreach ($this->timeEntries as $entry) {
-            $startTimeCarbon = Carbon::instance($entry->startTime());
-            if ($startTimeCarbon->isSameDay($today)) {
-                ++$count;
-            }
-        }
-
-        return $count;
     }
 
     public function clockOut(): void
@@ -209,7 +173,6 @@ final class User
             'email' => $this->email->value(),
             'name' => $this->name(),
             'is_active' => $this->isActive(),
-            'is_admin' => $this->isAdmin(),
             'registros_horarios' => array_map(function (TimeEntry $entry) {
                 return $entry->toArray();
             }, $this->timeEntries),
