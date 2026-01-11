@@ -6,9 +6,11 @@ use App\Http\Controllers\BienvenidoController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RegistroHorario\RegistroHorarioController;
+use App\Http\Controllers\User\AssignRoleToUserController;
 use App\Http\Controllers\User\DeleteUserController;
 use App\Http\Controllers\User\GetMyTimeEntriesController;
 use App\Http\Controllers\User\ListUsersController;
+use App\Http\Controllers\User\RemoveRoleFromUserController;
 use App\Http\Controllers\User\ShowUserController;
 use App\Http\Controllers\User\ToggleUserActiveController;
 use Illuminate\Support\Facades\Route;
@@ -40,10 +42,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/user/{id}', ShowUserController::class)->name('user.show');
         Route::patch('/user/{id}/toggle-active', ToggleUserActiveController::class)->name('user.toggle-active');
         Route::delete('/user/{id}', DeleteUserController::class)->name('user.delete');
-
         Route::get('/admin/holidays', [HolidayAdminController::class, 'index'])->name('admin.holidays.index');
         Route::post('/admin/holidays/{id}/approve', [HolidayAdminController::class, 'approve'])->name('admin.holidays.approve');
         Route::post('/admin/holidays/{id}/reject', [HolidayAdminController::class, 'reject'])->name('admin.holidays.reject');
+        Route::post('/user/{id}/roles', AssignRoleToUserController::class)->name('user.roles.assign');
+        Route::delete('/user/{id}/roles/{roleSlug}', RemoveRoleFromUserController::class)->name('user.roles.remove');
     });
 
     Route::middleware('active')->group(function () {

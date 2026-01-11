@@ -53,6 +53,83 @@
     </div>
 </div>
 
+<!-- Gestión de Roles -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    <i class="material-icons left">security</i>
+                    Roles del Usuario
+                </span>
+
+                <div class="divider" style="margin: 20px 0;"></div>
+
+                <!-- Roles actuales -->
+                <h6 class="grey-text text-darken-1">Roles Asignados</h6>
+                <div style="margin: 15px 0;">
+                    @forelse($userRoles as $role)
+                        <div class="chip" style="margin: 5px;">
+                            <i class="material-icons tiny">verified_user</i>
+                            {{ $role['name'] }}
+                            @if(!($role['is_system'] && $role['slug'] === 'super_admin'))
+                                <form action="{{ route('user.roles.remove', ['id' => $user->id()->value(), 'roleSlug' => $role['slug']]) }}"
+                                      method="POST"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('¿Seguro que deseas quitar el rol {{ $role['name'] }}?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-flat btn-small" style="padding: 0; margin-left: 5px; min-width: auto; height: auto; line-height: 1;">
+                                        <i class="material-icons tiny red-text">close</i>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    @empty
+                        <p class="grey-text"><em>Sin roles asignados</em></p>
+                    @endforelse
+                </div>
+
+                <!-- Agregar nuevo rol -->
+                @php
+                    $userRoleSlugs = collect($userRoles)->pluck('slug')->toArray();
+                    $availableRoles = collect($allRoles)->filter(fn($r) => !in_array($r['slug'], $userRoleSlugs));
+                @endphp
+
+                @if($availableRoles->isNotEmpty())
+                    <div class="divider" style="margin: 20px 0;"></div>
+                    <h6 class="grey-text text-darken-1">Asignar Nuevo Rol</h6>
+
+                    <form action="{{ route('user.roles.assign', ['id' => $user->id()->value()]) }}" method="POST">
+                        @csrf
+                        <div class="row" style="margin-bottom: 0;">
+                            <div class="input-field col s12 m8">
+                                <select name="role_slug" id="role_slug" required>
+                                    <option value="" disabled selected>Selecciona un rol</option>
+                                    @foreach($availableRoles as $role)
+                                        <option value="{{ $role['slug'] }}">
+                                            {{ $role['name'] }}
+                                            @if($role['description'])
+                                                - {{ $role['description'] }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <label for="role_slug">Rol a asignar</label>
+                            </div>
+                            <div class="input-field col s12 m4">
+                                <button type="submit" class="btn waves-effect waves-light light-green">
+                                    <i class="material-icons left">add</i>Asignar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Resumen Mensual -->
 @if(isset($totalMes) && $totalMes['segundos'] > 0)
 <div class="row">
@@ -243,6 +320,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize collapsibles
     var elems = document.querySelectorAll('.collapsible');
     M.Collapsible.init(elems);
+
+    // Initialize select for role assignment
+    var selectElems = document.querySelectorAll('select');
+    M.FormSelect.init(selectElems);
 });
 
 function expandAll() {

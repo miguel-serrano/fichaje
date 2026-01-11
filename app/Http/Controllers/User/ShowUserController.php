@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Authorization\Application\Query\GetAllRolesQuery;
+use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
@@ -16,8 +18,9 @@ use Illuminate\View\View;
 class ShowUserController extends Controller
 {
     public function __construct(
-        private QueryBusInterface $queryBus
-    ) {}
+        private QueryBusInterface $queryBus,
+    ) {
+    }
 
     public function __invoke(string $id): View|RedirectResponse
     {
@@ -29,11 +32,19 @@ class ShowUserController extends Controller
             $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->value());
             $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
 
+            $allRolesQuery = new GetAllRolesQuery();
+            $allRoles = $this->queryBus->dispatch($allRolesQuery);
+
+            $userRolesQuery = new GetUserRolesQuery($user->id()->value());
+            $userRoles = $this->queryBus->dispatch($userRolesQuery);
+
             return view('users.show', [
                 'user' => $user,
                 'allRegistros' => $user->timeEntries(),
                 'dailyRegistros' => $registrosData['registros'],
                 'totalMes' => $registrosData['total_mes_actual'],
+                'allRoles' => $allRoles,
+                'userRoles' => $userRoles,
             ]);
         } catch (UserNotFoundException $e) {
             return redirect()->route('users.index')
