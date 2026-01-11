@@ -8,6 +8,7 @@ final class ApproveHolidayRequestCommand
 {
     public function __construct(
         public int $authenticatedUserId,
-        public int $holidayRequestId
-    ) {}
+        public int $holidayRequestId,
+    ) {
+    }
 }

@@ -19,8 +19,9 @@ final class RegisterCommandHandler
         private UserCreationValidator $userCreationValidator,
         private UserExistValidator $userExistValidator,
         private PasswordHashingService $passwordHasher,
-        private AuthenticationService $authService
-    ) {}
+        private AuthenticationService $authService,
+    ) {
+    }
 
     public function handle(RegisterCommand $command): User
     {

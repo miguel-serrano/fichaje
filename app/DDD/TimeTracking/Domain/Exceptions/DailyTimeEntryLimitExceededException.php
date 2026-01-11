@@ -2,9 +2,7 @@
 
 namespace App\DDD\TimeTracking\Domain\Exceptions;
 
-use Exception;
-
-class DailyTimeEntryLimitExceededException extends Exception
+class DailyTimeEntryLimitExceededException extends \Exception
 {
     public const MAX_DAILY_ENTRIES = 8;
 

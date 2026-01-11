@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 class StoreRoleController extends Controller
 {
     public function __construct(
-        private CommandBusInterface $commandBus
+        private CommandBusInterface $commandBus,
     ) {
     }
 

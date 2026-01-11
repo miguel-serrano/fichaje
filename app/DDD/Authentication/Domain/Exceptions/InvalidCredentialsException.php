@@ -2,9 +2,7 @@
 
 namespace App\DDD\Authentication\Domain\Exceptions;
 
-use Exception;
-
-final class InvalidCredentialsException extends Exception
+final class InvalidCredentialsException extends \Exception
 {
     public function __construct()
     {

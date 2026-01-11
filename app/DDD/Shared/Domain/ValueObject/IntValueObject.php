@@ -2,7 +2,6 @@
 
 namespace App\DDD\Shared\Domain\ValueObject;
 
-use InvalidArgumentException;
 use MichaelRubel\ValueObjects\ValueObject;
 
 /**
@@ -22,7 +21,7 @@ abstract class IntValueObject extends ValueObject
     public function __construct(int $value)
     {
         if (isset($this->value)) {
-            throw new InvalidArgumentException(static::IMMUTABLE_MESSAGE);
+            throw new \InvalidArgumentException(static::IMMUTABLE_MESSAGE);
         }
 
         $this->value = $value;

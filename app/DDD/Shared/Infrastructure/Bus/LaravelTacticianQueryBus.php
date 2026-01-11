@@ -8,8 +8,9 @@ use Joselfonseca\LaravelTactician\CommandBusInterface as TacticianCommandBusInte
 class LaravelTacticianQueryBus implements QueryBusInterface
 {
     public function __construct(
-        private TacticianCommandBusInterface $commandBus
-    ) {}
+        private TacticianCommandBusInterface $commandBus,
+    ) {
+    }
 
     public function dispatch($query): mixed
     {

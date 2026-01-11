@@ -2,9 +2,7 @@
 
 namespace App\DDD\User\Domain\Exceptions;
 
-use Exception;
-
-class DailyUserRegistrationLimitExceededException extends Exception
+class DailyUserRegistrationLimitExceededException extends \Exception
 {
     public const MAX_DAILY_REGISTRATIONS = 8;
 

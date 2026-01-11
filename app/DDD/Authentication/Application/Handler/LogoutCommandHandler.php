@@ -8,8 +8,9 @@ use App\DDD\Authentication\Domain\Services\AuthenticationService;
 final class LogoutCommandHandler
 {
     public function __construct(
-        private AuthenticationService $authService
-    ) {}
+        private AuthenticationService $authService,
+    ) {
+    }
 
     public function handle(LogoutCommand $command): void
     {

@@ -20,8 +20,9 @@ class CreateHolidayRequestCommandHandler
     public function __construct(
         private HolidayRepositoryInterface $holidayRepository,
         private UserRepositoryInterface $userRepository,
-        private NotificationService $notificationService
-    ) {}
+        private NotificationService $notificationService,
+    ) {
+    }
 
     public function handle(CreateHolidayRequestCommand $command): HolidayRequest
     {

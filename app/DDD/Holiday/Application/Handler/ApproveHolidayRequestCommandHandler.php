@@ -20,8 +20,9 @@ class ApproveHolidayRequestCommandHandler
     public function __construct(
         private HolidayRepositoryInterface $holidayRepository,
         private UserRepositoryInterface $userRepository,
-        private NotificationService $notificationService
-    ) {}
+        private NotificationService $notificationService,
+    ) {
+    }
 
     public function handle(ApproveHolidayRequestCommand $command): HolidayRequest
     {
@@ -43,7 +44,7 @@ class ApproveHolidayRequestCommandHandler
     {
         $user = $this->userRepository->findByIdOrFail(new UserId($userId));
 
-        if (! $user->isAdmin()) {
+        if (!$user->isAdmin()) {
             throw new UnauthorizedException('Solo los administradores pueden aprobar solicitudes de vacaciones');
         }
     }

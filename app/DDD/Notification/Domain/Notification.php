@@ -7,15 +7,16 @@ namespace App\DDD\Notification\Domain;
 final class Notification
 {
     /**
-     * @param  Channel[]  $channels
+     * @param Channel[] $channels
      */
     public function __construct(
         private NotificationType $type,
         private string $title,
         private string $message,
         private array $data = [],
-        private array $channels = [Channel::Database]
-    ) {}
+        private array $channels = [Channel::Database],
+    ) {
+    }
 
     public function type(): NotificationType
     {

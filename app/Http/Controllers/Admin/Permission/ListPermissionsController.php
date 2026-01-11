@@ -11,7 +11,7 @@ use Illuminate\View\View;
 class ListPermissionsController extends Controller
 {
     public function __construct(
-        private QueryBusInterface $queryBus
+        private QueryBusInterface $queryBus,
     ) {
     }
 

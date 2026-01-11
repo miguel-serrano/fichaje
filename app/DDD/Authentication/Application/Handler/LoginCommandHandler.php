@@ -10,15 +10,16 @@ use App\DDD\User\Domain\ValueObjects\Email;
 final class LoginCommandHandler
 {
     public function __construct(
-        private AuthenticationService $authService
-    ) {}
+        private AuthenticationService $authService,
+    ) {
+    }
 
     public function handle(LoginCommand $command): void
     {
         $email = new Email($command->email);
 
-        if (! $this->authService->attempt($email, $command->password)) {
-            throw new InvalidCredentialsException;
+        if (!$this->authService->attempt($email, $command->password)) {
+            throw new InvalidCredentialsException();
         }
     }
 }

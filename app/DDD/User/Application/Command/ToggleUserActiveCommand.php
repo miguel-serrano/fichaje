@@ -6,6 +6,7 @@ final class ToggleUserActiveCommand
 {
     public function __construct(
         public int $authenticatedUserId,
-        public int $targetUserId
-    ) {}
+        public int $targetUserId,
+    ) {
+    }
 }

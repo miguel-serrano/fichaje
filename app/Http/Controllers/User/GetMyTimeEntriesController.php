@@ -14,13 +14,14 @@ use Illuminate\View\View;
 class GetMyTimeEntriesController extends Controller
 {
     public function __construct(
-        private QueryBusInterface $queryBus
-    ) {}
+        private QueryBusInterface $queryBus,
+    ) {
+    }
 
     public function __invoke(): View|RedirectResponse
     {
         try {
-            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery);
+            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
             $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($authenticatedUser->id()->value());
             $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);

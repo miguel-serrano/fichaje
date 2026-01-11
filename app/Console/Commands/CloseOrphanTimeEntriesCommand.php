@@ -33,7 +33,7 @@ class CloseOrphanTimeEntriesCommand extends Command
         $total = array_sum(array_map('count', $result));
         $usersAffected = count($result);
 
-        if ($total === 0) {
+        if (0 === $total) {
             $this->info('No se encontraron fichajes huérfanos.');
         } else {
             $this->info("Cerrados {$total} fichajes huérfanos de {$usersAffected} usuarios.");

@@ -2,9 +2,7 @@
 
 namespace App\DDD\TimeTracking\Domain\Exceptions;
 
-use Exception;
-
-class UnsavedUserCannotClockInException extends Exception
+class UnsavedUserCannotClockInException extends \Exception
 {
     public function __construct()
     {

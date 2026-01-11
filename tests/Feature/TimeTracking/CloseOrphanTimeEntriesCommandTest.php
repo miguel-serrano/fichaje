@@ -232,7 +232,14 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
         ]);
 
         // Both users get notifications
-        $this->assertDatabaseCount('notifications', 2);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->user->id,
+            'type' => 'time_entry_auto_closed',
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $user2->id,
+            'type' => 'time_entry_auto_closed',
+        ]);
     }
 
     public function test_closes_orphan_considering_total_daily_hours(): void

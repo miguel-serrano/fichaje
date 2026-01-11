@@ -2,9 +2,7 @@
 
 namespace App\DDD\User\Domain\Exceptions;
 
-use Exception;
-
-class MaxUsersLimitExceededException extends Exception
+class MaxUsersLimitExceededException extends \Exception
 {
     public function __construct(int $maxUsers, int $currentCount)
     {

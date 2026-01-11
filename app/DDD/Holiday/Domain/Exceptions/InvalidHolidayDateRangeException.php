@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Domain\Exceptions;
 
-use Exception;
-
-class InvalidHolidayDateRangeException extends Exception
+class InvalidHolidayDateRangeException extends \Exception
 {
     public function __construct(
         string $message = 'Rango de fechas de vacaciones inválido',
         int $code = 422,
-        ?\Throwable $previous = null
+        ?\Throwable $previous = null,
     ) {
         parent::__construct($message, $code, $previous);
     }

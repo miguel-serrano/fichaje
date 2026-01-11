@@ -9,7 +9,9 @@ use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 
 final class CloseOrphanTimeEntriesCommandHandler
 {
-    public function __construct(private TimeTrackingService $service) {}
+    public function __construct(private TimeTrackingService $service)
+    {
+    }
 
     /**
      * @return array<int, array<int, array<string, mixed>>>

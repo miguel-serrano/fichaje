@@ -26,10 +26,8 @@ class TestDependencyInjection extends Command
             $this->info('✅ GetAllUsersWithTimeQueryHandler resolved: '.get_class($handler));
 
             $this->info('🎉 All dependencies resolved successfully!');
-
         } catch (\Exception $e) {
             $this->error('❌ Dependency injection failed: '.$e->getMessage());
         }
-
     }
 }

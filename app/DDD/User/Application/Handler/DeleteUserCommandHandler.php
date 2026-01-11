@@ -11,8 +11,9 @@ class DeleteUserCommandHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserAuthorizationServiceInterface $authorizationService
-    ) {}
+        private UserAuthorizationServiceInterface $authorizationService,
+    ) {
+    }
 
     public function handle(DeleteUserCommand $command): void
     {
@@ -25,7 +26,7 @@ class DeleteUserCommandHandler
         $this->authorizationService->ensureCanDelete($authenticatedUser, $targetUser);
 
         $deleted = $this->userRepository->delete($targetUserId);
-        if (! $deleted) {
+        if (!$deleted) {
             throw new \RuntimeException("Failed to delete user {$command->targetUserId}");
         }
     }

@@ -146,7 +146,8 @@ class CreateHolidayRequestTest extends TestCase
         $response->assertRedirect(route('holidays.index'));
         $response->assertSessionHas('error');
 
-        $this->assertDatabaseCount('holiday_requests', 1);
+        // Solo debe haber 1 solicitud para este usuario (la original, no la solapada)
+        $this->assertEquals(1, HolidayRequest::where('user_id', $user->id)->count());
     }
 
     public function test_user_can_see_previous_holiday_requests(): void

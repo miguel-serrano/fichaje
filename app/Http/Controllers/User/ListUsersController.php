@@ -13,8 +13,9 @@ use Illuminate\View\View;
 class ListUsersController extends Controller
 {
     public function __construct(
-        private QueryBusInterface $queryBus
-    ) {}
+        private QueryBusInterface $queryBus,
+    ) {
+    }
 
     public function __invoke(): View|RedirectResponse
     {

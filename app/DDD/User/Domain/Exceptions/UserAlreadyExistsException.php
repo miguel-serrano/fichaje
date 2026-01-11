@@ -2,9 +2,7 @@
 
 namespace App\DDD\User\Domain\Exceptions;
 
-use Exception;
-
-class UserAlreadyExistsException extends Exception
+class UserAlreadyExistsException extends \Exception
 {
     public function __construct(string $email)
     {

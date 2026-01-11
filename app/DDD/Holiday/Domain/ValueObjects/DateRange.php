@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\DDD\Holiday\Domain\ValueObjects;
 
 use App\DDD\Holiday\Domain\Exceptions\InvalidHolidayDateRangeException;
-use DateTimeImmutable;
 
 final class DateRange
 {
-    private DateTimeImmutable $startDate;
-    private DateTimeImmutable $endDate;
+    private \DateTimeImmutable $startDate;
+    private \DateTimeImmutable $endDate;
 
-    public function __construct(DateTimeImmutable $startDate, DateTimeImmutable $endDate)
+    public function __construct(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate)
     {
         $this->validate($startDate, $endDate);
         $this->startDate = $startDate;
@@ -22,29 +21,29 @@ final class DateRange
     public static function fromStrings(string $startDate, string $endDate): self
     {
         return new self(
-            new DateTimeImmutable($startDate),
-            new DateTimeImmutable($endDate)
+            new \DateTimeImmutable($startDate),
+            new \DateTimeImmutable($endDate)
         );
     }
 
-    private function validate(DateTimeImmutable $startDate, DateTimeImmutable $endDate): void
+    private function validate(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): void
     {
         if ($endDate < $startDate) {
             throw InvalidHolidayDateRangeException::endDateBeforeStartDate();
         }
 
-        $today = new DateTimeImmutable('today');
+        $today = new \DateTimeImmutable('today');
         if ($startDate < $today) {
             throw InvalidHolidayDateRangeException::startDateInPast();
         }
     }
 
-    public function startDate(): DateTimeImmutable
+    public function startDate(): \DateTimeImmutable
     {
         return $this->startDate;
     }
 
-    public function endDate(): DateTimeImmutable
+    public function endDate(): \DateTimeImmutable
     {
         return $this->endDate;
     }

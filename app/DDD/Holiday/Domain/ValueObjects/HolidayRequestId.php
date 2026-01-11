@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\DDD\Holiday\Domain\ValueObjects;
 
 use App\DDD\Shared\Domain\ValueObject\StringValueObject;
-use InvalidArgumentException;
 
 final class HolidayRequestId extends StringValueObject
 {
@@ -17,7 +16,7 @@ final class HolidayRequestId extends StringValueObject
     protected function validate(): void
     {
         if (empty($this->value)) {
-            throw new InvalidArgumentException('Holiday Request ID cannot be empty');
+            throw new \InvalidArgumentException('Holiday Request ID cannot be empty');
         }
     }
 }

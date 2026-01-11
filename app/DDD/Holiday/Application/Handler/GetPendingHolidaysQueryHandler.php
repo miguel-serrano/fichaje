@@ -15,8 +15,9 @@ class GetPendingHolidaysQueryHandler
 {
     public function __construct(
         private HolidayRepositoryInterface $holidayRepository,
-        private UserRepositoryInterface $userRepository
-    ) {}
+        private UserRepositoryInterface $userRepository,
+    ) {
+    }
 
     /**
      * @return HolidayRequest[]
@@ -32,7 +33,7 @@ class GetPendingHolidaysQueryHandler
     {
         $user = $this->userRepository->findByIdOrFail(new UserId($userId));
 
-        if (! $user->isAdmin()) {
+        if (!$user->isAdmin()) {
             throw new UnauthorizedException('Solo los administradores pueden ver las solicitudes pendientes');
         }
     }

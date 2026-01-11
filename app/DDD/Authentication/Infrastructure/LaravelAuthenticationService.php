@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Auth;
 final class LaravelAuthenticationService implements AuthenticationService
 {
     public function __construct(
-        private EloquentUserRepository $userRepository
-    ) {}
+        private EloquentUserRepository $userRepository,
+    ) {
+    }
 
     public function attempt(Email $email, string $password): bool
     {
@@ -38,7 +39,7 @@ final class LaravelAuthenticationService implements AuthenticationService
     {
         $eloquentUser = Auth::user();
 
-        if (! $eloquentUser) {
+        if (!$eloquentUser) {
             return null;
         }
 

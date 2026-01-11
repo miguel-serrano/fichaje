@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Auth;
 class DeleteUserController extends Controller
 {
     public function __construct(
-        private CommandBusInterface $commandBus
-    ) {}
+        private CommandBusInterface $commandBus,
+    ) {
+    }
 
     public function __invoke(string $id): RedirectResponse
     {

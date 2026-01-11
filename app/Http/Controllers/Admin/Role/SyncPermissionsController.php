@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 class SyncPermissionsController extends Controller
 {
     public function __construct(
-        private CommandBusInterface $commandBus
+        private CommandBusInterface $commandBus,
     ) {
     }
 

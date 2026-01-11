@@ -5,7 +5,6 @@ namespace App\DDD\TimeTracking\Domain;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use Carbon\Carbon;
-use DateTime;
 
 final class TimeEntry
 {
@@ -13,9 +12,9 @@ final class TimeEntry
 
     private UserId $userId;
 
-    private DateTime $startTime;
+    private \DateTime $startTime;
 
-    private ?DateTime $endTime;
+    private ?\DateTime $endTime;
 
     private bool $autoClosed;
 
@@ -24,10 +23,10 @@ final class TimeEntry
     private function __construct(
         ?TimeEntryId $id,
         UserId $userId,
-        DateTime $startTime,
-        ?DateTime $endTime,
+        \DateTime $startTime,
+        ?\DateTime $endTime,
         bool $autoClosed = false,
-        ?string $autoCloseReason = null
+        ?string $autoCloseReason = null,
     ) {
         $this->id = $id;
         $this->userId = $userId;
@@ -55,13 +54,13 @@ final class TimeEntry
         string $startTime,
         ?string $endTime,
         bool $autoClosed = false,
-        ?string $autoCloseReason = null
+        ?string $autoCloseReason = null,
     ): self {
         return new self(
             $id ? new TimeEntryId($id) : null,
             new UserId($userId),
-            new DateTime($startTime),
-            $endTime ? new DateTime($endTime) : null,
+            new \DateTime($startTime),
+            $endTime ? new \DateTime($endTime) : null,
             $autoClosed,
             $autoCloseReason
         );
@@ -82,12 +81,12 @@ final class TimeEntry
         return $this->userId;
     }
 
-    public function startTime(): DateTime
+    public function startTime(): \DateTime
     {
         return $this->startTime;
     }
 
-    public function endTime(): ?DateTime
+    public function endTime(): ?\DateTime
     {
         return $this->endTime;
     }
@@ -97,7 +96,7 @@ final class TimeEntry
         $this->endTime = Carbon::now()->toDateTime();
     }
 
-    public function closeAt(DateTime $closeTime, bool $autoClosed = false, ?string $autoCloseReason = null): void
+    public function closeAt(\DateTime $closeTime, bool $autoClosed = false, ?string $autoCloseReason = null): void
     {
         $this->endTime = $closeTime;
         $this->autoClosed = $autoClosed;
@@ -106,7 +105,7 @@ final class TimeEntry
 
     public function isOpen(): bool
     {
-        return $this->endTime === null;
+        return null === $this->endTime;
     }
 
     public function isAutoClosed(): bool
@@ -126,7 +125,7 @@ final class TimeEntry
         }
 
         // If open, calculate with current time (theoretical time)
-        if ($this->startTime && $this->endTime === null) {
+        if ($this->startTime && null === $this->endTime) {
             return Carbon::now()->getTimestamp() - $this->startTime->getTimestamp();
         }
 

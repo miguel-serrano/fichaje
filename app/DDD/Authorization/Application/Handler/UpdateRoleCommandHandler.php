@@ -3,7 +3,6 @@
 namespace App\DDD\Authorization\Application\Handler;
 
 use App\DDD\Authorization\Application\Command\UpdateRoleCommand;
-use App\DDD\Authorization\Domain\Entity\Role;
 use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleId;

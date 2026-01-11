@@ -16,8 +16,9 @@ use Illuminate\View\View;
 class AuthenticationController extends Controller
 {
     public function __construct(
-        private CommandBusInterface $commandBus
-    ) {}
+        private CommandBusInterface $commandBus,
+    ) {
+    }
 
     public function showLoginForm(): View
     {
@@ -73,7 +74,7 @@ class AuthenticationController extends Controller
 
     public function logout(): RedirectResponse
     {
-        $command = new LogoutCommand;
+        $command = new LogoutCommand();
         $this->commandBus->dispatch($command);
 
         request()->session()->invalidate();

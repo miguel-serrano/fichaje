@@ -8,7 +8,9 @@ use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 
 final class UserAuthorizationService implements UserAuthorizationServiceInterface
 {
-    public function __construct(private readonly UserPolicy $userPolicy) {}
+    public function __construct(private readonly UserPolicy $userPolicy)
+    {
+    }
 
     public function ensureCanToggleActive(User $authenticatedUser): void
     {

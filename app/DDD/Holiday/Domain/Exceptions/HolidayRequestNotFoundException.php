@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Domain\Exceptions;
 
-use Exception;
-
-class HolidayRequestNotFoundException extends Exception
+class HolidayRequestNotFoundException extends \Exception
 {
     public function __construct(
         string $message = 'Solicitud de vacaciones no encontrada',
         int $code = 404,
-        ?\Throwable $previous = null
+        ?\Throwable $previous = null,
     ) {
         parent::__construct($message, $code, $previous);
     }

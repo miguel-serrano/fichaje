@@ -10,7 +10,7 @@ use Illuminate\View\View;
 class ListRolesController extends Controller
 {
     public function __construct(
-        private QueryBusInterface $queryBus
+        private QueryBusInterface $queryBus,
     ) {
     }
 

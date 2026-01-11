@@ -28,6 +28,6 @@ final class DatabaseNotifier implements NotifierInterface
 
     public function supports(Channel $channel): bool
     {
-        return $channel === Channel::Database;
+        return Channel::Database === $channel;
     }
 }

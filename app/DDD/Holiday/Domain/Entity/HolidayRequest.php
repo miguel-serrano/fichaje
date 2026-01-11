@@ -8,7 +8,6 @@ use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayStatus;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use DateTimeImmutable;
 
 final class HolidayRequest
 {
@@ -16,16 +15,16 @@ final class HolidayRequest
     private UserId $userId;
     private DateRange $dateRange;
     private HolidayStatus $status;
-    private ?DateTimeImmutable $createdAt;
-    private ?DateTimeImmutable $updatedAt;
+    private ?\DateTimeImmutable $createdAt;
+    private ?\DateTimeImmutable $updatedAt;
 
     private function __construct(
         ?HolidayRequestId $id,
         UserId $userId,
         DateRange $dateRange,
         HolidayStatus $status,
-        ?DateTimeImmutable $createdAt = null,
-        ?DateTimeImmutable $updatedAt = null
+        ?\DateTimeImmutable $createdAt = null,
+        ?\DateTimeImmutable $updatedAt = null,
     ) {
         $this->id = $id;
         $this->userId = $userId;
@@ -42,8 +41,8 @@ final class HolidayRequest
             $userId,
             $dateRange,
             HolidayStatus::Pending,
-            new DateTimeImmutable(),
-            new DateTimeImmutable()
+            new \DateTimeImmutable(),
+            new \DateTimeImmutable()
         );
     }
 
@@ -57,8 +56,8 @@ final class HolidayRequest
             new UserId($data['user_id']),
             DateRange::fromStrings($data['start_date'], $data['end_date']),
             HolidayStatus::from($data['status']),
-            isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
-            isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null
+            isset($data['created_at']) ? new \DateTimeImmutable($data['created_at']) : null,
+            isset($data['updated_at']) ? new \DateTimeImmutable($data['updated_at']) : null
         );
     }
 
@@ -87,12 +86,12 @@ final class HolidayRequest
         return $this->status;
     }
 
-    public function createdAt(): ?DateTimeImmutable
+    public function createdAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function updatedAt(): ?DateTimeImmutable
+    public function updatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
@@ -100,13 +99,13 @@ final class HolidayRequest
     public function approve(): void
     {
         $this->status = HolidayStatus::Approved;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function reject(): void
     {
         $this->status = HolidayStatus::Rejected;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function isPending(): bool

@@ -9,8 +9,9 @@ use App\DDD\User\Domain\ValueObjects\Email;
 class UserExistValidator
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository
-    ) {}
+        private UserRepositoryInterface $userRepository,
+    ) {
+    }
 
     /**
      * Validate that a user with the given email does not already exist.
@@ -37,6 +38,6 @@ class UserExistValidator
      */
     public function doesNotExist(Email $email): bool
     {
-        return ! $this->userRepository->existsByEmail($email);
+        return !$this->userRepository->existsByEmail($email);
     }
 }

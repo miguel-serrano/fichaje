@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class EditRoleController extends Controller
 {
     public function __construct(
-        private QueryBusInterface $queryBus
+        private QueryBusInterface $queryBus,
     ) {
     }
 

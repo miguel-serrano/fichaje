@@ -36,7 +36,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
      */
     public function handle(
         UserRepositoryInterface $userRepository,
-        NotificationService $notificationService
+        NotificationService $notificationService,
     ): int {
         $uuid = $this->argument('uuid');
 
@@ -44,7 +44,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
 
         $user = $userRepository->findByUuid(new Uuid($uuid));
 
-        if (! $user) {
+        if (!$user) {
             $this->error("Usuario no encontrado con UUID: {$uuid}");
 
             return Command::FAILURE;
@@ -143,7 +143,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
             ->whereDate('entrada', $date)
             ->whereNotNull('salida');
 
-        if ($excludeEntryId !== null) {
+        if (null !== $excludeEntryId) {
             $query->where('id', '!=', $excludeEntryId);
         }
 
@@ -160,15 +160,15 @@ class CloseUserOrphanTimeEntryCommand extends Command
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $entries
+     * @param array<int, array<string, mixed>> $entries
      */
     private function buildNotificationMessage(array $entries): string
     {
-        if (count($entries) === 1) {
+        if (1 === count($entries)) {
             $entry = $entries[0];
             $entrada = Carbon::parse($entry['entrada']);
             $salida = Carbon::parse($entry['salida']);
-            $reason = $entry['reason'] === 'max_hours_exceeded'
+            $reason = 'max_hours_exceeded' === $entry['reason']
                 ? 'al alcanzar el límite de 8 horas diarias'
                 : 'al final del día';
 

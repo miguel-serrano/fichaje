@@ -6,6 +6,7 @@ final class GetUserByIdQuery
 {
     public function __construct(
         public int $authenticatedUserId,
-        public int $targetUserId
-    ) {}
+        public int $targetUserId,
+    ) {
+    }
 }

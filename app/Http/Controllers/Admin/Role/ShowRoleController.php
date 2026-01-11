@@ -13,7 +13,7 @@ use Illuminate\View\View;
 class ShowRoleController extends Controller
 {
     public function __construct(
-        private QueryBusInterface $queryBus
+        private QueryBusInterface $queryBus,
     ) {
     }
 

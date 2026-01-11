@@ -39,6 +39,6 @@ class Notification extends Model
 
     public function isRead(): bool
     {
-        return $this->read_at !== null;
+        return null !== $this->read_at;
     }
 }

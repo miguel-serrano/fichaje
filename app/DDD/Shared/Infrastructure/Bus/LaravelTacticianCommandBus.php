@@ -8,8 +8,9 @@ use Joselfonseca\LaravelTactician\CommandBusInterface as TacticianCommandBusInte
 class LaravelTacticianCommandBus implements CommandBusInterface
 {
     public function __construct(
-        private TacticianCommandBusInterface $commandBus
-    ) {}
+        private TacticianCommandBusInterface $commandBus,
+    ) {
+    }
 
     public function dispatch($command): mixed
     {

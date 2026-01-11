@@ -10,15 +10,16 @@ use App\DDD\User\Domain\Entity\User;
 final class GetAuthenticatedUserQueryHandler
 {
     public function __construct(
-        private AuthenticationService $authService
-    ) {}
+        private AuthenticationService $authService,
+    ) {
+    }
 
     public function handle(GetAuthenticatedUserQuery $query): User
     {
         $user = $this->authService->user();
 
-        if (! $user) {
-            throw new UserNotAuthenticatedException;
+        if (!$user) {
+            throw new UserNotAuthenticatedException();
         }
 
         return $user;

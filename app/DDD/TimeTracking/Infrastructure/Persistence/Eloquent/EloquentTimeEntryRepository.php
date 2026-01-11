@@ -17,7 +17,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
     {
         $row = DB::table(self::TABLE)->find($id->value());
 
-        if (! $row) {
+        if (!$row) {
             return null;
         }
 
@@ -52,7 +52,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
 
     public function update(TimeEntry $timeEntry): void
     {
-        if (! $timeEntry->id()) {
+        if (!$timeEntry->id()) {
             throw new \InvalidArgumentException('Cannot update a TimeEntry without an ID');
         }
 
@@ -86,7 +86,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
             ->whereDate('entrada', $date->toDateString())
             ->whereNotNull('salida');
 
-        if ($excludeEntryId !== null) {
+        if (null !== $excludeEntryId) {
             $query->where('id', '!=', $excludeEntryId->value());
         }
 

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 class UpdateRoleController extends Controller
 {
     public function __construct(
-        private CommandBusInterface $commandBus
+        private CommandBusInterface $commandBus,
     ) {
     }
 

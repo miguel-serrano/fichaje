@@ -72,7 +72,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $eloquentUser = DB::table($this->getUsersTable())->where('id', $id->value())->first();
 
-        if (! $eloquentUser) {
+        if (!$eloquentUser) {
             return null;
         }
 
@@ -97,7 +97,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $user = $this->findById($id);
 
-        if (! $user) {
+        if (!$user) {
             throw new UserNotFoundException("User {$id->value()} not found");
         }
 
@@ -108,7 +108,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $eloquentUser = DB::table($this->getUsersTable())->where('uuid', $uuid->value())->first();
 
-        if (! $eloquentUser) {
+        if (!$eloquentUser) {
             return null;
         }
 
@@ -133,7 +133,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $user = $this->findByUuid($uuid);
 
-        if (! $user) {
+        if (!$user) {
             throw new UserNotFoundException("User with UUID {$uuid->value()} not found");
         }
 
@@ -182,7 +182,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             ->count();
     }
 
-    public function saveWithPassword(\App\DDD\User\Domain\Entity\User $user, \App\DDD\Authentication\Domain\ValueObjects\HashedPassword $password): User
+    public function saveWithPassword(User $user, \App\DDD\Authentication\Domain\ValueObjects\HashedPassword $password): User
     {
         $user_id = $user->id() ? $user->id()->value() : null;
 

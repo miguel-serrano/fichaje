@@ -32,7 +32,11 @@ class CustomLocator implements LocatorInterface
         return [];
     }
 
-    public function addHandler($commandName, $handler) {}
+    public function addHandler($commandName, $handler)
+    {
+    }
 
-    public function addHandlers(array $handlers) {}
+    public function addHandlers(array $handlers)
+    {
+    }
 }

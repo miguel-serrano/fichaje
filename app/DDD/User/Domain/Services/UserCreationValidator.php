@@ -10,8 +10,9 @@ class UserCreationValidator
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private int $maxUsersLimit
-    ) {}
+        private int $maxUsersLimit,
+    ) {
+    }
 
     /**
      * Validate if a new user can be created based on business rules.

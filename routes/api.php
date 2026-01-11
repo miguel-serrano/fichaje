@@ -11,7 +11,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware('api')->group(function () {
     Route::get('/users/by-remember-token', function (Request $request) {
         $code = $request->get('code');
-        if (! $code || strlen($code) < 8) {
+        if (!$code || strlen($code) < 8) {
             return response()->json([]);
         }
         $users = User::query()

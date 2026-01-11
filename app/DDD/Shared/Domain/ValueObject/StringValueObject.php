@@ -3,7 +3,6 @@
 namespace App\DDD\Shared\Domain\ValueObject;
 
 use Illuminate\Support\Stringable;
-use InvalidArgumentException;
 use MichaelRubel\ValueObjects\ValueObject;
 
 /**
@@ -23,7 +22,7 @@ abstract class StringValueObject extends ValueObject
     public function __construct(string|Stringable $value)
     {
         if (isset($this->value)) {
-            throw new InvalidArgumentException(static::IMMUTABLE_MESSAGE);
+            throw new \InvalidArgumentException(static::IMMUTABLE_MESSAGE);
         }
 
         $this->value = (string) $value;

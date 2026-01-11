@@ -3,7 +3,6 @@
 namespace App\DDD\User\Domain\ValueObjects;
 
 use App\DDD\Shared\Domain\ValueObject\StringValueObject;
-use InvalidArgumentException;
 
 /**
  * @method static static make(string|int $value)
@@ -20,7 +19,7 @@ final class UserId extends StringValueObject
     protected function validate(): void
     {
         if (empty($this->value)) {
-            throw new InvalidArgumentException('User ID cannot be empty');
+            throw new \InvalidArgumentException('User ID cannot be empty');
         }
     }
 }

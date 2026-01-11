@@ -7,6 +7,7 @@ namespace App\DDD\Holiday\Application\Query;
 final class GetUserHolidaysQuery
 {
     public function __construct(
-        public int $userId
-    ) {}
+        public int $userId,
+    ) {
+    }
 }

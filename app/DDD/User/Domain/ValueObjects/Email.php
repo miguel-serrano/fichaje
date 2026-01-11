@@ -2,7 +2,6 @@
 
 namespace App\DDD\User\Domain\ValueObjects;
 
-use InvalidArgumentException;
 use MichaelRubel\ValueObjects\Collection\Complex\Email as BaseEmail;
 
 /**
@@ -14,8 +13,8 @@ final class Email extends BaseEmail
 {
     protected function validate(): void
     {
-        if (! filter_var($this->value(), FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException('Invalid email format');
+        if (!filter_var($this->value(), FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Invalid email format');
         }
     }
 

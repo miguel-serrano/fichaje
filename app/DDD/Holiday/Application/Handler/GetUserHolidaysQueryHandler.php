@@ -12,8 +12,9 @@ use App\DDD\User\Domain\ValueObjects\UserId;
 class GetUserHolidaysQueryHandler
 {
     public function __construct(
-        private HolidayRepositoryInterface $holidayRepository
-    ) {}
+        private HolidayRepositoryInterface $holidayRepository,
+    ) {
+    }
 
     /**
      * @return HolidayRequest[]

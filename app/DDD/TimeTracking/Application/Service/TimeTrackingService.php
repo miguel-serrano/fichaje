@@ -20,14 +20,15 @@ class TimeTrackingService
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
-        private ?NotificationService $notificationService = null
-    ) {}
+        private ?NotificationService $notificationService = null,
+    ) {
+    }
 
     public function clockIn(string $userUuid): void
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -40,11 +41,11 @@ class TimeTrackingService
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        if ($timeEntryId !== null) {
+        if (null !== $timeEntryId) {
             $entryToClose = null;
             foreach ($user->timeEntries() as $entry) {
                 if ($entry->id() && $entry->id()->value() === $timeEntryId) {
@@ -53,11 +54,11 @@ class TimeTrackingService
                 }
             }
 
-            if (! $entryToClose) {
+            if (!$entryToClose) {
                 throw new \InvalidArgumentException('Registro horario no encontrado.');
             }
 
-            if (! $entryToClose->isOpen()) {
+            if (!$entryToClose->isOpen()) {
                 throw new \InvalidArgumentException('El registro horario ya está cerrado.');
             }
 
@@ -73,7 +74,7 @@ class TimeTrackingService
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -93,7 +94,7 @@ class TimeTrackingService
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -170,11 +171,11 @@ class TimeTrackingService
     }
 
     /**
-     * @param  array<int, array<int, array<string, mixed>>>  $closedByUser
+     * @param array<int, array<int, array<string, mixed>>> $closedByUser
      */
     private function notifyAffectedUsers(array $closedByUser): void
     {
-        if (! $this->notificationService) {
+        if (!$this->notificationService) {
             return;
         }
 
@@ -194,15 +195,15 @@ class TimeTrackingService
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $entries
+     * @param array<int, array<string, mixed>> $entries
      */
     private function buildNotificationMessage(array $entries): string
     {
-        if (count($entries) === 1) {
+        if (1 === count($entries)) {
             $entry = $entries[0];
             $entrada = Carbon::parse($entry['entrada']);
             $salida = Carbon::parse($entry['salida']);
-            $reason = $entry['reason'] === 'max_hours_exceeded'
+            $reason = 'max_hours_exceeded' === $entry['reason']
                 ? 'al alcanzar el límite de 8 horas diarias'
                 : 'al final del día';
 

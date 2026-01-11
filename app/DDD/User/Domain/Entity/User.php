@@ -36,7 +36,7 @@ final class User
         string $name,
         bool $isActive = true,
         bool $isAdmin = false,
-        array $timeEntries = []
+        array $timeEntries = [],
     ) {
         $this->id = $id;
         $this->uuid = $uuid;
@@ -59,10 +59,10 @@ final class User
         string $name,
         bool $isActive,
         bool $isAdmin = false,
-        array $timeEntries = []
+        array $timeEntries = [],
     ): self {
         $user = new self(
-            $id !== null ? new UserId($id) : null,
+            null !== $id ? new UserId($id) : null,
             new Uuid($uuid),
             new Email($email),
             $name,
@@ -126,7 +126,7 @@ final class User
 
     public function toggleActive(): bool
     {
-        $this->isActive = ! $this->isActive;
+        $this->isActive = !$this->isActive;
 
         return $this->isActive;
     }
@@ -145,15 +145,15 @@ final class User
     public function clockIn(): void
     {
         if ($this->getOpenTimeEntry()) {
-            throw new OpenTimeEntryAlreadyExistsException;
+            throw new OpenTimeEntryAlreadyExistsException();
         }
 
-        if (! $this->id()) {
-            throw new UnsavedUserCannotClockInException;
+        if (!$this->id()) {
+            throw new UnsavedUserCannotClockInException();
         }
 
         // Validate daily limit (only for non-admin users)
-        if (! $this->isAdmin()) {
+        if (!$this->isAdmin()) {
             $todayEntries = $this->countTodayEntries();
             if ($todayEntries >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
                 throw new DailyTimeEntryLimitExceededException($todayEntries);
@@ -173,7 +173,7 @@ final class User
         foreach ($this->timeEntries as $entry) {
             $startTimeCarbon = Carbon::instance($entry->startTime());
             if ($startTimeCarbon->isSameDay($today)) {
-                $count++;
+                ++$count;
             }
         }
 
@@ -183,8 +183,8 @@ final class User
     public function clockOut(): void
     {
         $openEntry = $this->getOpenTimeEntry();
-        if (! $openEntry) {
-            throw new NoOpenTimeEntryException;
+        if (!$openEntry) {
+            throw new NoOpenTimeEntryException();
         }
 
         $openEntry->close();

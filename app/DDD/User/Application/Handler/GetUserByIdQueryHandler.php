@@ -12,8 +12,9 @@ class GetUserByIdQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserAuthorizationServiceInterface $authorizationService
-    ) {}
+        private UserAuthorizationServiceInterface $authorizationService,
+    ) {
+    }
 
     public function handle(GetUserByIdQuery $query): User
     {
