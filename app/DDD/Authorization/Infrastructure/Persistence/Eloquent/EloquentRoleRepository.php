@@ -17,20 +17,29 @@ use Illuminate\Database\Query\Builder;
 
 class EloquentRoleRepository implements RoleRepositoryInterface
 {
+    private string $roleTable;
+
+    private string $userRoleTable;
+
+    private string $rolePermissionTable;
+
+    private string $permissionTable;
+
     public function __construct(
         private ConnectionInterface $connection,
     ) {
+        $this->roleTable = RoleModel::tableName();
+        $this->userRoleTable = UserRole::tableName();
+        $this->rolePermissionTable = RolePermission::tableName();
+        $this->permissionTable = PermissionModel::tableName();
     }
 
     public function userHasRole(UserId $userId, string $roleSlug): bool
     {
-        $userRoleTable = UserRole::tableName();
-        $roleTable = RoleModel::tableName();
-
-        $query = $this->connection->table($userRoleTable)
-            ->join($roleTable, "{$userRoleTable}.role_id", '=', "{$roleTable}.id")
-            ->where("{$userRoleTable}.user_id", $userId->value())
-            ->where("{$roleTable}.slug", $roleSlug);
+        $query = $this->connection->table($this->userRoleTable)
+            ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
+            ->where("{$this->userRoleTable}.user_id", $userId->value())
+            ->where("{$this->roleTable}.slug", $roleSlug);
 
         return $query->exists();
     }
@@ -148,12 +157,12 @@ class EloquentRoleRepository implements RoleRepositoryInterface
 
     private function query(): Builder
     {
-        return $this->connection->table(RoleModel::tableName());
+        return $this->connection->table($this->roleTable);
     }
 
     private function rolePermissionQuery(): Builder
     {
-        return $this->connection->table(RolePermission::tableName());
+        return $this->connection->table($this->rolePermissionTable);
     }
 
     /**
@@ -161,13 +170,10 @@ class EloquentRoleRepository implements RoleRepositoryInterface
      */
     private function getPermissionsForRole(int $roleId): array
     {
-        $rolePermissionTable = RolePermission::tableName();
-        $permissionTable = PermissionModel::tableName();
-
-        $rows = $this->connection->table($rolePermissionTable)
-            ->join($permissionTable, "{$rolePermissionTable}.permission_id", '=', "{$permissionTable}.id")
-            ->where("{$rolePermissionTable}.role_id", $roleId)
-            ->select("{$permissionTable}.*")
+        $rows = $this->connection->table($this->rolePermissionTable)
+            ->join($this->permissionTable, "{$this->rolePermissionTable}.permission_id", '=', "{$this->permissionTable}.id")
+            ->where("{$this->rolePermissionTable}.role_id", $roleId)
+            ->select("{$this->permissionTable}.*")
             ->get();
 
         return $rows->map(fn (\stdClass $row) => [

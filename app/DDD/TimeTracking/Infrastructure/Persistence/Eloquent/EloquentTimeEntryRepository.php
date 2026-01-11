@@ -13,9 +13,12 @@ use Illuminate\Database\Query\Builder;
 
 class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
 {
+    private string $timeEntryTable;
+
     public function __construct(
         private ConnectionInterface $connection,
     ) {
+        $this->timeEntryTable = TimeEntryModel::tableName();
     }
 
     public function findById(TimeEntryId $id): ?TimeEntry
@@ -121,7 +124,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
 
     private function query(): Builder
     {
-        return $this->connection->table(TimeEntryModel::tableName());
+        return $this->connection->table($this->timeEntryTable);
     }
 
     private function toEntity(\stdClass $row): TimeEntry

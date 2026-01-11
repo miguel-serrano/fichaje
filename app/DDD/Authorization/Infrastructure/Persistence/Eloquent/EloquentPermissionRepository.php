@@ -17,22 +17,27 @@ use Illuminate\Database\Query\Builder;
 
 class EloquentPermissionRepository implements PermissionRepositoryInterface
 {
+    private string $permissionTable;
+
+    private string $userRoleTable;
+
+    private string $rolePermissionTable;
+
     public function __construct(
         private ConnectionInterface $connection,
     ) {
+        $this->permissionTable = PermissionModel::tableName();
+        $this->userRoleTable = UserRole::tableName();
+        $this->rolePermissionTable = RolePermission::tableName();
     }
 
     public function userHasPermission(UserId $userId, string $permissionSlug): bool
     {
-        $userRoleTable = UserRole::tableName();
-        $rolePermissionTable = RolePermission::tableName();
-        $permissionTable = PermissionModel::tableName();
-
-        $query = $this->connection->table($userRoleTable)
-            ->join($rolePermissionTable, "{$userRoleTable}.role_id", '=', "{$rolePermissionTable}.role_id")
-            ->join($permissionTable, "{$rolePermissionTable}.permission_id", '=', "{$permissionTable}.id")
-            ->where("{$userRoleTable}.user_id", $userId->value())
-            ->where("{$permissionTable}.slug", $permissionSlug);
+        $query = $this->connection->table($this->userRoleTable)
+            ->join($this->rolePermissionTable, "{$this->userRoleTable}.role_id", '=', "{$this->rolePermissionTable}.role_id")
+            ->join($this->permissionTable, "{$this->rolePermissionTable}.permission_id", '=', "{$this->permissionTable}.id")
+            ->where("{$this->userRoleTable}.user_id", $userId->value())
+            ->where("{$this->permissionTable}.slug", $permissionSlug);
 
         return $query->exists();
     }
@@ -127,7 +132,7 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
 
     private function query(): Builder
     {
-        return $this->connection->table(PermissionModel::tableName());
+        return $this->connection->table($this->permissionTable);
     }
 
     private function toDomainEntity(\stdClass $row): Permission

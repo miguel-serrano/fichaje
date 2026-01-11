@@ -16,9 +16,12 @@ use Illuminate\Database\Query\Builder;
 
 class EloquentHolidayRepository implements HolidayRepositoryInterface
 {
+    private string $holidayRequestTable;
+
     public function __construct(
         private ConnectionInterface $connection,
     ) {
+        $this->holidayRequestTable = HolidayRequestModel::tableName();
     }
 
     public function save(HolidayRequest $request): HolidayRequest
@@ -149,7 +152,7 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
 
     private function query(): Builder
     {
-        return $this->connection->table(HolidayRequestModel::tableName());
+        return $this->connection->table($this->holidayRequestTable);
     }
 
     private function mapToEntity(\stdClass $row): HolidayRequest

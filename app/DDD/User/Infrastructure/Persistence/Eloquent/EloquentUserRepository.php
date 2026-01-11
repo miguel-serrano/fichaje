@@ -19,9 +19,21 @@ use Illuminate\Database\Query\Builder;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
+    private string $usersTable;
+
+    private string $timeEntriesTable;
+
+    private string $userRoleTable;
+
+    private string $rolesTable;
+
     public function __construct(
         private ConnectionInterface $connection,
     ) {
+        $this->usersTable = UserModel::tableName();
+        $this->timeEntriesTable = TimeEntryModel::tableName();
+        $this->userRoleTable = UserRole::tableName();
+        $this->rolesTable = RoleModel::tableName();
     }
 
     public function save(User $user): User
@@ -235,15 +247,11 @@ class EloquentUserRepository implements UserRepositoryInterface
     /** @return User[] */
     public function findAdmins(): array
     {
-        $usersTable = UserModel::tableName();
-        $userRoleTable = UserRole::tableName();
-        $rolesTable = RoleModel::tableName();
-
-        $rows = $this->connection->table($usersTable)
-            ->join($userRoleTable, "{$usersTable}.id", '=', "{$userRoleTable}.user_id")
-            ->join($rolesTable, "{$userRoleTable}.role_id", '=', "{$rolesTable}.id")
-            ->whereIn("{$rolesTable}.slug", ['super_admin', 'admin'])
-            ->select("{$usersTable}.*")
+        $rows = $this->connection->table($this->usersTable)
+            ->join($this->userRoleTable, "{$this->usersTable}.id", '=', "{$this->userRoleTable}.user_id")
+            ->join($this->rolesTable, "{$this->userRoleTable}.role_id", '=', "{$this->rolesTable}.id")
+            ->whereIn("{$this->rolesTable}.slug", ['super_admin', 'admin'])
+            ->select("{$this->usersTable}.*")
             ->distinct()
             ->get();
 
@@ -258,11 +266,11 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     private function usersQuery(): Builder
     {
-        return $this->connection->table(UserModel::tableName());
+        return $this->connection->table($this->usersTable);
     }
 
     private function timeEntriesQuery(): Builder
     {
-        return $this->connection->table(TimeEntryModel::tableName());
+        return $this->connection->table($this->timeEntriesTable);
     }
 }
