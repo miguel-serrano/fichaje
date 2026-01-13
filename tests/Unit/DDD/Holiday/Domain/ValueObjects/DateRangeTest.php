@@ -13,13 +13,13 @@ class DateRangeTest extends TestCase
 {
     public function testCanCreateValidDateRange(): void
     {
-        $startDate = new DateTimeImmutable('+1 day');
-        $endDate = new DateTimeImmutable('+5 days');
+        $startDate = (new DateTimeImmutable('+1 day'))->format('Y-m-d');
+        $endDate = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
 
-        $dateRange = new DateRange($startDate, $endDate);
+        $dateRange = DateRange::fromStrings($startDate, $endDate);
 
-        $this->assertEquals($startDate->format('Y-m-d'), $dateRange->startDateFormatted());
-        $this->assertEquals($endDate->format('Y-m-d'), $dateRange->endDateFormatted());
+        $this->assertEquals($startDate, $dateRange->startDateFormatted());
+        $this->assertEquals($endDate, $dateRange->endDateFormatted());
     }
 
     public function testCanCreateFromStrings(): void
@@ -38,10 +38,10 @@ class DateRangeTest extends TestCase
         $this->expectException(InvalidHolidayDateRangeException::class);
         $this->expectExceptionMessage('La fecha de fin debe ser posterior a la fecha de inicio');
 
-        $startDate = new DateTimeImmutable('+5 days');
-        $endDate = new DateTimeImmutable('+1 day');
+        $startDate = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
+        $endDate = (new DateTimeImmutable('+1 day'))->format('Y-m-d');
 
-        new DateRange($startDate, $endDate);
+        DateRange::fromStrings($startDate, $endDate);
     }
 
     public function testThrowsExceptionWhenStartDateIsInPast(): void
@@ -49,20 +49,42 @@ class DateRangeTest extends TestCase
         $this->expectException(InvalidHolidayDateRangeException::class);
         $this->expectExceptionMessage('La fecha de inicio no puede ser anterior a hoy');
 
-        $startDate = new DateTimeImmutable('-1 day');
-        $endDate = new DateTimeImmutable('+5 days');
+        $startDate = (new DateTimeImmutable('-1 day'))->format('Y-m-d');
+        $endDate = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
 
-        new DateRange($startDate, $endDate);
+        DateRange::fromStrings($startDate, $endDate);
     }
 
     public function testCalculatesTotalDaysCorrectly(): void
     {
-        $startDate = new DateTimeImmutable('+1 day');
-        $endDate = new DateTimeImmutable('+5 days');
+        $startDate = (new DateTimeImmutable('+1 day'))->format('Y-m-d');
+        $endDate = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
 
-        $dateRange = new DateRange($startDate, $endDate);
+        $dateRange = DateRange::fromStrings($startDate, $endDate);
 
         $this->assertEquals(5, $dateRange->totalDays());
+    }
+
+    public function testFromPersistenceAllowsPastDates(): void
+    {
+        $startDate = (new DateTimeImmutable('-30 days'))->format('Y-m-d');
+        $endDate = (new DateTimeImmutable('-25 days'))->format('Y-m-d');
+
+        $dateRange = DateRange::fromPersistence($startDate, $endDate);
+
+        $this->assertEquals($startDate, $dateRange->startDateFormatted());
+        $this->assertEquals($endDate, $dateRange->endDateFormatted());
+    }
+
+    public function testFromPersistenceStillValidatesEndDateBeforeStartDate(): void
+    {
+        $this->expectException(InvalidHolidayDateRangeException::class);
+        $this->expectExceptionMessage('La fecha de fin debe ser posterior a la fecha de inicio');
+
+        $startDate = (new DateTimeImmutable('-20 days'))->format('Y-m-d');
+        $endDate = (new DateTimeImmutable('-25 days'))->format('Y-m-d');
+
+        DateRange::fromPersistence($startDate, $endDate);
     }
 
     public function testDetectsOverlappingRanges(): void

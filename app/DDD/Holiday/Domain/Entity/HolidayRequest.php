@@ -12,10 +12,15 @@ use App\DDD\User\Domain\ValueObjects\UserId;
 final class HolidayRequest
 {
     private ?HolidayRequestId $id;
+
     private UserId $userId;
+
     private DateRange $dateRange;
+
     private HolidayStatus $status;
+
     private ?\DateTimeImmutable $createdAt;
+
     private ?\DateTimeImmutable $updatedAt;
 
     private function __construct(
@@ -54,7 +59,7 @@ final class HolidayRequest
         return new self(
             new HolidayRequestId($data['id']),
             new UserId($data['user_id']),
-            DateRange::fromStrings($data['start_date'], $data['end_date']),
+            DateRange::fromPersistence($data['start_date'], $data['end_date']),
             HolidayStatus::from($data['status']),
             isset($data['created_at']) ? new \DateTimeImmutable($data['created_at']) : null,
             isset($data['updated_at']) ? new \DateTimeImmutable($data['updated_at']) : null

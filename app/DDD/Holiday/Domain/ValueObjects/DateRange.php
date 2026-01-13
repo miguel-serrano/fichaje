@@ -9,11 +9,15 @@ use App\DDD\Holiday\Domain\Exceptions\InvalidHolidayDateRangeException;
 final class DateRange
 {
     private \DateTimeImmutable $startDate;
+
     private \DateTimeImmutable $endDate;
 
-    public function __construct(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate)
-    {
-        $this->validate($startDate, $endDate);
+    private function __construct(
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate,
+        bool $skipDateValidation = false,
+    ) {
+        $this->validate($startDate, $endDate, $skipDateValidation);
         $this->startDate = $startDate;
         $this->endDate = $endDate;
     }
@@ -26,15 +30,34 @@ final class DateRange
         );
     }
 
-    private function validate(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): void
+    public static function fromPersistence(string $startDate, string $endDate): self
     {
+        $start = new \DateTimeImmutable($startDate);
+        $end = new \DateTimeImmutable($endDate);
+
+        if ($end < $start) {
+            throw InvalidHolidayDateRangeException::endDateBeforeStartDate();
+        }
+
+        $instance = new self($start, $end, skipDateValidation: true);
+
+        return $instance;
+    }
+
+    private function validate(
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate,
+        bool $skipDateValidation = false,
+    ): void {
         if ($endDate < $startDate) {
             throw InvalidHolidayDateRangeException::endDateBeforeStartDate();
         }
 
-        $today = new \DateTimeImmutable('today');
-        if ($startDate < $today) {
-            throw InvalidHolidayDateRangeException::startDateInPast();
+        if (!$skipDateValidation) {
+            $today = new \DateTimeImmutable('today');
+            if ($startDate < $today) {
+                throw InvalidHolidayDateRangeException::startDateInPast();
+            }
         }
     }
 
