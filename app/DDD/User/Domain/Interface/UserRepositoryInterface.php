@@ -33,7 +33,10 @@ interface UserRepositoryInterface
     /** @return User[] */
     public function findAll(): array;
 
-    public function delete(UserId $id): bool;
+    /**
+     * @throws \App\DDD\User\Domain\Exceptions\UserDeletionFailedException
+     */
+    public function delete(UserId $id): void;
 
     public function count(): int;
 
@@ -44,4 +47,9 @@ interface UserRepositoryInterface
 
     /** @return User[] */
     public function findAdmins(): array;
+
+    /**
+     * @return array{cerrados: \Illuminate\Support\Collection<int, \stdClass>, abiertos: \Illuminate\Support\Collection<int, \stdClass>}
+     */
+    public function findDailyTimeEntriesByUserId(UserId $id): array;
 }

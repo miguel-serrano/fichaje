@@ -6,7 +6,6 @@ use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
 
 class GetUserByIdQueryHandler
 {
@@ -18,11 +17,9 @@ class GetUserByIdQueryHandler
 
     public function handle(GetUserByIdQuery $query): User
     {
-        $authenticatedUserId = new UserId($query->authenticatedUserId);
-        $targetUserId = new UserId($query->targetUserId);
+        $targetUser = $this->userRepository->findByIdOrFail($query->targetUserId);
 
-        $authenticatedUser = $this->userRepository->findByIdOrFail($authenticatedUserId);
-        $targetUser = $this->userRepository->findByIdOrFail($targetUserId);
+        $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
         $this->authorizationService->ensureCanView($authenticatedUser, $targetUser);
 

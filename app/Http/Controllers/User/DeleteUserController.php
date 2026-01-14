@@ -20,8 +20,12 @@ class DeleteUserController extends Controller
     public function __invoke(string $id): RedirectResponse
     {
         try {
-            $command = new DeleteUserCommand(Auth::id(), (int) $id);
-            $this->commandBus->dispatch($command);
+            $this->commandBus->dispatch(
+                DeleteUserCommand::create(
+                    authenticatedUserId: Auth::id(),
+                    targetUserId: (int) $id,
+                )
+            );
 
             return redirect()->route('users.index')
                 ->with('success', 'Usuario eliminado correctamente');

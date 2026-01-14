@@ -3,9 +3,9 @@
 namespace App\DDD\User\Application\Handler;
 
 use App\DDD\User\Application\Query\GetAllUsersQuery;
+use App\DDD\User\Application\Response\GetAllUsersQueryResponse;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
 
 class GetAllUsersQueryHandler
 {
@@ -15,15 +15,12 @@ class GetAllUsersQueryHandler
     ) {
     }
 
-    public function handle(GetAllUsersQuery $query): array
+    public function handle(GetAllUsersQuery $query): GetAllUsersQueryResponse
     {
-        $authenticatedUserId = new UserId($query->authenticatedUserId);
-        $authenticatedUser = $this->userRepository->findByIdOrFail($authenticatedUserId);
+        $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
         $this->authorizationService->ensureCanList($authenticatedUser);
 
-        $users = $this->userRepository->findAll();
-
-        return array_map(fn ($user) => $user->toArray(), $users);
+        return new GetAllUsersQueryResponse($this->userRepository->findAll());
     }
 }

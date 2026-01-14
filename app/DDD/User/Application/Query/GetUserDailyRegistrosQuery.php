@@ -2,15 +2,21 @@
 
 namespace App\DDD\User\Application\Query;
 
-class GetUserDailyRegistrosQuery
+use App\DDD\User\Domain\ValueObjects\UserId;
+
+final class GetUserDailyRegistrosQuery
 {
-    public function __construct(
-        private int $userId,
+    private function __construct(
+        public readonly UserId $authenticatedUserId,
+        public readonly UserId $targetUserId,
     ) {
     }
 
-    public function getUserId(): int
+    public static function create(int $authenticatedUserId, int $targetUserId): self
     {
-        return $this->userId;
+        return new self(
+            authenticatedUserId: UserId::make($authenticatedUserId),
+            targetUserId: UserId::make($targetUserId),
+        );
     }
 }

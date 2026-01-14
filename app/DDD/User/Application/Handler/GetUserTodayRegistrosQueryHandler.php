@@ -2,27 +2,29 @@
 
 namespace App\DDD\User\Application\Handler;
 
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
+use App\DDD\User\Application\Response\GetUserTodayRegistrosQueryResponse;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\Permission\UserPermission;
-use App\DDD\User\Domain\ValueObjects\UserId;
+use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 
 class GetUserTodayRegistrosQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private UserAuthorizationServiceInterface $authorizationService,
     ) {
     }
 
-    /** @return array<array-key, mixed> */
-    public function handle(GetUserTodayRegistrosQuery $query): array
+    public function handle(GetUserTodayRegistrosQuery $query): GetUserTodayRegistrosQueryResponse
     {
-        $userId = new UserId($query->getUserId());
-        $user = $this->userRepository->findByIdOrFail($userId);
-        $this->permissionChecker->ensureHasPermission($user, UserPermission::ViewOwn->value);
+        $targetUser = $this->userRepository->findByIdOrFail($query->targetUserId);
 
-        return $this->userRepository->findTodayTimeEntriesByUserId($userId);
+        $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
+
+        $this->authorizationService->ensureCanView($authenticatedUser, $targetUser);
+
+        return new GetUserTodayRegistrosQueryResponse(
+            $this->userRepository->findTodayTimeEntriesByUserId($query->targetUserId)
+        );
     }
 }

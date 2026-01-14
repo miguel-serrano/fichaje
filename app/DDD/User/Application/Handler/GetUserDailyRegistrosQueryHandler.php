@@ -2,138 +2,29 @@
 
 namespace App\DDD\User\Application\Handler;
 
-use App\DDD\Shared\Domain\Service\TimeFormatter;
-use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
+use App\DDD\User\Application\Response\GetUserDailyRegistrosQueryResponse;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
-use App\Models\TimeEntry as TimeEntryModel;
-use Illuminate\Database\ConnectionInterface;
-use Illuminate\Database\Query\Builder;
+use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 
 class GetUserDailyRegistrosQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private TimeTrackingService $timeTrackingService,
-        private ConnectionInterface $connection,
+        private UserAuthorizationServiceInterface $authorizationService,
     ) {
     }
 
-    /**
-     * Note: Authorization is handled upstream by the controller's UserPolicy check.
-     * This handler only retrieves data for the given user ID.
-     */
-    public function handle(GetUserDailyRegistrosQuery $query): array
+    public function handle(GetUserDailyRegistrosQuery $query): GetUserDailyRegistrosQueryResponse
     {
-        $userId = $query->getUserId();
-        $this->userRepository->findByIdOrFail(new UserId($userId));
+        $targetUser = $this->userRepository->findByIdOrFail($query->targetUserId);
 
-        $hoy = date('Y-m-d');
+        $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
-        // Obtener registros cerrados
-        $registrosCerrados = $this->timeEntriesQuery()
-            ->where('user_id', $userId)
-            ->whereNotNull('salida')
-            ->orderBy('entrada', 'desc')
-            ->get();
+        $this->authorizationService->ensureCanView($authenticatedUser, $targetUser);
 
-        // Obtener registros abiertos de hoy
-        $registrosAbiertos = $this->timeEntriesQuery()
-            ->where('user_id', $userId)
-            ->whereNull('salida')
-            ->whereDate('entrada', $hoy)
-            ->orderBy('entrada', 'desc')
-            ->get();
-
-        $registrosPorDia = [];
-
-        // Procesar registros cerrados
-        foreach ($registrosCerrados as $registro) {
-            $fecha = date('Y-m-d', strtotime($registro->entrada));
-            $entrada = new \DateTime($registro->entrada);
-            $salida = new \DateTime($registro->salida);
-            $duracion = $salida->diff($entrada);
-
-            $segundosTrabajados = ($duracion->h * 3600) + ($duracion->i * 60) + $duracion->s;
-
-            if (!isset($registrosPorDia[$fecha])) {
-                $registrosPorDia[$fecha] = [
-                    'fecha' => $fecha,
-                    'fecha_formateada' => date('d/m/Y', strtotime($fecha)),
-                    'registros' => [],
-                    'total_segundos' => 0,
-                    'total_formateado' => '00:00:00',
-                    'tiene_abierto' => false,
-                ];
-            }
-
-            $registrosPorDia[$fecha]['registros'][] = [
-                'entrada' => date('H:i:s', strtotime($registro->entrada)),
-                'salida' => date('H:i:s', strtotime($registro->salida)),
-                'duracion' => TimeFormatter::formatTime($segundosTrabajados),
-                'abierto' => false,
-            ];
-
-            $registrosPorDia[$fecha]['total_segundos'] += $segundosTrabajados;
-            $registrosPorDia[$fecha]['total_formateado'] = TimeFormatter::formatTime($registrosPorDia[$fecha]['total_segundos']);
-        }
-
-        // Procesar registros abiertos de hoy
-        foreach ($registrosAbiertos as $registro) {
-            $fecha = date('Y-m-d', strtotime($registro->entrada));
-            $entrada = new \DateTime($registro->entrada);
-            $segundosTrabajados = time() - $entrada->getTimestamp();
-
-            if (!isset($registrosPorDia[$fecha])) {
-                $registrosPorDia[$fecha] = [
-                    'fecha' => $fecha,
-                    'fecha_formateada' => date('d/m/Y', strtotime($fecha)),
-                    'registros' => [],
-                    'total_segundos' => 0,
-                    'total_formateado' => '00:00:00',
-                    'tiene_abierto' => false,
-                ];
-            }
-
-            $registrosPorDia[$fecha]['registros'][] = [
-                'entrada' => date('H:i:s', strtotime($registro->entrada)),
-                'salida' => null,
-                'duracion' => TimeFormatter::formatTime($segundosTrabajados),
-                'abierto' => true,
-                'entrada_timestamp' => $entrada->getTimestamp(),
-            ];
-
-            $registrosPorDia[$fecha]['total_segundos'] += $segundosTrabajados;
-            $registrosPorDia[$fecha]['total_formateado'] = TimeFormatter::formatTime($registrosPorDia[$fecha]['total_segundos']);
-            $registrosPorDia[$fecha]['tiene_abierto'] = true;
-        }
-
-        // Reordenar por fecha descendente
-        krsort($registrosPorDia);
-
-        // Calcular total del mes actual
-        $totalSegundosMes = 0;
-        $mesActual = date('Y-m');
-
-        foreach ($registrosPorDia as $dia) {
-            if (0 === strpos($dia['fecha'], $mesActual)) {
-                $totalSegundosMes += $dia['total_segundos'];
-            }
-        }
-
-        return [
-            'registros' => array_values($registrosPorDia),
-            'total_mes_actual' => [
-                'segundos' => $totalSegundosMes,
-                'formateado' => TimeFormatter::formatTime($totalSegundosMes),
-                'mes' => TimeFormatter::formatMonth(date('Y-m')),
-            ],
-        ];
-    }
-
-    private function timeEntriesQuery(): Builder
-    {
-        return $this->connection->table(TimeEntryModel::tableName());
+        return new GetUserDailyRegistrosQueryResponse(
+            $this->userRepository->findDailyTimeEntriesByUserId($query->targetUserId)
+        );
     }
 }

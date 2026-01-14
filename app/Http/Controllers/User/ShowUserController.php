@@ -25,12 +25,20 @@ class ShowUserController extends Controller
     public function __invoke(string $id): View|RedirectResponse
     {
         try {
-            $query = new GetUserByIdQuery(Auth::id(), (int) $id);
             /** @var User $user */
-            $user = $this->queryBus->dispatch($query);
+            $user = $this->queryBus->dispatch(
+                GetUserByIdQuery::create(
+                    authenticatedUserId: Auth::id(),
+                    targetUserId: (int) $id,
+                )
+            );
 
-            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($user->id()->value());
-            $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
+            $registrosData = $this->queryBus->dispatch(
+                GetUserDailyRegistrosQuery::create(
+                    authenticatedUserId: Auth::id(),
+                    targetUserId: $user->id()->value(),
+                )
+            )->response();
 
             $allRolesQuery = new GetAllRolesQuery();
             $allRoles = $this->queryBus->dispatch($allRolesQuery);

@@ -57,7 +57,7 @@ class DeleteUserUseCaseTest extends TestCase
 
         $userId = $eloquentUser->id;
 
-        $command = new DeleteUserCommand($adminUser->id, $userId);
+        $command = DeleteUserCommand::create($adminUser->id, $userId);
         $this->handler->handle($command);
 
         // Verify user was deleted
@@ -84,7 +84,7 @@ class DeleteUserUseCaseTest extends TestCase
 
         $this->expectException(UserNotFoundException::class);
 
-        $command = new DeleteUserCommand($adminUser->id, $userId);
+        $command = DeleteUserCommand::create($adminUser->id, $userId);
         $this->handler->handle($command);
     }
 
@@ -116,7 +116,7 @@ class DeleteUserUseCaseTest extends TestCase
 
         $this->expectException(UnauthorizedException::class);
 
-        $command = new DeleteUserCommand($adminUser->id, $targetAdminUser->id);
+        $command = DeleteUserCommand::create($adminUser->id, $targetAdminUser->id);
         $this->handler->handle($command);
     }
 }

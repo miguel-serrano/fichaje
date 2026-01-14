@@ -22,17 +22,21 @@ class GetMyTimeEntriesController extends Controller
     {
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+            $userId = $authenticatedUser->id()->value();
 
-            $dailyRegistrosQuery = new GetUserDailyRegistrosQuery($authenticatedUser->id()->value());
-            $registrosData = $this->queryBus->dispatch($dailyRegistrosQuery);
+            $registrosData = $this->queryBus->dispatch(
+                GetUserDailyRegistrosQuery::create(
+                    authenticatedUserId: $userId,
+                    targetUserId: $userId,
+                )
+            )->response();
 
-            $todayRegistrosQuery = new GetUserTodayRegistrosQuery($authenticatedUser->id()->value());
-            $todayRegistrosData = $this->queryBus->dispatch($todayRegistrosQuery);
-
-            $todayRegistros = array_map(
-                fn (array $r) => TimeEntry::fromPrimitives($r['id'], $r['user_id'], $r['entrada'], $r['salida']),
-                $todayRegistrosData
-            );
+            $todayRegistros = $this->queryBus->dispatch(
+                GetUserTodayRegistrosQuery::create(
+                    authenticatedUserId: $userId,
+                    targetUserId: $userId,
+                )
+            )->response();
 
             $monthlyRegistros = array_filter(
                 $authenticatedUser->timeEntries(),

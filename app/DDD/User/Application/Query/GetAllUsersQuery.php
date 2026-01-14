@@ -2,10 +2,19 @@
 
 namespace App\DDD\User\Application\Query;
 
-class GetAllUsersQuery
+use App\DDD\User\Domain\ValueObjects\UserId;
+
+final class GetAllUsersQuery
 {
-    public function __construct(
-        public int $authenticatedUserId,
+    private function __construct(
+        public readonly UserId $authenticatedUserId,
     ) {
+    }
+
+    public static function create(int $authenticatedUserId): self
+    {
+        return new self(
+            authenticatedUserId: UserId::make($authenticatedUserId),
+        );
     }
 }

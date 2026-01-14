@@ -20,8 +20,12 @@ class ToggleUserActiveController extends Controller
     public function __invoke(string $id): RedirectResponse
     {
         try {
-            $command = new ToggleUserActiveCommand(Auth::id(), (int) $id);
-            $isActive = $this->commandBus->dispatch($command);
+            $isActive = $this->commandBus->dispatch(
+                ToggleUserActiveCommand::create(
+                    authenticatedUserId: Auth::id(),
+                    targetUserId: (int) $id,
+                )
+            );
 
             $message = $isActive ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente';
 
