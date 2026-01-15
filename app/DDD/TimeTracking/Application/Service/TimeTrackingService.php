@@ -1,22 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\TimeTracking\Application\Service;
 
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
-use App\DDD\Notification\Application\NotificationService;
-use App\DDD\Notification\Domain\Channel;
-use App\DDD\Notification\Domain\Notification;
-use App\DDD\Notification\Domain\NotificationType;
 use App\DDD\TimeTracking\Domain\Exceptions\DailyTimeEntryLimitExceededException;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-class TimeTrackingService
+final class TimeTrackingService
 {
     private const MAX_HOURS = 8;
 
@@ -24,7 +21,6 @@ class TimeTrackingService
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
         private PermissionCheckerInterface $permissionChecker,
-        private ?NotificationService $notificationService = null,
     ) {
     }
 
@@ -44,23 +40,6 @@ class TimeTrackingService
         $user->clockIn();
 
         $this->userRepository->save($user);
-    }
-
-    private function ensureDailyLimitNotExceeded(User $user): void
-    {
-        $today = Carbon::today();
-        $todayEntries = 0;
-
-        foreach ($user->timeEntries() as $entry) {
-            $startTimeCarbon = Carbon::instance($entry->startTime());
-            if ($startTimeCarbon->isSameDay($today)) {
-                ++$todayEntries;
-            }
-        }
-
-        if ($todayEntries >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
-            throw new DailyTimeEntryLimitExceededException($todayEntries);
-        }
     }
 
     public function clockOut(string $userUuid, ?int $timeEntryId = null): void
@@ -135,6 +114,7 @@ class TimeTrackingService
 
     /**
      * Cierra automáticamente los fichajes huérfanos de días anteriores.
+     * Retorna los datos de los fichajes cerrados para que el handler pueda notificar.
      *
      * @return array<int, array<int, array<string, mixed>>> Registros cerrados agrupados por user_id
      */
@@ -186,8 +166,6 @@ class TimeTrackingService
             ];
         }
 
-        $this->notifyAffectedUsers($closedByUser);
-
         Log::info('Fichajes huérfanos cerrados', [
             'total' => count($orphanEntries),
             'users_affected' => count($closedByUser),
@@ -196,52 +174,20 @@ class TimeTrackingService
         return $closedByUser;
     }
 
-    /**
-     * @param array<int, array<int, array<string, mixed>>> $closedByUser
-     */
-    private function notifyAffectedUsers(array $closedByUser): void
+    private function ensureDailyLimitNotExceeded(User $user): void
     {
-        if (!$this->notificationService) {
-            return;
-        }
+        $today = Carbon::today();
+        $todayEntries = 0;
 
-        foreach ($closedByUser as $userId => $entries) {
-            $user = $this->userRepository->findById(new UserId($userId));
-            if ($user) {
-                $notification = new Notification(
-                    type: NotificationType::TimeEntryAutoClosed,
-                    title: 'Fichaje cerrado automáticamente',
-                    message: $this->buildNotificationMessage($entries),
-                    data: ['entries' => $entries],
-                    channels: [Channel::Database]
-                );
-                $this->notificationService->notify($user, $notification);
+        foreach ($user->timeEntries() as $entry) {
+            $startTimeCarbon = Carbon::instance($entry->startTime());
+            if ($startTimeCarbon->isSameDay($today)) {
+                ++$todayEntries;
             }
         }
-    }
 
-    /**
-     * @param array<int, array<string, mixed>> $entries
-     */
-    private function buildNotificationMessage(array $entries): string
-    {
-        if (1 === count($entries)) {
-            $entry = $entries[0];
-            $entrada = Carbon::parse($entry['entrada']);
-            $salida = Carbon::parse($entry['salida']);
-            $reason = 'max_hours_exceeded' === $entry['reason']
-                ? 'al alcanzar el límite de 8 horas diarias'
-                : 'al final del día';
-
-            return sprintf(
-                'Entrada: %s a las %s. Cerrado automáticamente a las %s %s.',
-                $entrada->format('d/m/Y'),
-                $entrada->format('H:i'),
-                $salida->format('H:i'),
-                $reason
-            );
+        if ($todayEntries >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
+            throw DailyTimeEntryLimitExceededException::withCount($todayEntries);
         }
-
-        return sprintf('%d fichajes se cerraron automáticamente.', count($entries));
     }
 }

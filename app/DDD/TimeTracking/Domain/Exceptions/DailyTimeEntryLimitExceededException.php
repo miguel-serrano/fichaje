@@ -12,4 +12,9 @@ class DailyTimeEntryLimitExceededException extends \Exception
             'Has alcanzado el límite máximo de '.self::MAX_DAILY_ENTRIES." fichajes diarios. Registros de hoy: {$currentCount}."
         );
     }
+
+    public static function withCount(int $currentCount): self
+    {
+        return new self($currentCount);
+    }
 }

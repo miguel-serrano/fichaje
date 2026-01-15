@@ -43,8 +43,9 @@ class RegistroHorarioController extends Controller
                     ->with('error', 'No tienes permisos para fichar entrada.');
             }
 
-            $command = new ClockInCommand($user->uuid()->value());
-            $this->commandBus->dispatch($command);
+            $this->commandBus->dispatch(
+                ClockInCommand::create($user->uuid()->value())
+            );
 
             return redirect()->route('user.me')
                 ->with('success', 'Entrada registrada correctamente');
@@ -72,8 +73,9 @@ class RegistroHorarioController extends Controller
                     ->with('error', 'No tienes permisos para fichar salida.');
             }
 
-            $command = new ClockOutCommand($user->uuid()->value(), $registroHorarioId);
-            $this->commandBus->dispatch($command);
+            $this->commandBus->dispatch(
+                ClockOutCommand::create($user->uuid()->value(), $registroHorarioId)
+            );
 
             $successMessage = null !== $registroHorarioId
                 ? 'Fichaje cerrado correctamente'
@@ -95,13 +97,13 @@ class RegistroHorarioController extends Controller
 
             $canClockIn = $this->permissionChecker->hasPermission($user, TimeTrackingPermission::ClockIn->value);
 
-            $segundos = $this->queryBus->dispatch(new GetAccumulatedSecondsQuery($userUuid));
-            $tieneRegistroAbierto = $this->queryBus->dispatch(new HasOpenTimeEntryQuery($userUuid));
+            $segundosResponse = $this->queryBus->dispatch(GetAccumulatedSecondsQuery::create($userUuid));
+            $tieneRegistroAbiertoResponse = $this->queryBus->dispatch(HasOpenTimeEntryQuery::create($userUuid));
 
             return view('registro_horario', [
                 'user' => $user,
-                'segundos' => $segundos,
-                'tieneRegistroAbierto' => $tieneRegistroAbierto,
+                'segundos' => $segundosResponse->seconds(),
+                'tieneRegistroAbierto' => $tieneRegistroAbiertoResponse->hasOpenEntry(),
                 'canClockIn' => $canClockIn,
             ]);
         } catch (\Throwable $th) {

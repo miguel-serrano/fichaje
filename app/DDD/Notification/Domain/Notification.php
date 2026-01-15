@@ -9,13 +9,27 @@ final class Notification
     /**
      * @param Channel[] $channels
      */
-    public function __construct(
+    private function __construct(
         private NotificationType $type,
         private string $title,
         private string $message,
         private array $data = [],
         private array $channels = [Channel::Database],
     ) {
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param Channel[]            $channels
+     */
+    public static function create(
+        NotificationType $type,
+        string $title,
+        string $message,
+        array $data = [],
+        array $channels = [Channel::Database],
+    ): self {
+        return new self($type, $title, $message, $data, $channels);
     }
 
     public function type(): NotificationType

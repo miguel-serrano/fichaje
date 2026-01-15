@@ -4,10 +4,10 @@ namespace App\DDD\TimeTracking\Application\Handler;
 
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\TimeTracking\Application\Query\GetAccumulatedSecondsQuery;
+use App\DDD\TimeTracking\Application\Response\GetAccumulatedSecondsQueryResponse;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\Uuid;
 
 class GetAccumulatedSecondsQueryHandler
 {
@@ -18,11 +18,14 @@ class GetAccumulatedSecondsQueryHandler
     ) {
     }
 
-    public function handle(GetAccumulatedSecondsQuery $query): int
+    public function handle(GetAccumulatedSecondsQuery $query): GetAccumulatedSecondsQueryResponse
     {
-        $user = $this->userRepository->findByUuidOrFail(new Uuid($query->userUuid));
+        $user = $this->userRepository->findByUuidOrFail($query->userUuid);
+
         $this->permissionChecker->ensureHasPermission($user, TimeTrackingPermission::ViewOwn->value);
 
-        return $this->service->getAccumulatedSeconds($query->userUuid);
+        return new GetAccumulatedSecondsQueryResponse(
+            $this->service->getAccumulatedSeconds($query->userUuid->value())
+        );
     }
 }

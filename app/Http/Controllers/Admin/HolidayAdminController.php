@@ -27,16 +27,16 @@ class HolidayAdminController extends Controller
 
     public function index(): View
     {
-        $pendingHolidays = $this->queryBus->dispatch(
-            new GetPendingHolidaysQuery(Auth::id())
+        $pendingResponse = $this->queryBus->dispatch(
+            GetPendingHolidaysQuery::create(Auth::id())
         );
 
-        $approvedHolidays = $this->queryBus->dispatch(
-            new GetApprovedHolidaysQuery(Auth::id())
+        $approvedResponse = $this->queryBus->dispatch(
+            GetApprovedHolidaysQuery::create(Auth::id())
         );
 
         $pendingWithUsers = [];
-        foreach ($pendingHolidays as $holiday) {
+        foreach ($pendingResponse->holidays() as $holiday) {
             $user = $this->userRepository->findById($holiday->userId());
             $pendingWithUsers[] = [
                 'holiday' => $holiday,
@@ -45,7 +45,7 @@ class HolidayAdminController extends Controller
         }
 
         $approvedWithUsers = [];
-        foreach ($approvedHolidays as $holiday) {
+        foreach ($approvedResponse->holidays() as $holiday) {
             $user = $this->userRepository->findById($holiday->userId());
             $approvedWithUsers[] = [
                 'holiday' => $holiday,
@@ -62,7 +62,7 @@ class HolidayAdminController extends Controller
     public function approve(int $id): RedirectResponse
     {
         $this->commandBus->dispatch(
-            new ApproveHolidayRequestCommand(Auth::id(), $id)
+            ApproveHolidayRequestCommand::create(Auth::id(), $id)
         );
 
         return redirect()
@@ -73,7 +73,7 @@ class HolidayAdminController extends Controller
     public function reject(int $id): RedirectResponse
     {
         $this->commandBus->dispatch(
-            new RejectHolidayRequestCommand(Auth::id(), $id)
+            RejectHolidayRequestCommand::create(Auth::id(), $id)
         );
 
         return redirect()

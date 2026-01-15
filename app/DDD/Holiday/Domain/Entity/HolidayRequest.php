@@ -57,8 +57,8 @@ final class HolidayRequest
     public static function fromPrimitives(array $data): self
     {
         return new self(
-            new HolidayRequestId($data['id']),
-            new UserId($data['user_id']),
+            new HolidayRequestId((int) $data['id']),
+            new UserId((int) $data['user_id']),
             DateRange::fromPersistence($data['start_date'], $data['end_date']),
             HolidayStatus::from($data['status']),
             isset($data['created_at']) ? new \DateTimeImmutable($data['created_at']) : null,

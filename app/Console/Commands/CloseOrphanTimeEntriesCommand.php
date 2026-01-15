@@ -2,7 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
+use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\TimeTracking\Application\Command\CloseOrphanTimeEntriesCommand as CloseOrphanCommand;
 use Illuminate\Console\Command;
 
 class CloseOrphanTimeEntriesCommand extends Command
@@ -24,14 +25,14 @@ class CloseOrphanTimeEntriesCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(TimeTrackingService $service): int
+    public function handle(CommandBusInterface $commandBus): int
     {
         $this->info('Buscando fichajes huérfanos...');
 
-        $result = $service->closeOrphanTimeEntries();
+        $response = $commandBus->dispatch(CloseOrphanCommand::create());
 
-        $total = array_sum(array_map('count', $result));
-        $usersAffected = count($result);
+        $total = $response->totalClosed();
+        $usersAffected = $response->usersAffected();
 
         if (0 === $total) {
             $this->info('No se encontraron fichajes huérfanos.');

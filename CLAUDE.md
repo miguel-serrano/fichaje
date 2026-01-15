@@ -344,7 +344,7 @@ app/DDD/
 
 ## Referencias
 
-- **Bounded Context User (referencia para refactorizar)**: `.claude/docs/refactor-user-bounded-context.md`
+- **Bounded Context User (referencia para refactorizar)**: `.claude/docs/refactor-feb.md`
 - **Debugging**: `/telescope`
 - **Pre-commit hook**: php-cs-fixer con reglas `@Symfony`
 - **Skill disponible**: `/php-fixer-symfony`

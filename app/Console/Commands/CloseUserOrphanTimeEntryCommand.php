@@ -127,7 +127,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
         }
 
         // Notificar al usuario
-        $notification = new Notification(
+        $notification = Notification::create(
             type: NotificationType::TimeEntryAutoClosed,
             title: 'Fichaje cerrado automáticamente',
             message: $this->buildNotificationMessage($closedEntries),

@@ -31,22 +31,22 @@ class HolidayController extends Controller
 
     public function index(): View
     {
-        $holidays = $this->queryBus->dispatch(
-            new GetUserHolidaysQuery(Auth::id())
+        $holidaysResponse = $this->queryBus->dispatch(
+            GetUserHolidaysQuery::create(Auth::id())
         );
 
-        $user = $this->userRepository->findByIdOrFail(new UserId(Auth::id()));
+        $user = $this->userRepository->findByIdOrFail(UserId::make(Auth::id()));
         $canRequestHoliday = $this->permissionChecker->hasPermission($user, HolidayPermission::Request->value);
 
         return view('holidays.index', [
-            'holidays' => $holidays,
+            'holidays' => $holidaysResponse->holidays(),
             'canRequestHoliday' => $canRequestHoliday,
         ]);
     }
 
     public function store(StoreHolidayRequest $request): RedirectResponse
     {
-        $user = $this->userRepository->findByIdOrFail(new UserId(Auth::id()));
+        $user = $this->userRepository->findByIdOrFail(UserId::make(Auth::id()));
 
         if (!$this->permissionChecker->hasPermission($user, HolidayPermission::Request->value)) {
             return redirect()
@@ -56,7 +56,7 @@ class HolidayController extends Controller
 
         try {
             $this->commandBus->dispatch(
-                new CreateHolidayRequestCommand(
+                CreateHolidayRequestCommand::create(
                     Auth::id(),
                     $request->validated('start_date'),
                     $request->validated('end_date')

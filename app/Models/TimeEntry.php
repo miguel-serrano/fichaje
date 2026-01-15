@@ -13,12 +13,19 @@ class TimeEntry extends Model
 
     protected $table = 'time_entries';
 
-    protected $fillable = ['user_id', 'entrada', 'salida'];
+    protected $fillable = [
+        'user_id',
+        'entrada',
+        'salida',
+        'auto_closed',
+        'auto_close_reason',
+    ];
 
     protected $casts = [
-        'user_id' => 'string',
+        'user_id' => 'integer',
         'entrada' => 'datetime',
         'salida' => 'datetime',
+        'auto_closed' => 'boolean',
     ];
 
     public $timestamps = true;

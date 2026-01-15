@@ -6,11 +6,10 @@ namespace App\DDD\Holiday\Application\Handler;
 
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
-use App\DDD\Holiday\Domain\Entity\HolidayRequest;
+use App\DDD\Holiday\Application\Response\GetApprovedHolidaysQueryResponse;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
 use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
 
 class GetApprovedHolidaysQueryHandler
 {
@@ -21,15 +20,14 @@ class GetApprovedHolidaysQueryHandler
     ) {
     }
 
-    /**
-     * @return HolidayRequest[]
-     */
-    public function handle(GetApprovedHolidaysQuery $query): array
+    public function handle(GetApprovedHolidaysQuery $query): GetApprovedHolidaysQueryResponse
     {
-        $user = $this->userRepository->findByIdOrFail(new UserId($query->authenticatedUserId));
+        $user = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
         $this->permissionChecker->ensureHasPermission($user, HolidayPermission::ViewApproved->value);
 
-        return $this->holidayRepository->findApproved();
+        $holidays = $this->holidayRepository->findApproved();
+
+        return new GetApprovedHolidaysQueryResponse($holidays);
     }
 }

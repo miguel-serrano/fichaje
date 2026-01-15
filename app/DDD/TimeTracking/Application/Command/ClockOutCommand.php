@@ -2,11 +2,22 @@
 
 namespace App\DDD\TimeTracking\Application\Command;
 
-class ClockOutCommand
+use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
+use App\DDD\User\Domain\ValueObjects\Uuid;
+
+final class ClockOutCommand
 {
-    public function __construct(
-        public readonly string $userUuid,
-        public readonly ?int $timeEntryId = null,
+    private function __construct(
+        public readonly Uuid $userUuid,
+        public readonly ?TimeEntryId $timeEntryId,
     ) {
+    }
+
+    public static function create(string $userUuid, ?int $timeEntryId = null): self
+    {
+        return new self(
+            userUuid: new Uuid($userUuid),
+            timeEntryId: TimeEntryId::makeOrNull($timeEntryId),
+        );
     }
 }

@@ -4,10 +4,10 @@ namespace App\DDD\TimeTracking\Application\Handler;
 
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\TimeTracking\Application\Query\HasOpenTimeEntryQuery;
+use App\DDD\TimeTracking\Application\Response\HasOpenTimeEntryQueryResponse;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\Uuid;
 
 class HasOpenTimeEntryQueryHandler
 {
@@ -18,11 +18,14 @@ class HasOpenTimeEntryQueryHandler
     ) {
     }
 
-    public function handle(HasOpenTimeEntryQuery $query): bool
+    public function handle(HasOpenTimeEntryQuery $query): HasOpenTimeEntryQueryResponse
     {
-        $user = $this->userRepository->findByUuidOrFail(new Uuid($query->userUuid));
+        $user = $this->userRepository->findByUuidOrFail($query->userUuid);
+
         $this->permissionChecker->ensureHasPermission($user, TimeTrackingPermission::ViewOwn->value);
 
-        return $this->service->hasOpenTimeEntry($query->userUuid);
+        return new HasOpenTimeEntryQueryResponse(
+            $this->service->hasOpenTimeEntry($query->userUuid->value())
+        );
     }
 }

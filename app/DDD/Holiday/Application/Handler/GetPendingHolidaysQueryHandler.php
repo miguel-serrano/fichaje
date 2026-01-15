@@ -6,11 +6,10 @@ namespace App\DDD\Holiday\Application\Handler;
 
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
-use App\DDD\Holiday\Domain\Entity\HolidayRequest;
+use App\DDD\Holiday\Application\Response\GetPendingHolidaysQueryResponse;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
 use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
 
 class GetPendingHolidaysQueryHandler
 {
@@ -21,15 +20,14 @@ class GetPendingHolidaysQueryHandler
     ) {
     }
 
-    /**
-     * @return HolidayRequest[]
-     */
-    public function handle(GetPendingHolidaysQuery $query): array
+    public function handle(GetPendingHolidaysQuery $query): GetPendingHolidaysQueryResponse
     {
-        $user = $this->userRepository->findByIdOrFail(new UserId($query->authenticatedUserId));
+        $user = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
         $this->permissionChecker->ensureHasPermission($user, HolidayPermission::ViewPending->value);
 
-        return $this->holidayRepository->findPending();
+        $holidays = $this->holidayRepository->findPending();
+
+        return new GetPendingHolidaysQueryResponse($holidays);
     }
 }

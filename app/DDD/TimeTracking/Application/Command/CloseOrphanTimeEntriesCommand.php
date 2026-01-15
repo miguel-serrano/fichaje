@@ -6,7 +6,12 @@ namespace App\DDD\TimeTracking\Application\Command;
 
 final class CloseOrphanTimeEntriesCommand
 {
-    public function __construct()
+    private function __construct()
     {
+    }
+
+    public static function create(): self
+    {
+        return new self();
     }
 }
