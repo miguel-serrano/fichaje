@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\DDD\Notification\Domain;
+namespace App\DDD\Notification\Domain\Entity;
+
+use App\DDD\Notification\Domain\ValueObjects\Channel;
+use App\DDD\Notification\Domain\ValueObjects\NotificationType;
 
 final class Notification
 {
     /**
-     * @param Channel[] $channels
+     * @param  Channel[]  $channels
      */
     private function __construct(
         private NotificationType $type,
@@ -15,12 +18,11 @@ final class Notification
         private string $message,
         private array $data = [],
         private array $channels = [Channel::Database],
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<string, mixed> $data
-     * @param Channel[]            $channels
+     * @param  array<string, mixed>  $data
+     * @param  Channel[]  $channels
      */
     public static function create(
         NotificationType $type,

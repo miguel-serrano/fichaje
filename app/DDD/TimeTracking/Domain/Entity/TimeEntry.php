@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\TimeTracking\Domain;
+namespace App\DDD\TimeTracking\Domain\Entity;
 
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;

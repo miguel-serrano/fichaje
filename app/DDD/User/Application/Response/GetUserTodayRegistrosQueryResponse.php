@@ -2,7 +2,7 @@
 
 namespace App\DDD\User\Application\Response;
 
-use App\DDD\TimeTracking\Domain\TimeEntry;
+use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 
 class GetUserTodayRegistrosQueryResponse
 {

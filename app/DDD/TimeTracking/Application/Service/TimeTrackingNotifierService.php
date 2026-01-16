@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\DDD\TimeTracking\Application\Service;
 
 use App\DDD\Notification\Application\NotificationService;
-use App\DDD\Notification\Domain\Channel;
-use App\DDD\Notification\Domain\Notification;
-use App\DDD\Notification\Domain\NotificationType;
+use App\DDD\Notification\Domain\Entity\Notification;
+use App\DDD\Notification\Domain\ValueObjects\Channel;
+use App\DDD\Notification\Domain\ValueObjects\NotificationType;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;

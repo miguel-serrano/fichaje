@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DDD\Notification\Domain;
+namespace App\DDD\Notification\Domain\ValueObjects;
 
 enum NotificationType: string
 {

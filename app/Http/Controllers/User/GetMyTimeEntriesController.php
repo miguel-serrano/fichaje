@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
-use App\DDD\TimeTracking\Domain\TimeEntry;
+use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
 use App\Http\Controllers\Controller;

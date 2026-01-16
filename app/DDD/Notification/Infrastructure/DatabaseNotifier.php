@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\DDD\Notification\Infrastructure;
 
-use App\DDD\Notification\Domain\Channel;
+use App\DDD\Notification\Domain\Entity\Notification;
 use App\DDD\Notification\Domain\Interface\NotifierInterface;
-use App\DDD\Notification\Domain\Notification;
+use App\DDD\Notification\Domain\ValueObjects\Channel;
 use App\DDD\User\Domain\Entity\User;
 use App\Models\Notification as NotificationModel;
 use Illuminate\Database\ConnectionInterface;

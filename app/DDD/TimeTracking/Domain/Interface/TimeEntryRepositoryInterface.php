@@ -2,7 +2,7 @@
 
 namespace App\DDD\TimeTracking\Domain\Interface;
 
-use App\DDD\TimeTracking\Domain\TimeEntry;
+use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use Carbon\Carbon;

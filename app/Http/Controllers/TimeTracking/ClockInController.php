@@ -8,7 +8,6 @@ use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\TimeTracking\Application\Command\ClockInCommand;
 use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\Http\Controllers\Controller;
 use App\Models\User as EloquentUser;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +17,6 @@ class ClockInController extends Controller
     public function __construct(
         private CommandBusInterface $commandBus,
         private QueryBusInterface $queryBus,
-        private UserRepositoryInterface $userRepository,
         private PermissionCheckerInterface $permissionChecker,
     ) {
     }

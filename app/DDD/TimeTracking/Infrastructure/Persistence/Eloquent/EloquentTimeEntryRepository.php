@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Infrastructure\Persistence\Eloquent;
 
+use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
-use App\DDD\TimeTracking\Domain\TimeEntry;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\TimeEntry as TimeEntryModel;
