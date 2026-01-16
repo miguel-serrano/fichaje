@@ -11,8 +11,5 @@ use App\DDD\Shared\Domain\ValueObject\StringValueObject;
  */
 final class HashedPassword extends StringValueObject
 {
-    protected function validate(): void
-    {
-        // Hashed passwords are already validated
-    }
+    protected function validate(): void {}
 }

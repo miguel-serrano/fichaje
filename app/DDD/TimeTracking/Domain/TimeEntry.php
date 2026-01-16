@@ -105,7 +105,7 @@ final class TimeEntry
 
     public function isOpen(): bool
     {
-        return null === $this->endTime;
+        return $this->endTime === null;
     }
 
     public function isAutoClosed(): bool
@@ -124,8 +124,7 @@ final class TimeEntry
             return $this->endTime->getTimestamp() - $this->startTime->getTimestamp();
         }
 
-        // If open, calculate with current time (theoretical time)
-        if ($this->startTime && null === $this->endTime) {
+        if ($this->startTime && $this->endTime === null) {
             return Carbon::now()->getTimestamp() - $this->startTime->getTimestamp();
         }
 

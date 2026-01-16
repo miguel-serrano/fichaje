@@ -13,8 +13,7 @@ class GetUserPermissionsQueryHandler
 {
     public function __construct(
         private ConnectionInterface $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @return string[]
@@ -26,7 +25,6 @@ class GetUserPermissionsQueryHandler
         $rolePermissionTable = RolePermission::tableName();
         $permissionsTable = PermissionModel::tableName();
 
-        // Check if user has super_admin role
         $hasSuperAdmin = $this->connection->table($userRoleTable)
             ->join($rolesTable, "{$userRoleTable}.role_id", '=', "{$rolesTable}.id")
             ->where("{$userRoleTable}.user_id", $query->userId)

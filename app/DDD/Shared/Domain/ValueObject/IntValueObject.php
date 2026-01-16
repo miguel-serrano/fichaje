@@ -34,8 +34,5 @@ abstract class IntValueObject extends ValueObject
         return $this->value;
     }
 
-    protected function validate(): void
-    {
-        // Override in child classes for specific validation
-    }
+    protected function validate(): void {}
 }

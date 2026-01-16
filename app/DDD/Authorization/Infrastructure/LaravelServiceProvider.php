@@ -30,9 +30,5 @@ class LaravelServiceProvider extends ServiceProvider
         );
     }
 
-    public function boot(): void
-    {
-        // Register command handlers with Tactician
-        // This will be done in DDDServiceProvider
-    }
+    public function boot(): void {}
 }
