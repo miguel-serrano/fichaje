@@ -320,6 +320,58 @@
     </div>
 </div>
 
+<!-- Balance de Horas -->
+@if(isset($totalMes) && count($dailyRegistros) > 0)
+@php
+    $diasFichados = count($dailyRegistros);
+    $segundosEsperados = $diasFichados * 8 * 3600;
+    $balanceSegundos = $totalMes['segundos'] - $segundosEsperados;
+    $esPositivo = $balanceSegundos >= 0;
+    $balanceFormateado = ($esPositivo ? '+' : '-') . gmdate('H:i:s', abs($balanceSegundos));
+    $esperadoFormateado = gmdate('H:i:s', $segundosEsperados);
+@endphp
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    <i class="material-icons left">balance</i>
+                    Balance de Horas - {{ $totalMes['mes'] }}
+                </span>
+
+                <div class="row" style="margin-top: 20px; margin-bottom: 0;">
+                    <div class="col s12 m4 center-align" style="margin-bottom: 15px;">
+                        <h6 class="grey-text text-darken-1" style="margin-bottom: 10px;">Trabajadas</h6>
+                        <span class="chip blue lighten-4 blue-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                            {{ $totalMes['formateado'] }}
+                        </span>
+                    </div>
+                    <div class="col s12 m4 center-align" style="margin-bottom: 15px;">
+                        <h6 class="grey-text text-darken-1" style="margin-bottom: 10px;">Esperadas</h6>
+                        <span class="chip grey lighten-2 grey-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                            {{ $esperadoFormateado }}
+                        </span>
+                        <p class="grey-text" style="margin: 5px 0 0 0; font-size: 0.9rem;">{{ $diasFichados }} {{ $diasFichados == 1 ? 'día' : 'días' }} × 8h</p>
+                    </div>
+                    <div class="col s12 m4 center-align" style="margin-bottom: 15px;">
+                        <h6 class="grey-text text-darken-1" style="margin-bottom: 10px;">Balance</h6>
+                        @if($esPositivo)
+                            <span class="chip green lighten-4 green-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                                <i class="material-icons tiny">trending_up</i> {{ $balanceFormateado }}
+                            </span>
+                        @else
+                            <span class="chip red lighten-4 red-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                                <i class="material-icons tiny">trending_down</i> {{ $balanceFormateado }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- Resumen Mensual -->
 <div class="row">
     <div class="col s12">
