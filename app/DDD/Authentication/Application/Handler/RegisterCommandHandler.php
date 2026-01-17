@@ -25,15 +25,15 @@ final class RegisterCommandHandler
 
     public function handle(RegisterCommand $command): User
     {
-        $emailVO = new Email($command->email);
+        $email = new Email($command->email);
         $plainPassword = new PlainPassword($command->password);
 
-        $this->userExistValidator->validate($emailVO);
+        $this->userExistValidator->validate($email);
         $this->userCreationValidator->validate();
 
         $hashedPassword = $this->passwordHasher->hash($plainPassword);
 
-        $user = User::create($emailVO, $command->name);
+        $user = User::create($email, $command->name);
 
         $savedUser = $this->userRepository->saveWithPassword($user, $hashedPassword);
 

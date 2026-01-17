@@ -20,7 +20,7 @@ class DeleteUserCommandHandler
 
         $authenticatedUser = $this->userRepository->findByIdOrFail($command->authenticatedUserId);
 
-        $this->authorizationService->ensureCanDelete($authenticatedUser, $targetUser);
+        $this->authorizationService->assertCanDelete($authenticatedUser, $targetUser);
 
         $this->userRepository->delete($command->targetUserId);
     }

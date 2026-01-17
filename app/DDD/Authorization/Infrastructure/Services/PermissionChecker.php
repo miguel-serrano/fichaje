@@ -29,7 +29,7 @@ class PermissionChecker implements PermissionCheckerInterface
         return $this->permissionRepository->userHasPermission($user->id(), $permissionSlug);
     }
 
-    public function ensureHasPermission(User $user, string $permissionSlug): void
+    public function assertHasPermission(User $user, string $permissionSlug): void
     {
         if (!$this->hasPermission($user, $permissionSlug)) {
             throw UnauthorizedException::forPermission($permissionSlug);

@@ -24,7 +24,7 @@ class GetApprovedHolidaysQueryHandler
     {
         $user = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
-        $this->permissionChecker->ensureHasPermission($user, HolidayPermission::ViewApproved->value);
+        $this->permissionChecker->assertHasPermission($user, HolidayPermission::ViewApproved->value);
 
         $holidays = $this->holidayRepository->findApproved();
 

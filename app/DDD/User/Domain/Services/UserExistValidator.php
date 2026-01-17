@@ -20,7 +20,7 @@ class UserExistValidator
      */
     public function validate(Email $email): void
     {
-        if ($this->userRepository->existsByEmail($email)) {
+        if ($this->exists($email)) {
             throw new UserAlreadyExistsException($email->value());
         }
     }

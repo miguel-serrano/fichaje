@@ -28,7 +28,7 @@ class AssignRoleToUserCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::AssignRoles->value);
+        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::AssignRoles->value);
 
         $role = $this->roleRepository->findBySlugOrFail(new RoleSlug($command->roleSlug));
 

@@ -22,13 +22,12 @@ class UserCreationValidator
      */
     public function validate(): void
     {
-        $currentUserCount = $this->userRepository->count();
+        $currentUserCount = $this->getCurrentUserCount();
+        $todayRegistrations = $this->userRepository->countTodayRegistrations();
 
         if ($currentUserCount >= $this->maxUsersLimit) {
             throw new MaxUsersLimitExceededException($this->maxUsersLimit, $currentUserCount);
         }
-
-        $todayRegistrations = $this->userRepository->countTodayRegistrations();
 
         if ($todayRegistrations >= DailyUserRegistrationLimitExceededException::MAX_DAILY_REGISTRATIONS) {
             throw new DailyUserRegistrationLimitExceededException($todayRegistrations);

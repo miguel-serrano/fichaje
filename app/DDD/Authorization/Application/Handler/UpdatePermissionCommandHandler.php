@@ -31,7 +31,7 @@ class UpdatePermissionCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::ManagePermissions->value);
+        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManagePermissions->value);
 
         $this->permissionRepository->findByIdOrFail(new PermissionId($command->permissionId));
 

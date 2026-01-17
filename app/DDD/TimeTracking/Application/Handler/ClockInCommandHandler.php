@@ -21,8 +21,8 @@ class ClockInCommandHandler
     {
         $user = $this->userRepository->findByUuidOrFail($command->userUuid);
 
-        $this->permissionChecker->ensureHasPermission($user, TimeTrackingPermission::ClockIn->value);
+        $this->permissionChecker->assertHasPermission($user, TimeTrackingPermission::ClockIn->value);
 
-        $this->service->clockIn($command->userUuid->value());
+        $this->service->clockIn($command->userUuid);
     }
 }

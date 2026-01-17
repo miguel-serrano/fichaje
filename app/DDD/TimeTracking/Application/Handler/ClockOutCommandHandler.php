@@ -21,7 +21,7 @@ class ClockOutCommandHandler
     {
         $user = $this->userRepository->findByUuidOrFail($command->userUuid);
 
-        $this->permissionChecker->ensureHasPermission($user, TimeTrackingPermission::ClockOut->value);
+        $this->permissionChecker->assertHasPermission($user, TimeTrackingPermission::ClockOut->value);
 
         $this->service->clockOut(
             $command->userUuid->value(),

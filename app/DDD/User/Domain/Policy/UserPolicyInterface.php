@@ -10,10 +10,6 @@ interface UserPolicyInterface
 
     public function canView(User $authenticatedUser, User $targetUser): bool;
 
-    public function canCreate(User $authenticatedUser): bool;
-
-    public function canUpdate(User $authenticatedUser, User $targetUser): bool;
-
     public function canDelete(User $authenticatedUser, User $targetUser): bool;
 
     public function canList(User $authenticatedUser): bool;

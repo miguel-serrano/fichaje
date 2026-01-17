@@ -3,6 +3,7 @@
 namespace App\DDD\User\Infrastructure\Services;
 
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Policy\UserPolicy;
 use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 
@@ -12,33 +13,31 @@ final class UserAuthorizationService implements UserAuthorizationServiceInterfac
     {
     }
 
-    public function ensureCanToggleActive(User $authenticatedUser): void
+    public function assertCanView(User $authenticatedUser, User $targetUser): void
     {
-        $this->userPolicy->ensureCanToggleActive($authenticatedUser);
+        if (!$this->userPolicy->canView($authenticatedUser, $targetUser)) {
+            throw UnauthorizedException::forView();
+        }
     }
 
-    public function ensureCanView(User $authenticatedUser, User $targetUser): void
+    public function assertCanToggleActive(User $authenticatedUser): void
     {
-        $this->userPolicy->ensureCanView($authenticatedUser, $targetUser);
+        if (!$this->userPolicy->canToggleActive($authenticatedUser)) {
+            throw UnauthorizedException::forToggleActive();
+        }
     }
 
-    public function ensureCanCreate(User $authenticatedUser): void
+    public function assertCanDelete(User $authenticatedUser, User $targetUser): void
     {
-        $this->userPolicy->ensureCanCreate($authenticatedUser);
+        if (!$this->userPolicy->canDelete($authenticatedUser, $targetUser)) {
+            throw UnauthorizedException::forDelete();
+        }
     }
 
-    public function ensureCanUpdate(User $authenticatedUser, User $targetUser): void
+    public function assertCanList(User $authenticatedUser): void
     {
-        $this->userPolicy->ensureCanUpdate($authenticatedUser, $targetUser);
-    }
-
-    public function ensureCanDelete(User $authenticatedUser, User $targetUser): void
-    {
-        $this->userPolicy->ensureCanDelete($authenticatedUser, $targetUser);
-    }
-
-    public function ensureCanList(User $authenticatedUser): void
-    {
-        $this->userPolicy->ensureCanList($authenticatedUser);
+        if (!$this->userPolicy->canList($authenticatedUser)) {
+            throw UnauthorizedException::forList();
+        }
     }
 }

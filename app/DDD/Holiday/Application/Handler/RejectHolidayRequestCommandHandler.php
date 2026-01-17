@@ -25,7 +25,7 @@ final class RejectHolidayRequestCommandHandler
     {
         $user = $this->userRepository->findByIdOrFail($command->authenticatedUserId);
 
-        $this->permissionChecker->ensureHasPermission($user, HolidayPermission::Reject->value);
+        $this->permissionChecker->assertHasPermission($user, HolidayPermission::Reject->value);
 
         $holidayRequest = $this->holidayService->reject($command->holidayRequestId);
 

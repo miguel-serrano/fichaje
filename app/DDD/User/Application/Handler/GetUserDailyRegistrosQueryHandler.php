@@ -21,7 +21,7 @@ class GetUserDailyRegistrosQueryHandler
 
         $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
-        $this->authorizationService->ensureCanView($authenticatedUser, $targetUser);
+        $this->authorizationService->assertCanView($authenticatedUser, $targetUser);
 
         return new GetUserDailyRegistrosQueryResponse(
             $this->userRepository->findDailyTimeEntriesByUserId($query->targetUserId)

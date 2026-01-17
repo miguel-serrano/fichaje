@@ -25,7 +25,7 @@ final class CreateHolidayRequestCommandHandler
     {
         $user = $this->userRepository->findByIdOrFail($command->userId);
 
-        $this->permissionChecker->ensureHasPermission($user, HolidayPermission::Request->value);
+        $this->permissionChecker->assertHasPermission($user, HolidayPermission::Request->value);
 
         $dateRange = $this->holidayService->createRequest($user, $command->startDate, $command->endDate);
 

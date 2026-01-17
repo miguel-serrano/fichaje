@@ -6,15 +6,11 @@ use App\DDD\User\Domain\Entity\User;
 
 interface UserAuthorizationServiceInterface
 {
-    public function ensureCanToggleActive(User $authenticatedUser): void;
+    public function assertCanToggleActive(User $authenticatedUser): void;
 
-    public function ensureCanView(User $authenticatedUser, User $targetUser): void;
+    public function assertCanView(User $authenticatedUser, User $targetUser): void;
 
-    public function ensureCanCreate(User $authenticatedUser): void;
+    public function assertCanDelete(User $authenticatedUser, User $targetUser): void;
 
-    public function ensureCanUpdate(User $authenticatedUser, User $targetUser): void;
-
-    public function ensureCanDelete(User $authenticatedUser, User $targetUser): void;
-
-    public function ensureCanList(User $authenticatedUser): void;
+    public function assertCanList(User $authenticatedUser): void;
 }

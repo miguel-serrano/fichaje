@@ -21,7 +21,7 @@ class GetUserByIdQueryHandler
 
         $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
-        $this->authorizationService->ensureCanView($authenticatedUser, $targetUser);
+        $this->authorizationService->assertCanView($authenticatedUser, $targetUser);
 
         return $targetUser;
     }

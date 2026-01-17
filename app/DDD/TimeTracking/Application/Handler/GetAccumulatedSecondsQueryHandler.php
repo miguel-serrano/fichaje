@@ -22,7 +22,7 @@ class GetAccumulatedSecondsQueryHandler
     {
         $user = $this->userRepository->findByUuidOrFail($query->userUuid);
 
-        $this->permissionChecker->ensureHasPermission($user, TimeTrackingPermission::ViewOwn->value);
+        $this->permissionChecker->assertHasPermission($user, TimeTrackingPermission::ViewOwn->value);
 
         return new GetAccumulatedSecondsQueryResponse(
             $this->service->getAccumulatedSeconds($query->userUuid->value())

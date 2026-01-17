@@ -22,7 +22,7 @@ class HasOpenTimeEntryQueryHandler
     {
         $user = $this->userRepository->findByUuidOrFail($query->userUuid);
 
-        $this->permissionChecker->ensureHasPermission($user, TimeTrackingPermission::ViewOwn->value);
+        $this->permissionChecker->assertHasPermission($user, TimeTrackingPermission::ViewOwn->value);
 
         return new HasOpenTimeEntryQueryResponse(
             $this->service->hasOpenTimeEntry($query->userUuid->value())

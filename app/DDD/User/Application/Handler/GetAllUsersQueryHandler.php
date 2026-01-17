@@ -19,7 +19,7 @@ class GetAllUsersQueryHandler
     {
         $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
 
-        $this->authorizationService->ensureCanList($authenticatedUser);
+        $this->authorizationService->assertCanList($authenticatedUser);
 
         return new GetAllUsersQueryResponse($this->userRepository->findAll());
     }

@@ -21,17 +21,18 @@ final class TimeTrackingService
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
         private PermissionCheckerInterface $permissionChecker,
-    ) {}
+    ) {
+    }
 
-    public function clockIn(string $userUuid): void
+    public function clockIn(Uuid $userUuid): void
     {
-        $user = $this->userRepository->findByUuid(new Uuid($userUuid));
+        $user = $this->userRepository->findByUuid($userUuid);
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        if (! $this->permissionChecker->isSuperAdmin($user)) {
+        if (!$this->permissionChecker->isSuperAdmin($user)) {
             $this->ensureDailyLimitNotExceeded($user);
         }
 
@@ -44,11 +45,11 @@ final class TimeTrackingService
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        if ($timeEntryId !== null) {
+        if (null !== $timeEntryId) {
             $entryToClose = null;
             foreach ($user->timeEntries() as $entry) {
                 if ($entry->id() && $entry->id()->value() === $timeEntryId) {
@@ -57,11 +58,11 @@ final class TimeTrackingService
                 }
             }
 
-            if (! $entryToClose) {
+            if (!$entryToClose) {
                 throw new \InvalidArgumentException('Registro horario no encontrado.');
             }
 
-            if (! $entryToClose->isOpen()) {
+            if (!$entryToClose->isOpen()) {
                 throw new \InvalidArgumentException('El registro horario ya está cerrado.');
             }
 
@@ -77,7 +78,7 @@ final class TimeTrackingService
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -97,7 +98,7 @@ final class TimeTrackingService
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
-        if (! $user) {
+        if (!$user) {
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
@@ -180,7 +181,7 @@ final class TimeTrackingService
         foreach ($user->timeEntries() as $entry) {
             $startTimeCarbon = Carbon::instance($entry->startTime());
             if ($startTimeCarbon->isSameDay($today)) {
-                $todayEntries++;
+                ++$todayEntries;
             }
         }
 

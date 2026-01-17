@@ -30,7 +30,7 @@ class CreateRoleCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
+        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
 
         $role = Role::create(
             new RoleName($command->name),

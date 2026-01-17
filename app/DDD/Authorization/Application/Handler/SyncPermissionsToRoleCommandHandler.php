@@ -25,7 +25,7 @@ class SyncPermissionsToRoleCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
+        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
 
         $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
 

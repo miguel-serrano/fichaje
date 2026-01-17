@@ -31,7 +31,7 @@ class UpdateRoleCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->ensureHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
+        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
 
         $role = $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
 
