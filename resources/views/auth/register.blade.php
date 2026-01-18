@@ -9,7 +9,7 @@
             <div class="card-content">
                 <span class="card-title center-align">Crear Cuenta</span>
                 <p class="grey-text center-align">
-                    O <a href="{{ route('login') }}" class="light-green-text text-darken-3">iniciar sesión con una cuenta existente</a>
+                    O <a href="{{ route('login') }}" class="text-claude">iniciar sesión con una cuenta existente</a>
                 </p>
 
                 <div class="divider" style="margin: 20px 0;"></div>
@@ -76,7 +76,7 @@
                     </div>
                     <div class="row">
                         <div class="col s12">
-                            <button type="submit" class="btn waves-effect waves-light light-green darken-3 col s12">
+                            <button type="submit" class="btn waves-effect waves-light btn-claude col s12">
                                 <i class="material-icons left">person_add</i>Registrarse
                             </button>
                         </div>
