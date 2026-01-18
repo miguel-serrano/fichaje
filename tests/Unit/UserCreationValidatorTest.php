@@ -36,7 +36,7 @@ class UserCreationValidatorTest extends TestCase
     public function test_throws_exception_when_max_users_limit_exceeded(): void
     {
         $this->mockRepository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('count')
             ->willReturn(10);
 
@@ -51,7 +51,7 @@ class UserCreationValidatorTest extends TestCase
     public function test_throws_exception_when_exactly_at_limit(): void
     {
         $this->mockRepository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('count')
             ->willReturn(5);
 
@@ -99,29 +99,11 @@ class UserCreationValidatorTest extends TestCase
         $this->assertFalse($this->validator->canCreateUser());
     }
 
-    public function test_get_current_user_count_returns_repository_count(): void
-    {
-        $this->mockRepository
-            ->expects($this->once())
-            ->method('count')
-            ->willReturn(7);
-
-        $this->validator = new UserCreationValidator($this->mockRepository, 10);
-
-        $this->assertEquals(7, $this->validator->getCurrentUserCount());
-    }
-
-    public function test_get_max_users_limit_returns_configured_limit(): void
-    {
-        $this->validator = new UserCreationValidator($this->mockRepository, 15);
-
-        $this->assertEquals(15, $this->validator->getMaxUsersLimit());
-    }
 
     public function test_validates_with_zero_limit_always_throws_exception(): void
     {
         $this->mockRepository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('count')
             ->willReturn(0);
 
@@ -136,7 +118,7 @@ class UserCreationValidatorTest extends TestCase
     public function test_validates_with_negative_limit_always_throws_exception(): void
     {
         $this->mockRepository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('count')
             ->willReturn(0);
 

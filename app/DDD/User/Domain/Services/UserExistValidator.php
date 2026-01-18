@@ -32,12 +32,4 @@ class UserExistValidator
     {
         return $this->userRepository->existsByEmail($email);
     }
-
-    /**
-     * Check if a user with the given email does not exist.
-     */
-    public function doesNotExist(Email $email): bool
-    {
-        return !$this->userRepository->existsByEmail($email);
-    }
 }

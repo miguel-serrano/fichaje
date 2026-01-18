@@ -29,6 +29,7 @@ final class RegisterCommandHandler
         $plainPassword = new PlainPassword($command->password);
 
         $this->userExistValidator->validate($email);
+
         $this->userCreationValidator->validate();
 
         $hashedPassword = $this->passwordHasher->hash($plainPassword);
