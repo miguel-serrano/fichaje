@@ -60,7 +60,7 @@ class GetUserByIdUseCaseTest extends TestCase
         $this->assertEquals($targetUser->id, $result->id()->value());
         $this->assertEquals('123e4567-e89b-12d3-a456-426614174000', $result->uuid()->value());
         $this->assertEquals('test@example.com', $result->email()->value());
-        $this->assertEquals('Test User', $result->name());
+        $this->assertEquals('Test User', $result->name()->value());
         $this->assertTrue($result->isActive());
     }
 
@@ -124,7 +124,7 @@ class GetUserByIdUseCaseTest extends TestCase
         $this->assertEquals($targetUser->id, $result->id()->value());
         $this->assertEquals('223e4567-e89b-12d3-a456-426614174001', $result->uuid()->value());
         $this->assertEquals('another@example.com', $result->email()->value());
-        $this->assertEquals('Another User', $result->name());
+        $this->assertEquals('Another User', $result->name()->value());
         $this->assertFalse($result->isActive());
     }
 

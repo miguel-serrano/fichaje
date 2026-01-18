@@ -29,13 +29,13 @@ final class HolidayNotifierService
             'Solicitud de vacaciones',
             sprintf(
                 '%s ha solicitado vacaciones del %s al %s',
-                $requester->name(),
+                $requester->name()->value(),
                 $dateRange->startDateFormatted('d/m/Y'),
                 $dateRange->endDateFormatted('d/m/Y')
             ),
             [
                 'user_id' => $requester->id()->value(),
-                'user_name' => $requester->name(),
+                'user_name' => $requester->name()->value(),
                 'start_date' => $dateRange->startDateFormatted(),
                 'end_date' => $dateRange->endDateFormatted(),
             ]

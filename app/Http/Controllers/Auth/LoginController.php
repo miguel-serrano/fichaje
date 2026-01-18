@@ -21,7 +21,7 @@ class LoginController extends Controller
         $validated = $request->validated();
 
         try {
-            $command = new LoginCommand($validated['email'], $validated['password']);
+            $command = LoginCommand::create($validated['email'], $validated['password']);
             $this->commandBus->dispatch($command);
 
             $request->session()->regenerate();

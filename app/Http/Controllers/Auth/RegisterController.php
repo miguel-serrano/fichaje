@@ -20,7 +20,7 @@ class RegisterController extends Controller
         $validated = $request->validated();
 
         try {
-            $command = new RegisterCommand(
+            $command = RegisterCommand::create(
                 $validated['name'],
                 $validated['email'],
                 $validated['password']

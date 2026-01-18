@@ -5,12 +5,10 @@ namespace App\DDD\Authentication\Application\Handler;
 use App\DDD\Authentication\Application\Command\RegisterCommand;
 use App\DDD\Authentication\Domain\Services\AuthenticationService;
 use App\DDD\Authentication\Domain\Services\PasswordHashingService;
-use App\DDD\Authentication\Domain\ValueObjects\PlainPassword;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserCreationValidator;
 use App\DDD\User\Domain\Services\UserExistValidator;
-use App\DDD\User\Domain\ValueObjects\Email;
 
 final class RegisterCommandHandler
 {
@@ -25,18 +23,16 @@ final class RegisterCommandHandler
 
     public function handle(RegisterCommand $command): User
     {
-        $email = new Email($command->email);
-        $plainPassword = new PlainPassword($command->password);
-
-        $this->userExistValidator->validate($email);
+        $this->userExistValidator->validate($command->email);
 
         $this->userCreationValidator->isSatisfiedBy();
 
-        $hashedPassword = $this->passwordHasher->hash($plainPassword);
+        $user = User::create($command->email, $command->name);
 
-        $user = User::create($email, $command->name);
-
-        $savedUser = $this->userRepository->saveWithPassword($user, $hashedPassword);
+        $savedUser = $this->userRepository->saveWithPassword(
+            $user,
+            $this->passwordHasher->hash($command->password)
+        );
 
         $this->authService->login($savedUser);
 

@@ -64,13 +64,13 @@
                                                         </button>
                                                     @endif
                                                 </form>
-                                                <form action="{{ route('user.delete', $user['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn-small waves-effect waves-light" style="background: var(--error) !important;">
-                                                        <i class="material-icons left">delete</i>Borrar
-                                                    </button>
-                                                </form>
+                                                <button type="button"
+                                                        class="btn-small waves-effect waves-light btn-delete-user"
+                                                        style="background: var(--error) !important;"
+                                                        data-user-id="{{ $user['id'] }}"
+                                                        data-user-name="{{ $user['name'] }}">
+                                                    <i class="material-icons left">delete</i>Borrar
+                                                </button>
                                             @endif
                                         </td>
                                     </tr>
@@ -90,4 +90,48 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de confirmación para eliminar usuario -->
+<div id="delete-user-modal" class="modal">
+    <div class="modal-content">
+        <h5><i class="material-icons left" style="color: var(--error);">warning</i> Confirmar eliminación</h5>
+        <p>¿Estás seguro de que deseas eliminar al usuario <strong id="delete-user-name"></strong>?</p>
+        <p class="grey-text">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+        <form id="delete-user-form" method="POST" style="display: inline;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="waves-effect waves-light btn" style="background: var(--error) !important;">
+                <i class="material-icons left">delete</i>Eliminar
+            </button>
+        </form>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modalElem = document.getElementById('delete-user-modal');
+    var modalInstance = M.Modal.init(modalElem);
+
+    var deleteButtons = document.querySelectorAll('.btn-delete-user');
+    var deleteForm = document.getElementById('delete-user-form');
+    var deleteUserName = document.getElementById('delete-user-name');
+
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            var userId = this.dataset.userId;
+            var userName = this.dataset.userName;
+
+            deleteForm.action = '{{ url("user") }}/' + userId;
+            deleteUserName.textContent = userName;
+
+            modalInstance.open();
+        });
+    });
+});
+</script>
 @endsection

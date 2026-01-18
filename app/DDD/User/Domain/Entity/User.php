@@ -7,6 +7,7 @@ use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
 use App\DDD\User\Domain\ValueObjects\Email;
+use App\DDD\User\Domain\ValueObjects\Name;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 
@@ -18,7 +19,7 @@ final class User
 
     private Email $email;
 
-    private string $name;
+    private Name $name;
 
     private bool $isActive;
 
@@ -29,7 +30,7 @@ final class User
         ?UserId $id,
         Uuid $uuid,
         Email $email,
-        string $name,
+        Name $name,
         bool $isActive = true,
         array $timeEntries = [],
     ) {
@@ -41,7 +42,7 @@ final class User
         $this->timeEntries = $timeEntries;
     }
 
-    public static function create(Email $email, string $name): self
+    public static function create(Email $email, Name $name): self
     {
         return new self(null, Uuid::generate(), $email, $name, false);
     }
@@ -58,7 +59,7 @@ final class User
             null !== $id ? new UserId($id) : null,
             new Uuid($uuid),
             new Email($email),
-            $name,
+            Name::make($name),
             $isActive
         );
 
@@ -91,7 +92,7 @@ final class User
         return $this->email;
     }
 
-    public function name(): string
+    public function name(): Name
     {
         return $this->name;
     }
@@ -171,7 +172,7 @@ final class User
             'id' => $this->id ? $this->id->value() : null,
             'uuid' => $this->uuid->value(),
             'email' => $this->email->value(),
-            'name' => $this->name(),
+            'name' => $this->name->value(),
             'is_active' => $this->isActive(),
             'registros_horarios' => array_map(function (TimeEntry $entry) {
                 return $entry->toArray();

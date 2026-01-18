@@ -30,14 +30,14 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $model->update([
                     'uuid' => $user->uuid()->value(),
                     'email' => $user->email()->value(),
-                    'name' => $user->name(),
+                    'name' => $user->name()->value(),
                     'is_active' => $user->isActive(),
                 ]);
             } else {
                 $model = UserModel::create([
                     'uuid' => $user->uuid()->value(),
                     'email' => $user->email()->value(),
-                    'name' => $user->name(),
+                    'name' => $user->name()->value(),
                     'is_active' => $user->isActive(),
                 ]);
                 $userId = $model->id;
@@ -158,7 +158,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $model->update([
                     'uuid' => $user->uuid()->value(),
                     'email' => $user->email()->value(),
-                    'name' => $user->name(),
+                    'name' => $user->name()->value(),
                     'is_active' => $user->isActive(),
                     'password' => $password->value(),
                 ]);
@@ -166,7 +166,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $model = UserModel::create([
                     'uuid' => $user->uuid()->value(),
                     'email' => $user->email()->value(),
-                    'name' => $user->name(),
+                    'name' => $user->name()->value(),
                     'is_active' => $user->isActive(),
                     'password' => $password->value(),
                 ]);
