@@ -4,11 +4,14 @@
 
 @section('content')
 <style>
-    .switch label input[type=checkbox]:checked + .lever {
-        background-color: #f48fb1;
+    .visibility-switch .lever {
+        background-color: var(--bg-secondary) !important;
     }
-    .switch label input[type=checkbox]:checked + .lever:after {
-        background-color: #c2185b;
+    .visibility-switch input:checked + .lever {
+        background-color: var(--claude-primary-light) !important;
+    }
+    .visibility-switch input:checked + .lever:after {
+        background-color: var(--claude-primary) !important;
     }
     /* Responsive para collapsible headers en móvil */
     @media only screen and (max-width: 600px) {
@@ -35,12 +38,12 @@
                         <i class="material-icons left">person</i>
                         Información Personal
                     </span>
-                    <div class="switch" style="display: flex; align-items: center;">
+                    <div class="switch visibility-switch" style="display: flex; align-items: center;">
                         <label>
                             <input type="checkbox" id="show-full-info">
                             <span class="lever"></span>
                         </label>
-                        <i class="material-icons grey-text" id="visibility-icon" style="margin-left: 8px;">visibility_off</i>
+                        <i class="material-icons" id="visibility-icon" style="margin-left: 8px; color: var(--text-secondary);">visibility_off</i>
                     </div>
                 </div>
 
@@ -69,11 +72,11 @@
                         <h6 class="grey-text text-darken-1">Estado</h6>
                         <p>
                             @if($user->isActive())
-                                <span class="chip green lighten-4 green-text text-darken-2">
+                                <span class="chip chip-success">
                                     <i class="material-icons tiny">check_circle</i> Activo
                                 </span>
                             @else
-                                <span class="chip red lighten-4 red-text text-darken-2">
+                                <span class="chip chip-error">
                                     <i class="material-icons tiny">cancel</i> Inactivo
                                 </span>
                             @endif
@@ -89,14 +92,14 @@
 @if(!$user->isActive())
 <div class="row">
     <div class="col s12">
-        <div class="card amber lighten-4">
-            <div class="card-content amber-text text-darken-4">
+        <div class="card" style="background: var(--warning-bg) !important;">
+            <div class="card-content" style="color: var(--warning) !important;">
                 <div class="row valign-wrapper" style="margin-bottom: 0;">
                     <div class="col s12 m1 center-align">
-                        <i class="material-icons amber-text text-darken-2" style="font-size: 48px;">warning</i>
+                        <i class="material-icons" style="font-size: 48px; color: var(--warning);">warning</i>
                     </div>
                     <div class="col s12 m11">
-                        <h5 class="amber-text text-darken-4" style="margin-top: 0;">Cuenta Inactiva</h5>
+                        <h5 style="margin-top: 0; color: var(--warning);">Cuenta Inactiva</h5>
                         <p>
                             Tu cuenta está pendiente de activación. No podrás fichar entrada ni salida hasta que un administrador active tu cuenta.
                             Por favor, contacta con un administrador.
@@ -126,14 +129,14 @@
                     </span>
                     @if(isset($allRegistros) && count($allRegistros) > 0)
                         @if($tieneAbiertoHoy)
-                            <span class="chip amber lighten-4 amber-text text-darken-2 live-timer-total"
+                            <span class="chip chip-warning live-timer-total"
                                   style="margin: 0; font-size: 1.1rem; font-weight: 600;"
                                   data-base-seconds="{{ $totalSegundosHoy }}"
                                   data-start-time="{{ $registroAbierto->startTime()->getTimestamp() }}">
                                 {{ gmdate('H:i:s', $totalSegundosHoy) }}
                             </span>
                         @else
-                            <span class="chip blue lighten-4 blue-text text-darken-2" style="margin: 0; font-size: 1.1rem; font-weight: 600;">
+                            <span class="chip chip-info" style="margin: 0; font-size: 1.1rem; font-weight: 600;">
                                 {{ gmdate('H:i:s', $totalSegundosHoy) }}
                             </span>
                         @endif
@@ -163,18 +166,18 @@
                                     @if($registro->endTime())
                                         {{ $registro->endTime()->format('H:i:s') }}
                                     @else
-                                        <span class="amber-text text-darken-2">
+                                        <span style="color: var(--warning);">
                                             <i class="material-icons tiny">schedule</i> Abierto
                                         </span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($registro->endTime())
-                                        <span class="chip blue lighten-4 blue-text text-darken-2">
+                                        <span class="chip chip-info">
                                             {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                         </span>
                                     @else
-                                        <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
+                                        <span class="chip chip-warning live-timer"
                                               data-start-time="{{ $registro->startTime()->getTimestamp() }}">
                                             {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                         </span>
@@ -182,9 +185,9 @@
                                 </td>
                                 <td>
                                     @if($registro->isOpen())
-                                        <span class="chip amber lighten-4 amber-text text-darken-2">Abierto</span>
+                                        <span class="chip chip-warning">Abierto</span>
                                     @else
-                                        <span class="chip green lighten-4 green-text text-darken-2">Cerrado</span>
+                                        <span class="chip chip-success">Cerrado</span>
                                     @endif
                                 </td>
                                 <td class="right-align">
@@ -192,7 +195,7 @@
                                         <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->value()]) }}" method="POST" style="display: inline;">
                                             @csrf
                                             <input type="hidden" name="userUuid" value="{{ $user->uuid()->value() }}">
-                                            <button type="submit" class="btn-small waves-effect waves-light pink darken-2">
+                                            <button type="submit" class="btn-small waves-effect waves-light btn-claude">
                                                 <i class="material-icons left">check</i>Cerrar
                                             </button>
                                         </form>
@@ -225,12 +228,12 @@
                 </span>
                 <p class="grey-text">Fichajes cerrados agrupados por día</p>
                 <div style="margin: 15px 0; display: flex; gap: 8px;">
-                    <button onclick="expandAll()" class="btn-small waves-effect waves-light light-green">
+                    <button onclick="expandAll()" class="btn-small waves-effect waves-light btn-claude">
                         <i class="material-icons tiny hide-on-med-and-up">unfold_more</i>
                         <span class="hide-on-small-only"><i class="material-icons left">unfold_more</i>Expandir</span>
                         <span class="hide-on-med-and-up">Exp</span>
                     </button>
-                    <button onclick="collapseAll()" class="btn-small waves-effect waves-light light-green">
+                    <button onclick="collapseAll()" class="btn-small waves-effect waves-light btn-claude">
                         <i class="material-icons tiny hide-on-med-and-up">unfold_less</i>
                         <span class="hide-on-small-only"><i class="material-icons left">unfold_less</i>Colapsar</span>
                         <span class="hide-on-med-and-up">Col</span>
@@ -245,18 +248,18 @@
                                 <i class="material-icons">date_range</i>
                                 <span style="flex: 1;">{{ $dia['fecha_formateada'] }}</span>
                                 @if(!empty($dia['tiene_abierto']))
-                                    <span class="chip amber lighten-4 amber-text text-darken-2 live-timer-total"
+                                    <span class="chip chip-warning live-timer-total"
                                           style="min-width: 90px; text-align: center;"
                                           data-base-seconds="{{ $dia['total_segundos'] }}"
                                           data-start-time="{{ collect($dia['registros'])->firstWhere('abierto', true)['entrada_timestamp'] ?? 0 }}">
                                         {{ $dia['total_formateado'] }}
                                     </span>
                                 @else
-                                    <span class="chip blue lighten-4 blue-text text-darken-2" style="min-width: 90px; text-align: center;">
+                                    <span class="chip chip-info" style="min-width: 90px; text-align: center;">
                                         {{ $dia['total_formateado'] }}
                                     </span>
                                 @endif
-                                <span class="chip grey lighten-2 grey-text text-darken-2" style="min-width: 90px; text-align: center;">
+                                <span class="chip chip-neutral" style="min-width: 90px; text-align: center;">
                                     {{ count($dia['registros']) }} {{ count($dia['registros']) == 1 ? 'fichaje' : 'fichajes' }}
                                 </span>
                             </div>
@@ -273,28 +276,28 @@
                                         @foreach($dia['registros'] as $registro)
                                         <tr>
                                             <td>
-                                                <i class="material-icons tiny light-green-text">login</i>
+                                                <i class="material-icons tiny text-claude">login</i>
                                                 {{ $registro['entrada'] }}
                                             </td>
                                             <td>
                                                 @if(!empty($registro['abierto']))
-                                                    <span class="amber-text text-darken-2">
+                                                    <span style="color: var(--warning);">
                                                         <i class="material-icons tiny">schedule</i> Abierto
                                                     </span>
                                                 @else
-                                                    <i class="material-icons tiny red-text text-lighten-1">logout</i>
+                                                    <i class="material-icons tiny" style="color: var(--error);">logout</i>
                                                     {{ $registro['salida'] }}
                                                 @endif
                                             </td>
                                             <td>
                                                 @if(!empty($registro['abierto']))
-                                                    <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
+                                                    <span class="chip chip-warning live-timer"
                                                           data-start-time="{{ $registro['entrada_timestamp'] }}">
                                                         <i class="material-icons tiny">timer</i>
                                                         {{ $registro['duracion'] }}
                                                     </span>
                                                 @else
-                                                    <span class="chip green lighten-4 green-text text-darken-2">
+                                                    <span class="chip chip-success">
                                                         <i class="material-icons tiny">timer</i>
                                                         {{ $registro['duracion'] }}
                                                     </span>
@@ -341,26 +344,26 @@
 
                 <div class="row" style="margin-top: 20px; margin-bottom: 0;">
                     <div class="col s12 m4 center-align" style="margin-bottom: 15px;">
-                        <h6 class="grey-text text-darken-1" style="margin-bottom: 10px;">Trabajadas</h6>
-                        <span class="chip blue lighten-4 blue-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                        <h6 class="grey-text" style="margin-bottom: 10px;">Trabajadas</h6>
+                        <span class="chip chip-info" style="font-size: 1.2rem; font-weight: 600;">
                             {{ $totalMes['formateado'] }}
                         </span>
                     </div>
                     <div class="col s12 m4 center-align" style="margin-bottom: 15px;">
-                        <h6 class="grey-text text-darken-1" style="margin-bottom: 10px;">Esperadas</h6>
-                        <span class="chip grey lighten-2 grey-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                        <h6 class="grey-text" style="margin-bottom: 10px;">Esperadas</h6>
+                        <span class="chip chip-neutral" style="font-size: 1.2rem; font-weight: 600;">
                             {{ $esperadoFormateado }}
                         </span>
                         <p class="grey-text" style="margin: 5px 0 0 0; font-size: 0.9rem;">{{ $diasFichados }} {{ $diasFichados == 1 ? 'día' : 'días' }} × 8h</p>
                     </div>
                     <div class="col s12 m4 center-align" style="margin-bottom: 15px;">
-                        <h6 class="grey-text text-darken-1" style="margin-bottom: 10px;">Balance</h6>
+                        <h6 class="grey-text" style="margin-bottom: 10px;">Balance</h6>
                         @if($esPositivo)
-                            <span class="chip green lighten-4 green-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                            <span class="chip chip-success" style="font-size: 1.2rem; font-weight: 600;">
                                 <i class="material-icons tiny">trending_up</i> {{ $balanceFormateado }}
                             </span>
                         @else
-                            <span class="chip red lighten-4 red-text text-darken-2" style="font-size: 1.2rem; font-weight: 600;">
+                            <span class="chip chip-error" style="font-size: 1.2rem; font-weight: 600;">
                                 <i class="material-icons tiny">trending_down</i> {{ $balanceFormateado }}
                             </span>
                         @endif
@@ -381,7 +384,7 @@
                     <i class="material-icons left">date_range</i>
                     Resumen Mensual
                     @if($tieneAbiertoHoy)
-                        <i class="material-icons amber-text text-darken-2" style="font-size: 20px; vertical-align: middle;" title="Fichaje abierto">warning</i>
+                        <i class="material-icons" style="font-size: 20px; vertical-align: middle; color: var(--warning);" title="Fichaje abierto">warning</i>
                     @endif
                 </span>
 
@@ -391,10 +394,10 @@
                             <div class="collapsible-header">
                                 <i class="material-icons">event_note</i>
                                 <span style="flex: 1;">{{ $totalMes['mes'] }}</span>
-                                <span class="chip blue lighten-4 blue-text text-darken-2" style="min-width: 90px; text-align: center;">
+                                <span class="chip chip-info" style="min-width: 90px; text-align: center;">
                                     {{ $totalMes['formateado'] }}
                                 </span>
-                                <span class="chip grey lighten-2 grey-text text-darken-2" style="min-width: 90px; text-align: center;">
+                                <span class="chip chip-neutral" style="min-width: 90px; text-align: center;">
                                     {{ count($monthlyRegistros) }} {{ count($monthlyRegistros) == 1 ? 'fichaje' : 'fichajes' }}
                                 </span>
                             </div>
@@ -418,18 +421,18 @@
                                                 @if($registro->endTime())
                                                     {{ $registro->endTime()->format('H:i:s') }}
                                                 @else
-                                                    <span class="amber-text text-darken-2">
+                                                    <span style="color: var(--warning);">
                                                         <i class="material-icons tiny">schedule</i> Abierto
                                                     </span>
                                                 @endif
                                             </td>
                                             <td>
                                                 @if($registro->endTime())
-                                                    <span class="chip blue lighten-4 blue-text text-darken-2">
+                                                    <span class="chip chip-info">
                                                         {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                                     </span>
                                                 @else
-                                                    <span class="chip amber lighten-4 amber-text text-darken-2 live-timer"
+                                                    <span class="chip chip-warning live-timer"
                                                           data-start-time="{{ $registro->startTime()->getTimestamp() }}">
                                                         {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                                     </span>
@@ -437,9 +440,9 @@
                                             </td>
                                             <td>
                                                 @if($registro->isOpen())
-                                                    <span class="chip amber lighten-4 amber-text text-darken-2">Abierto</span>
+                                                    <span class="chip chip-warning">Abierto</span>
                                                 @else
-                                                    <span class="chip green lighten-4 green-text text-darken-2">Cerrado</span>
+                                                    <span class="chip chip-success">Cerrado</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -478,14 +481,12 @@ document.addEventListener('DOMContentLoaded', function() {
             masked.forEach(function(el) { el.style.display = 'none'; });
             full.forEach(function(el) { el.style.display = 'inline'; });
             icon.textContent = 'visibility';
-            icon.classList.remove('grey-text');
-            icon.classList.add('pink-text', 'text-darken-2');
+            icon.style.color = 'var(--claude-primary)';
         } else {
             masked.forEach(function(el) { el.style.display = 'inline'; });
             full.forEach(function(el) { el.style.display = 'none'; });
             icon.textContent = 'visibility_off';
-            icon.classList.remove('pink-text', 'text-darken-2');
-            icon.classList.add('grey-text');
+            icon.style.color = 'var(--text-secondary)';
         }
     });
 });

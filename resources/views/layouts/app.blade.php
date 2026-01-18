@@ -15,12 +15,19 @@
 
     <!-- Vite Assets (includes Materialize CSS) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Theme initialization (prevents flash) -->
+    <script>
+    (function() {
+        const saved = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+    })();
+    </script>
 </head>
-<body class="blue-grey lighten-5">
+<body>
     <div class="navbar-fixed">
-    <nav class="light-green darken-3">
-        <div class="nav-wrapper">
-            <div class="container">
+    <nav>
+        <div class="nav-wrapper" style="padding: 0 15px;">
                 <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="brand-logo" style="display: flex; align-items: center;">
                     <i class="material-icons left">access_time</i>TimeTrack<sup style="font-size: 12px; margin-left: 4px; opacity: 0.8;">beta</sup>
                 </a>
@@ -86,6 +93,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="#" id="theme-toggle" style="display: flex; align-items: center;">
+                            <i class="material-icons" id="theme-icon">dark_mode</i>
+                        </a>
+                    </li>
+                    <li>
                         <a href="#" class="dropdown-trigger" data-target="user-dropdown">
                             <i class="material-icons left">account_circle</i>{{ auth()->user()->name }}<i class="material-icons right">arrow_drop_down</i>
                         </a>
@@ -118,14 +130,13 @@
                     <li>
                         <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                             @csrf
-                            <button type="submit" class="waves-effect waves-light pink-text text-darken-2" style="background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <button type="submit" class="waves-effect waves-light text-claude" style="background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                                 <i class="material-icons">exit_to_app</i>Cerrar Sesión
                             </button>
                         </form>
                     </li>
                 </ul>
                 @endauth
-            </div>
         </div>
     </nav>
     </div>
@@ -134,7 +145,7 @@
     <ul class="sidenav" id="mobile-nav">
         <li>
             <div class="user-view">
-                <div class="background light-green darken-3"></div>
+                <div class="background"></div>
                 <span class="white-text name">{{ auth()->user()->name }}</span>
                 <span class="white-text email">{{ auth()->user()->email }}</span>
             </div>
@@ -181,9 +192,14 @@
         @endif
         <li><div class="divider"></div></li>
         <li>
+            <a href="#" id="theme-toggle-mobile">
+                <i class="material-icons" id="theme-icon-mobile">dark_mode</i>Cambiar tema
+            </a>
+        </li>
+        <li>
             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                 @csrf
-                <button type="submit" class="waves-effect pink-text text-darken-2" style="background: none; border: none; width: 100%; text-align: left; padding: 0 32px; cursor: pointer; display: flex; align-items: center; gap: 32px; height: 48px; line-height: 48px;">
+                <button type="submit" class="waves-effect text-claude" style="background: none; border: none; width: 100%; text-align: left; padding: 0 32px; cursor: pointer; display: flex; align-items: center; gap: 32px; height: 48px; line-height: 48px;">
                     <i class="material-icons">exit_to_app</i>Cerrar Sesión
                 </button>
             </form>
@@ -201,6 +217,42 @@
 
             var sidenavs = document.querySelectorAll('.sidenav');
             M.Sidenav.init(sidenavs);
+
+            // Theme toggle functionality
+            var themeToggle = document.getElementById('theme-toggle');
+            var themeToggleMobile = document.getElementById('theme-toggle-mobile');
+            var themeIcon = document.getElementById('theme-icon');
+            var themeIconMobile = document.getElementById('theme-icon-mobile');
+            var savedTheme = localStorage.getItem('theme') || 'light';
+
+            function updateIcons(theme) {
+                var icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
+                if (themeIcon) themeIcon.textContent = icon;
+                if (themeIconMobile) themeIconMobile.textContent = icon;
+            }
+
+            // Set initial icon state
+            updateIcons(savedTheme);
+
+            function setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                updateIcons(theme);
+            }
+
+            function toggleTheme(e) {
+                e.preventDefault();
+                var currentTheme = localStorage.getItem('theme') || 'light';
+                setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            }
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+
+            if (themeToggleMobile) {
+                themeToggleMobile.addEventListener('click', toggleTheme);
+            }
 
             // Handle notification clicks
             document.querySelectorAll('.notification-item').forEach(function(item) {
@@ -243,7 +295,7 @@
             @if(session('success'))
                 <div class="row">
                     <div class="col s12">
-                        <div class="card-panel green lighten-4 green-text text-darken-4">
+                        <div class="card-panel card-panel-success">
                             {{ session('success') }}
                         </div>
                     </div>
@@ -253,7 +305,7 @@
             @if(session('error'))
                 <div class="row">
                     <div class="col s12">
-                        <div class="card-panel red lighten-4 red-text text-darken-4">
+                        <div class="card-panel card-panel-error">
                             {{ session('error') }}
                         </div>
                     </div>
@@ -263,7 +315,7 @@
             @if ($errors->any())
                 <div class="row">
                     <div class="col s12">
-                        <div class="card-panel red lighten-4 red-text text-darken-4">
+                        <div class="card-panel card-panel-error">
                             <ul style="margin: 0;">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>

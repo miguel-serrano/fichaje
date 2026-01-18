@@ -12,7 +12,7 @@
                         <span class="card-title">Información del Usuario</span>
                     </div>
                     <div class="col s12 m4 right-align">
-                        <a href="{{ route('users.index') }}" class="btn waves-effect waves-light light-green">
+                        <a href="{{ route('users.index') }}" class="btn waves-effect waves-light btn-claude">
                             <i class="material-icons left">arrow_back</i>Volver
                         </a>
                     </div>
@@ -22,26 +22,26 @@
 
                 <div class="row">
                     <div class="col s12 m6">
-                        <h6 class="grey-text text-darken-1">Nombre</h6>
+                        <h6 class="grey-text">Nombre</h6>
                         <p>{{ $user->name() }}</p>
                     </div>
                     <div class="col s12 m6">
-                        <h6 class="grey-text text-darken-1">Email</h6>
+                        <h6 class="grey-text">Email</h6>
                         <p>{{ $user->email()->value() }}</p>
                     </div>
                     <div class="col s12 m6">
-                        <h6 class="grey-text text-darken-1">UUID</h6>
-                        <p><code class="grey-text">{{ $user->uuid()->value() }}</code></p>
+                        <h6 class="grey-text">UUID</h6>
+                        <p><code>{{ $user->uuid()->value() }}</code></p>
                     </div>
                     <div class="col s12 m6">
-                        <h6 class="grey-text text-darken-1">Estado</h6>
+                        <h6 class="grey-text">Estado</h6>
                         <p>
                             @if($user->isActive())
-                                <span class="chip green lighten-4 green-text text-darken-2">
+                                <span class="chip chip-success">
                                     <i class="material-icons tiny">check_circle</i> Activo
                                 </span>
                             @else
-                                <span class="chip red lighten-4 red-text text-darken-2">
+                                <span class="chip chip-error">
                                     <i class="material-icons tiny">cancel</i> Inactivo
                                 </span>
                             @endif
@@ -66,7 +66,7 @@
                 <div class="divider" style="margin: 20px 0;"></div>
 
                 <!-- Roles actuales -->
-                <h6 class="grey-text text-darken-1">Roles Asignados</h6>
+                <h6 class="grey-text">Roles Asignados</h6>
                 <div style="margin: 15px 0;">
                     @forelse($userRoles as $role)
                         <div class="chip" style="margin: 5px;">
@@ -80,7 +80,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn-flat btn-small" style="padding: 0; margin-left: 5px; min-width: auto; height: auto; line-height: 1;">
-                                        <i class="material-icons tiny red-text">close</i>
+                                        <i class="material-icons tiny" style="color: var(--error);">close</i>
                                     </button>
                                 </form>
                             @endif
@@ -98,7 +98,7 @@
 
                 @if($availableRoles->isNotEmpty())
                     <div class="divider" style="margin: 20px 0;"></div>
-                    <h6 class="grey-text text-darken-1">Asignar Nuevo Rol</h6>
+                    <h6 class="grey-text">Asignar Nuevo Rol</h6>
 
                     <form action="{{ route('user.roles.assign', ['id' => $user->id()->value()]) }}" method="POST">
                         @csrf
@@ -118,7 +118,7 @@
                                 <label for="role_slug">Rol a asignar</label>
                             </div>
                             <div class="input-field col s12 m4">
-                                <button type="submit" class="btn waves-effect waves-light light-green">
+                                <button type="submit" class="btn waves-effect waves-light btn-claude">
                                     <i class="material-icons left">add</i>Asignar
                                 </button>
                             </div>
@@ -134,15 +134,15 @@
 @if(isset($totalMes) && $totalMes['segundos'] > 0)
 <div class="row">
     <div class="col s12">
-        <div class="card light-green lighten-5">
+        <div class="card" style="background: var(--info-bg) !important;">
             <div class="card-content">
                 <div class="row valign-wrapper" style="margin-bottom: 0;">
                     <div class="col s12 m6">
-                        <i class="material-icons left light-green-text">event</i>
+                        <i class="material-icons left text-claude">event</i>
                         <span class="card-title">Total {{ $totalMes['mes'] }}</span>
                     </div>
                     <div class="col s12 m6 right-align">
-                        <h4 class="light-green-text text-darken-2" style="margin: 0;">{{ $totalMes['formateado'] }}</h4>
+                        <h4 class="text-claude" style="margin: 0;">{{ $totalMes['formateado'] }}</h4>
                     </div>
                 </div>
             </div>
@@ -184,14 +184,14 @@
                                     @if($registro->endTime())
                                         {{ $registro->endTime()->format('H:i:s') }}
                                     @else
-                                        <span class="amber-text text-darken-2">
+                                        <span style="color: var(--warning);">
                                             <i class="material-icons tiny">schedule</i> Abierto
                                         </span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($registro->endTime())
-                                        <span class="chip blue lighten-4 blue-text text-darken-2">
+                                        <span class="chip chip-info">
                                             {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                         </span>
                                     @else
@@ -200,9 +200,9 @@
                                 </td>
                                 <td>
                                     @if($registro->isOpen())
-                                        <span class="chip amber lighten-4 amber-text text-darken-2">Abierto</span>
+                                        <span class="chip chip-warning">Abierto</span>
                                     @else
-                                        <span class="chip green lighten-4 green-text text-darken-2">Cerrado</span>
+                                        <span class="chip chip-success">Cerrado</span>
                                     @endif
                                 </td>
                                 <td class="right-align">
@@ -210,7 +210,7 @@
                                         <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->value()]) }}" method="POST" style="display: inline;">
                                             @csrf
                                             <input type="hidden" name="userUuid" value="{{ $user->uuid()->value() }}">
-                                            <button type="submit" class="btn-small waves-effect waves-light light-green">
+                                            <button type="submit" class="btn-small waves-effect waves-light btn-claude">
                                                 <i class="material-icons left">check</i>Cerrar
                                             </button>
                                         </form>
@@ -223,7 +223,7 @@
                 @else
                     <div class="center-align" style="padding: 60px 20px;">
                         <i class="material-icons grey-text" style="font-size: 72px;">assignment_late</i>
-                        <h5 class="grey-text text-darken-1">Sin registros de fichaje</h5>
+                        <h5 class="grey-text">Sin registros de fichaje</h5>
                         <p class="grey-text">Este usuario aún no tiene ningún registro de fichaje.</p>
                     </div>
                 @endif
@@ -246,10 +246,10 @@
                         <p class="grey-text">Fichajes cerrados agrupados por día</p>
                     </div>
                     <div class="col s12 m6 right-align">
-                        <button onclick="expandAll()" class="btn-small waves-effect waves-light light-green">
+                        <button onclick="expandAll()" class="btn-small waves-effect waves-light btn-claude">
                             <i class="material-icons left">unfold_more</i>Expandir
                         </button>
-                        <button onclick="collapseAll()" class="btn-small waves-effect waves-light grey">
+                        <button onclick="collapseAll()" class="btn-small waves-effect waves-light" style="background: var(--bg-secondary) !important; color: var(--text-primary) !important;">
                             <i class="material-icons left">unfold_less</i>Colapsar
                         </button>
                     </div>
@@ -262,10 +262,10 @@
                             <div class="collapsible-header">
                                 <i class="material-icons">date_range</i>
                                 <span style="flex: 1;">{{ $dia['fecha_formateada'] }}</span>
-                                <span class="chip blue lighten-4 blue-text text-darken-2">
+                                <span class="chip chip-info">
                                     {{ $dia['total_formateado'] }}
                                 </span>
-                                <span class="badge grey lighten-2 grey-text text-darken-2">
+                                <span class="chip chip-neutral">
                                     {{ count($dia['registros']) }} {{ count($dia['registros']) == 1 ? 'fichaje' : 'fichajes' }}
                                 </span>
                             </div>
@@ -282,15 +282,15 @@
                                         @foreach($dia['registros'] as $registro)
                                         <tr>
                                             <td>
-                                                <i class="material-icons tiny light-green-text">login</i>
+                                                <i class="material-icons tiny text-claude">login</i>
                                                 {{ $registro['entrada'] }}
                                             </td>
                                             <td>
-                                                <i class="material-icons tiny red-text text-lighten-1">logout</i>
+                                                <i class="material-icons tiny" style="color: var(--error);">logout</i>
                                                 {{ $registro['salida'] }}
                                             </td>
                                             <td>
-                                                <span class="chip green lighten-4 green-text text-darken-2">
+                                                <span class="chip chip-success">
                                                     <i class="material-icons tiny">timer</i>
                                                     {{ $registro['duracion'] }}
                                                 </span>
@@ -306,7 +306,7 @@
                 @else
                     <div class="center-align" style="padding: 60px 20px;">
                         <i class="material-icons grey-text" style="font-size: 72px;">event_busy</i>
-                        <h5 class="grey-text text-darken-1">Sin fichajes cerrados</h5>
+                        <h5 class="grey-text">Sin fichajes cerrados</h5>
                         <p class="grey-text">Este usuario aún no tiene registros de fichajes completados para mostrar en el resumen diario.</p>
                     </div>
                 @endif

@@ -16,7 +16,7 @@
                         <p class="grey-text">Administra los roles del sistema y sus permisos asociados.</p>
                     </div>
                     <div class="col s12 m4 right-align">
-                        <a href="{{ route('admin.roles.create') }}" class="btn waves-effect waves-light light-green">
+                        <a href="{{ route('admin.roles.create') }}" class="btn waves-effect waves-light btn-claude">
                             <i class="material-icons left">add</i>Nuevo Rol
                         </a>
                     </div>
@@ -32,7 +32,7 @@
                                 <span class="card-title">
                                     {{ $role['name'] }}
                                     @if($role['is_system'])
-                                        <span class="new badge amber darken-2" data-badge-caption="Sistema"></span>
+                                        <span class="chip chip-warning" style="font-size: 0.8rem;">Sistema</span>
                                     @endif
                                 </span>
                                 <p class="grey-text"><code>{{ $role['slug'] }}</code></p>
@@ -40,20 +40,20 @@
                                     <p style="margin-top: 10px;">{{ $role['description'] }}</p>
                                 @endif
                                 <div style="margin-top: 15px;">
-                                    <span class="chip blue lighten-4 blue-text text-darken-2">
+                                    <span class="chip chip-info">
                                         <i class="material-icons tiny">vpn_key</i>
                                         {{ count($role['permissions']) }} permisos
                                     </span>
-                                    <span class="chip grey lighten-2 grey-text text-darken-2">
+                                    <span class="chip chip-neutral">
                                         Jerarquía: {{ $role['hierarchy'] }}
                                     </span>
                                 </div>
                             </div>
                             <div class="card-action">
-                                <a href="{{ route('admin.roles.show', $role['id']) }}" class="light-green-text">Ver</a>
+                                <a href="{{ route('admin.roles.show', $role['id']) }}" class="text-claude">Ver</a>
                                 @if(!$role['is_system'])
-                                    <a href="{{ route('admin.roles.edit', $role['id']) }}" class="blue-text">Editar</a>
-                                    <a href="#" class="red-text" onclick="event.preventDefault(); if(confirm('¿Eliminar este rol?')) document.getElementById('delete-role-{{ $role['id'] }}').submit();">Eliminar</a>
+                                    <a href="{{ route('admin.roles.edit', $role['id']) }}" style="color: var(--info);">Editar</a>
+                                    <a href="#" style="color: var(--error);" onclick="event.preventDefault(); if(confirm('¿Eliminar este rol?')) document.getElementById('delete-role-{{ $role['id'] }}').submit();">Eliminar</a>
                                     <form id="delete-role-{{ $role['id'] }}" action="{{ route('admin.roles.destroy', $role['id']) }}" method="POST" style="display: none;">
                                         @csrf
                                         @method('DELETE')

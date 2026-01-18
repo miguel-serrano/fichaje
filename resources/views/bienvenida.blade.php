@@ -8,13 +8,13 @@
         <div class="card">
             <div class="card-content">
                 <span class="card-title center-align">
-                    <i class="material-icons light-green-text text-darken-3" style="font-size: 48px;">waving_hand</i>
+                    <i class="material-icons text-claude" style="font-size: 48px;">waving_hand</i>
                     <br>
                     Bienvenido, {{ Str::ucfirst(auth()->user()->name) }}
                 </span>
 
                 @if(!auth()->user()->is_active)
-                    <div class="card-panel amber lighten-4 amber-text text-darken-4" style="margin-top: 20px;">
+                    <div class="card-panel card-panel-warning" style="margin-top: 20px;">
                         <i class="material-icons left">info</i>
                         <strong>Tu cuenta está pendiente de activación, en breve se activará.</strong>
                         <p style="margin-top: 10px; margin-bottom: 0;">
@@ -61,18 +61,19 @@
 
                 @if(!auth()->user()->accepted_terms)
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="switch">
+                        <div class="switch terms-switch">
                             <label>
                                 <input type="checkbox" id="accept-terms-switch">
                                 <span class="lever"></span>
                             </label>
                         </div>
-                        <span class="grey-text text-darken-1">Acepto los términos y condiciones de uso de la versión beta</span>
+                        <span class="grey-text">Acepto los términos y condiciones de uso de la versión beta</span>
                     </div>
 
                     <style>
-                        .switch label input[type=checkbox]:checked + .lever { background-color: #a5d6a7; }
-                        .switch label input[type=checkbox]:checked + .lever:after { background-color: #388e3c; }
+                        .terms-switch .lever { background-color: var(--bg-secondary) !important; }
+                        .terms-switch input:checked + .lever { background-color: var(--success-bg) !important; }
+                        .terms-switch input:checked + .lever:after { background-color: var(--success) !important; }
                     </style>
 
                     <script>
@@ -100,7 +101,7 @@
                         });
                     </script>
                 @else
-                    <div class="card-panel green lighten-4 green-text text-darken-4" style="margin-top: 20px;">
+                    <div class="card-panel card-panel-success" style="margin-top: 20px;">
                         <i class="material-icons left">check_circle</i>
                         <strong>Has aceptado los términos y condiciones.</strong>
                         <p style="margin-top: 10px; margin-bottom: 0;">
@@ -112,7 +113,7 @@
                 <div class="divider" style="margin: 20px 0;"></div>
 
                 <div class="center-align">
-                    <a href="{{ route('user.me') }}" class="btn-flat waves-effect light-green-text text-darken-3">
+                    <a href="{{ route('user.me') }}" class="btn-flat waves-effect text-claude">
                         <i class="material-icons left">chrome_reader_mode</i>
                         Ir a Seguimiento
                     </a>

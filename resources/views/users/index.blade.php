@@ -36,18 +36,18 @@
                                 <tbody>
                                     @foreach($users as $user)
                                     <tr>
-                                        <td><a href="{{ route('user.show', $user['id']) }}" class="blue-text">{{ $user['name'] }}</a></td>
+                                        <td><a href="{{ route('user.show', $user['id']) }}" class="text-claude">{{ $user['name'] }}</a></td>
                                         <td class="grey-text">{{ $user['email'] }}</td>
-                                        <td><code class="grey-text" style="font-size: 0.85rem;">{{ $user['uuid'] }}</code></td>
+                                        <td><code style="font-size: 0.85rem;">{{ $user['uuid'] }}</code></td>
                                         <td>
                                             @if($user['is_active'])
-                                                <span class="chip green lighten-4 green-text text-darken-2">Activo</span>
+                                                <span class="chip chip-success">Activo</span>
                                             @else
-                                                <span class="chip red lighten-4 red-text text-darken-2">Inactivo</span>
+                                                <span class="chip chip-error">Inactivo</span>
                                             @endif
                                         </td>
                                         <td class="right-align">
-                                            <a href="{{ route('user.show', $user['id']) }}" class="btn-small waves-effect waves-light blue">
+                                            <a href="{{ route('user.show', $user['id']) }}" class="btn-small waves-effect waves-light btn-claude">
                                                 <i class="material-icons left">visibility</i>Ver
                                             </a>
                                             @if($isAdmin)
@@ -55,11 +55,11 @@
                                                     @csrf
                                                     @method('PATCH')
                                                     @if($user['is_active'])
-                                                        <button type="submit" class="btn-small waves-effect waves-light red">
+                                                        <button type="submit" class="btn-small waves-effect waves-light" style="background: var(--error) !important;">
                                                             <i class="material-icons left">block</i>Desactivar
                                                         </button>
                                                     @else
-                                                        <button type="submit" class="btn-small waves-effect waves-light light-green">
+                                                        <button type="submit" class="btn-small waves-effect waves-light" style="background: var(--success) !important;">
                                                             <i class="material-icons left">check_circle</i>Activar
                                                         </button>
                                                     @endif
@@ -67,7 +67,7 @@
                                                 <form action="{{ route('user.delete', $user['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn-small waves-effect waves-light red darken-3">
+                                                    <button type="submit" class="btn-small waves-effect waves-light" style="background: var(--error) !important;">
                                                         <i class="material-icons left">delete</i>Borrar
                                                     </button>
                                                 </form>

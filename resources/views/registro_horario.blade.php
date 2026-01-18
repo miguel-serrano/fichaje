@@ -18,9 +18,9 @@
                         <p>{{ Str::ucfirst($user->name()) }} ({{ $user->email()->value() }})</p>
                     </div>
                     <div class="col s12 m6">
-                        <p><strong class="grey-text text-darken-1">Tiempo acumulado hoy:</strong></p>
+                        <p><strong class="grey-text">Tiempo acumulado hoy:</strong></p>
                         <p>
-                            <span class="chip blue lighten-4 blue-text text-darken-2">
+                            <span class="chip chip-info">
                                 @php
                                     $horas = floor($segundos / 3600);
                                     $minutos = floor(($segundos % 3600) / 60);
@@ -40,20 +40,20 @@
                                 <button
                                     type="submit"
                                     @if($tieneRegistroAbierto) disabled @endif
-                                    class="btn waves-effect waves-light light-green {{ $tieneRegistroAbierto ? 'disabled' : '' }}"
+                                    class="btn waves-effect waves-light btn-claude {{ $tieneRegistroAbierto ? 'disabled' : '' }}"
                                 >
                                     <i class="material-icons left">input</i>Fichar Entrada
                                 </button>
                             </form>
                             @if($tieneRegistroAbierto)
                                 <p style="margin-top: 15px;" class="grey-text">
-                                    Tienes un fichaje abierto. Puedes cerrarlo desde <a href="{{ route('user.me') }}" class="light-green-text">tu página de fichajes</a>.
+                                    Tienes un fichaje abierto. Puedes cerrarlo desde <a href="{{ route('user.me') }}" class="text-claude">tu página de fichajes</a>.
                                 </p>
                             @endif
                         @else
-                            <div class="card-panel amber lighten-4">
-                                <i class="material-icons left amber-text text-darken-3">warning</i>
-                                <span class="amber-text text-darken-4">No tienes permisos para fichar. Contacta con tu administrador.</span>
+                            <div class="card-panel card-panel-warning">
+                                <i class="material-icons left">warning</i>
+                                <span>No tienes permisos para fichar. Contacta con tu administrador.</span>
                             </div>
                         @endif
                     </div>

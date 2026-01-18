@@ -32,7 +32,7 @@
                     </div>
                     <div class="row">
                         <div class="col s12">
-                            <button type="submit" class="btn waves-effect waves-light light-green darken-3">
+                            <button type="submit" class="btn waves-effect waves-light btn-claude">
                                 <i class="material-icons left">send</i>
                                 Enviar Solicitud
                             </button>
@@ -46,9 +46,9 @@
 @else
 <div class="row">
     <div class="col s12">
-        <div class="card-panel amber lighten-4">
-            <i class="material-icons left amber-text text-darken-3">warning</i>
-            <span class="amber-text text-darken-4">No tienes permisos para solicitar vacaciones. Contacta con tu administrador.</span>
+        <div class="card-panel card-panel-warning">
+            <i class="material-icons left">warning</i>
+            <span>No tienes permisos para solicitar vacaciones. Contacta con tu administrador.</span>
         </div>
     </div>
 </div>
@@ -82,7 +82,14 @@
                                     <td>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</td>
                                     <td>{{ $holiday->dateRange()->totalDays() }}</td>
                                     <td>
-                                        <span class="badge {{ $holiday->status()->color() }} white-text" style="border-radius: 4px; padding: 4px 8px;">
+                                        @php
+                                            $statusChip = match($holiday->status()) {
+                                                'approved' => 'chip-success',
+                                                'rejected' => 'chip-error',
+                                                default => 'chip-warning',
+                                            };
+                                        @endphp
+                                        <span class="chip {{ $statusChip }}">
                                             {{ $holiday->status()->label() }}
                                         </span>
                                     </td>

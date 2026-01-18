@@ -45,13 +45,13 @@
                                     <td>
                                         <form action="{{ route('admin.holidays.approve', $holiday->id()->value()) }}" method="POST" style="display: inline;">
                                             @csrf
-                                            <button type="submit" class="btn-small waves-effect waves-light green" title="Aprobar">
+                                            <button type="submit" class="btn-small waves-effect waves-light" style="background: var(--success) !important;" title="Aprobar">
                                                 <i class="material-icons">check</i>
                                             </button>
                                         </form>
                                         <form action="{{ route('admin.holidays.reject', $holiday->id()->value()) }}" method="POST" style="display: inline;">
                                             @csrf
-                                            <button type="submit" class="btn-small waves-effect waves-light red" title="Rechazar">
+                                            <button type="submit" class="btn-small waves-effect waves-light" style="background: var(--error) !important;" title="Rechazar">
                                                 <i class="material-icons">close</i>
                                             </button>
                                         </form>
@@ -109,7 +109,7 @@
                                     <td>{{ $holiday->dateRange()->totalDays() }}</td>
                                     <td>{{ $holiday->createdAt()->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        <span class="new badge green" data-badge-caption="">
+                                        <span class="chip chip-success">
                                             <i class="material-icons tiny">check</i> Aprobada
                                         </span>
                                     </td>
