@@ -30,7 +30,7 @@ final class RegisterCommandHandler
 
         $this->userExistValidator->validate($email);
 
-        $this->userCreationValidator->validate();
+        $this->userCreationValidator->isSatisfiedBy();
 
         $hashedPassword = $this->passwordHasher->hash($plainPassword);
 

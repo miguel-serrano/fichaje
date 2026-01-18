@@ -23,7 +23,7 @@ class UserCreationValidator
      * @throws MaxUsersLimitExceededException
      * @throws DailyUserRegistrationLimitExceededException
      */
-    public function validate(): void
+    public function isSatisfiedBy(): void
     {
         $limit = new LimitSpecification($this->maxUsersLimit);
         $daylimit = new DailyLimitSpecification($this->daylimit);
