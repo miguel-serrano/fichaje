@@ -2,6 +2,7 @@
 
 namespace App\DDD\User\Domain\Entity;
 
+use App\DDD\Authentication\Domain\ValueObjects\HashedPassword;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
@@ -23,6 +24,8 @@ final class User
 
     private bool $isActive;
 
+    private ?HashedPassword $password;
+
     /** @var TimeEntry[] */
     private array $timeEntries;
 
@@ -32,6 +35,7 @@ final class User
         Email $email,
         Name $name,
         bool $isActive = true,
+        ?HashedPassword $password = null,
         array $timeEntries = [],
     ) {
         $this->id = $id;
@@ -39,12 +43,18 @@ final class User
         $this->email = $email;
         $this->name = $name;
         $this->isActive = $isActive;
+        $this->password = $password;
         $this->timeEntries = $timeEntries;
     }
 
-    public static function create(Email $email, Name $name): self
+    public static function create(Email $email, Name $name, HashedPassword $hashedPassword): self
     {
-        return new self(null, Uuid::generate(), $email, $name, false);
+        return new self(null, Uuid::generate(), $email, $name, false, $hashedPassword);
+    }
+
+    public function password(): ?HashedPassword
+    {
+        return $this->password;
     }
 
     public static function fromPrimitives(

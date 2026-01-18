@@ -2,7 +2,6 @@
 
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
-use App\DDD\Authentication\Domain\ValueObjects\HashedPassword;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\UserDeletionFailedException;
@@ -22,24 +21,25 @@ class EloquentUserRepository implements UserRepositoryInterface
         $userId = $user->id()?->value();
 
         DB::transaction(function () use ($user, &$userId) {
+            $data = [
+                'uuid' => $user->uuid()->value(),
+                'email' => $user->email()->value(),
+                'name' => $user->name()->value(),
+                'is_active' => $user->isActive(),
+            ];
+
+            if ($user->password()) {
+                $data['password'] = $user->password()->value();
+            }
+
             if ($userId) {
                 $model = UserModel::find($userId);
                 if (!$model) {
                     throw new UserNotFoundException("User {$userId} not found");
                 }
-                $model->update([
-                    'uuid' => $user->uuid()->value(),
-                    'email' => $user->email()->value(),
-                    'name' => $user->name()->value(),
-                    'is_active' => $user->isActive(),
-                ]);
+                $model->update($data);
             } else {
-                $model = UserModel::create([
-                    'uuid' => $user->uuid()->value(),
-                    'email' => $user->email()->value(),
-                    'name' => $user->name()->value(),
-                    'is_active' => $user->isActive(),
-                ]);
+                $model = UserModel::create($data);
                 $userId = $model->id;
             }
 
@@ -143,55 +143,6 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function countTodayRegistrations(): int
     {
         return UserModel::whereDate('created_at', today())->count();
-    }
-
-    public function saveWithPassword(User $user, HashedPassword $password): User
-    {
-        $userId = $user->id()?->value();
-
-        DB::transaction(function () use ($user, $password, &$userId) {
-            if ($userId) {
-                $model = UserModel::find($userId);
-                if (!$model) {
-                    throw new UserNotFoundException("User {$userId} not found");
-                }
-                $model->update([
-                    'uuid' => $user->uuid()->value(),
-                    'email' => $user->email()->value(),
-                    'name' => $user->name()->value(),
-                    'is_active' => $user->isActive(),
-                    'password' => $password->value(),
-                ]);
-            } else {
-                $model = UserModel::create([
-                    'uuid' => $user->uuid()->value(),
-                    'email' => $user->email()->value(),
-                    'name' => $user->name()->value(),
-                    'is_active' => $user->isActive(),
-                    'password' => $password->value(),
-                ]);
-                $userId = $model->id;
-            }
-
-            foreach ($user->timeEntries() as $entry) {
-                $entryData = [
-                    'user_id' => $userId,
-                    'entrada' => $entry->startTime()->format('Y-m-d H:i:s'),
-                    'salida' => $entry->endTime()?->format('Y-m-d H:i:s'),
-                    'auto_closed' => $entry->isAutoClosed(),
-                    'auto_close_reason' => $entry->autoCloseReason(),
-                ];
-
-                if ($entry->id()) {
-                    TimeEntryModel::where('id', $entry->id()->value())->update($entryData);
-                } else {
-                    $newEntry = TimeEntryModel::create($entryData);
-                    $entry->setId(new TimeEntryId($newEntry->id));
-                }
-            }
-        });
-
-        return $this->findById(new UserId($userId));
     }
 
     /** @return array<array-key, mixed> */

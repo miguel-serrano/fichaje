@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\DDD\Authentication\Application\Command\RegisterCommand;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\User\Domain\Exceptions\MaxUsersLimitExceededException;
+use App\DDD\User\Domain\Exceptions\UserAlreadyExistsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
 {
@@ -25,13 +28,18 @@ class RegisterController extends Controller
                 $validated['email'],
                 $validated['password']
             );
-            $this->commandBus->dispatch($command);
+            $user = $this->commandBus->dispatch($command);
 
+            Auth::loginUsingId($user->id()->value());
             $request->session()->regenerate();
 
             return redirect()->route('bienvenido')
                 ->with('success', 'Cuenta creada exitosamente!');
-        } catch (\Exception $e) {
+        } catch (UserAlreadyExistsException $e) {
+            return back()
+                ->withInput($request->only('name', 'email'))
+                ->withErrors(['email' => $e->getMessage()]);
+        } catch (MaxUsersLimitExceededException $e) {
             return back()
                 ->withInput($request->only('name', 'email'))
                 ->withErrors(['email' => $e->getMessage()]);

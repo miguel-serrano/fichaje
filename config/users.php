@@ -22,6 +22,6 @@ return [
         |
         */
         'max_users' => env('MAX_USERS', 96),
-        'daylimit' => env('MAX_USERS', 4),
+        'daylimit' => env('DAILY_USER_LIMIT', 8),
     ],
 ];

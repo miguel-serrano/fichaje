@@ -4,10 +4,8 @@ namespace App\DDD\User\Domain\Exceptions;
 
 class MaxUsersLimitExceededException extends \Exception
 {
-    public function __construct()
+    public function __construct(string $message = 'Maximum users limit exceeded')
     {
-        parent::__construct(
-            'Cannot create more users. Maximum limit of users registered has been reached for today.'
-        );
+        parent::__construct($message);
     }
 }
