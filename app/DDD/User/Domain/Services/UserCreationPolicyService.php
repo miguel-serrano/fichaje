@@ -3,7 +3,9 @@
 namespace App\DDD\User\Domain\Services;
 
 use App\DDD\User\Domain\Exceptions\MaxUsersLimitExceededException;
+use App\DDD\User\Domain\Exceptions\UserAlreadyExistsException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\Email;
 
 class UserCreationPolicyService
 {
@@ -17,13 +19,21 @@ class UserCreationPolicyService
     /**
      * Validates all policies for user creation.
      *
+     * @throws UserAlreadyExistsException
      * @throws MaxUsersLimitExceededException
-     * @throws DailyUserRegistrationLimitExceededException
      */
-    public function canCreateUser(): void
+    public function canCreateUser(Email $email): void
     {
+        $this->ensureEmailIsUnique($email);
         $this->ensureMaxUsersNotExceeded();
         $this->ensureDailyLimitNotExceeded();
+    }
+
+    private function ensureEmailIsUnique(Email $email): void
+    {
+        if ($this->userRepository->existsByEmail($email)) {
+            throw new UserAlreadyExistsException($email->value());
+        }
     }
 
     private function ensureMaxUsersNotExceeded(): void

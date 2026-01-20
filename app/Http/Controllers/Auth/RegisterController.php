@@ -31,6 +31,7 @@ class RegisterController extends Controller
             $user = $this->commandBus->dispatch($command);
 
             Auth::loginUsingId($user->id()->value());
+
             $request->session()->regenerate();
 
             return redirect()->route('bienvenido')

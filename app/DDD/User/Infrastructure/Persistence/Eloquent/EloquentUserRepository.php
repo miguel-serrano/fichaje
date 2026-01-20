@@ -186,13 +186,22 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     private function toDomainEntity(UserModel $model): User
     {
+        $timeEntries = $model->timeEntries->map(fn ($entry) => [
+            'id' => $entry->id,
+            'user_id' => $entry->user_id,
+            'entrada' => $entry->entrada->format('Y-m-d H:i:s'),
+            'salida' => $entry->salida?->format('Y-m-d H:i:s'),
+            'auto_closed' => $entry->auto_closed,
+            'auto_close_reason' => $entry->auto_close_reason,
+        ])->toArray();
+
         return User::fromPrimitives(
             $model->id,
             $model->uuid,
             $model->email,
             $model->name,
             $model->is_active ?? true,
-            $model->timeEntries->toArray()
+            $timeEntries
         );
     }
 }
