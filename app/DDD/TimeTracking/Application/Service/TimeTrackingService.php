@@ -10,7 +10,6 @@ use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 final class TimeTrackingService
@@ -82,11 +81,11 @@ final class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        $today = Carbon::now()->startOfDay();
+        $todayDate = date('Y-m-d');
         $suma = 0;
 
         foreach ($user->timeEntries() as $entry) {
-            if (Carbon::instance($entry->startTime())->isSameDay($today)) {
+            if (date('Y-m-d', $entry->startTime()) === $todayDate) {
                 $suma += $entry->workedSeconds();
             }
         }
@@ -124,8 +123,9 @@ final class TimeTrackingService
         $closedByUser = [];
 
         foreach ($orphanEntries as $entry) {
-            $entrada = Carbon::instance($entry->startTime());
-            $endOfDay = $entrada->copy()->endOfDay();
+            $entrada = $entry->startTime();
+            $entradaDate = date('Y-m-d', $entrada);
+            $endOfDay = strtotime($entradaDate.' 23:59:59');
             $maxSecondsDaily = self::MAX_HOURS * 3600;
 
             $workedSecondsToday = $this->timeEntryRepository->getWorkedSecondsByUserAndDate(
@@ -140,9 +140,9 @@ final class TimeTrackingService
                 $salida = $entrada;
                 $reason = 'max_hours_exceeded';
             } else {
-                $maxHoursLimit = $entrada->copy()->addSeconds($remainingSeconds);
+                $maxHoursLimit = $entrada + $remainingSeconds;
 
-                if ($maxHoursLimit->lt($endOfDay)) {
+                if ($maxHoursLimit < $endOfDay) {
                     $salida = $maxHoursLimit;
                     $reason = 'max_hours_exceeded';
                 } else {
@@ -159,8 +159,8 @@ final class TimeTrackingService
 
             $closedByUser[$entry->userId()->value()][] = [
                 'entry_id' => $entry->id()->value(),
-                'entrada' => $entrada->toDateTimeString(),
-                'salida' => $salida->toDateTimeString(),
+                'entrada' => date('Y-m-d H:i:s', $entrada),
+                'salida' => date('Y-m-d H:i:s', $salida),
                 'reason' => $reason,
             ];
         }
@@ -175,12 +175,11 @@ final class TimeTrackingService
 
     private function ensureDailyLimitNotExceeded(User $user): void
     {
-        $today = Carbon::today();
+        $todayDate = date('Y-m-d');
         $todayEntries = 0;
 
         foreach ($user->timeEntries() as $entry) {
-            $startTimeCarbon = Carbon::instance($entry->startTime());
-            if ($startTimeCarbon->isSameDay($today)) {
+            if (date('Y-m-d', $entry->startTime()) === $todayDate) {
                 ++$todayEntries;
             }
         }

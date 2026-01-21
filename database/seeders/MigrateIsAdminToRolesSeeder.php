@@ -18,7 +18,7 @@ class MigrateIsAdminToRolesSeeder extends Seeder
             return;
         }
 
-        $now = now();
+        $now = time();
         $migratedAdmins = 0;
         $migratedEmployees = 0;
 

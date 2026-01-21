@@ -5,7 +5,6 @@ namespace App\DDD\TimeTracking\Domain\Interface;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Carbon\Carbon;
 
 interface TimeEntryRepositoryInterface
 {
@@ -25,11 +24,19 @@ interface TimeEntryRepositoryInterface
     /**
      * Get total worked seconds for a user on a specific date.
      * Optionally excludes a specific entry (useful when calculating remaining time for orphan closure).
+     *
+     * @param UserId           $userId         ID del usuario
+     * @param int              $dateTimestamp  Timestamp Unix de la fecha
+     * @param TimeEntryId|null $excludeEntryId ID de entrada a excluir (opcional)
      */
-    public function getWorkedSecondsByUserAndDate(UserId $userId, Carbon $date, ?TimeEntryId $excludeEntryId = null): int;
+    public function getWorkedSecondsByUserAndDate(UserId $userId, int $dateTimestamp, ?TimeEntryId $excludeEntryId = null): int;
 
     /**
      * Close a time entry with auto-close metadata.
+     *
+     * @param TimeEntryId $id       ID de la entrada
+     * @param int         $closedAt Timestamp Unix del momento de cierre
+     * @param string      $reason   Razón del auto-cierre
      */
-    public function closeWithAutoClosed(TimeEntryId $id, Carbon $closedAt, string $reason): void;
+    public function closeWithAutoClosed(TimeEntryId $id, int $closedAt, string $reason): void;
 }

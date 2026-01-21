@@ -60,8 +60,12 @@ final class TimeTrackingNotifierService
     {
         if (1 === count($entries)) {
             $entry = $entries[0];
-            $entrada = Carbon::parse($entry['entrada']);
-            $salida = Carbon::parse($entry['salida']);
+            $entrada = is_int($entry['entrada'])
+                ? Carbon::createFromTimestamp($entry['entrada'])
+                : Carbon::parse($entry['entrada']);
+            $salida = is_int($entry['salida'])
+                ? Carbon::createFromTimestamp($entry['salida'])
+                : Carbon::parse($entry['salida']);
             $reason = 'max_hours_exceeded' === $entry['reason']
                 ? 'al alcanzar el límite de 8 horas diarias'
                 : 'al final del día';

@@ -33,6 +33,8 @@ class User extends Authenticatable
         'is_active',
         'accepted_terms',
         'remember_token',
+        'created_at',
+        'updated_at',
     ];
 
     /**
@@ -46,6 +48,11 @@ class User extends Authenticatable
     ];
 
     /**
+     * Desactivamos timestamps automáticos de Laravel porque ahora son enteros.
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that should be cast.
      *
      * @var array<string, string>
@@ -54,6 +61,8 @@ class User extends Authenticatable
         'is_active' => 'boolean',
         'accepted_terms' => 'boolean',
         'uuid' => 'string',
+        'created_at' => \App\Casts\UnixTimestampCast::class,
+        'updated_at' => \App\Casts\UnixTimestampCast::class,
     ];
 
     /**
@@ -67,6 +76,17 @@ class User extends Authenticatable
             if (empty($model->uuid)) {
                 $model->uuid = (string) Str::orderedUuid();
             }
+            $now = time();
+            if (empty($model->created_at)) {
+                $model->created_at = $now;
+            }
+            if (empty($model->updated_at)) {
+                $model->updated_at = $now;
+            }
+        });
+
+        static::updating(function ($model) {
+            $model->updated_at = time();
         });
     }
 
@@ -99,7 +119,7 @@ class User extends Authenticatable
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'user_role')->withTimestamps();
+        return $this->belongsToMany(Role::class, 'user_role');
     }
 
     /**

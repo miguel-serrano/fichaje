@@ -20,6 +20,7 @@ final class DatabaseNotifier implements NotifierInterface
 
     public function send(User $user, Notification $notification): void
     {
+        $now = time();
         $this->connection->table(NotificationModel::tableName())->insert([
             'user_id' => $user->id()->value(),
             'type' => $notification->type()->value,
@@ -27,8 +28,8 @@ final class DatabaseNotifier implements NotifierInterface
             'message' => $notification->message(),
             'data' => json_encode($notification->data()),
             'read_at' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
     }
 

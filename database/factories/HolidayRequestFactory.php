@@ -22,12 +22,15 @@ class HolidayRequestFactory extends Factory
     {
         $startDate = fake()->dateTimeBetween('+1 day', '+1 month');
         $endDate = fake()->dateTimeBetween($startDate, '+2 months');
+        $now = time();
 
         return [
             'user_id' => User::factory(),
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d'),
+            'start_date' => strtotime($startDate->format('Y-m-d').' 00:00:00'),
+            'end_date' => strtotime($endDate->format('Y-m-d').' 00:00:00'),
             'status' => 'pending',
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
     }
 

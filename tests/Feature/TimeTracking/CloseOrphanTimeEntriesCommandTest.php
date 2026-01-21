@@ -4,7 +4,6 @@ namespace Tests\Feature\TimeTracking;
 
 use App\Models\Notification;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -17,19 +16,22 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
     {
         parent::setUp();
 
+        $now = time();
         $this->user = User::create([
             'uuid' => Str::orderedUuid(),
             'name' => 'Test User',
             'email' => 'testuser@test.com',
             'password' => bcrypt('password123'),
             'is_active' => true,
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
     }
 
     public function test_command_closes_orphan_time_entries_from_previous_days(): void
     {
         // Create an orphan entry from yesterday at 10:00
-        $yesterday = Carbon::yesterday()->setHour(10)->setMinute(0)->setSecond(0);
+        $yesterday = strtotime('yesterday 10:00:00');
 
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
@@ -56,7 +58,7 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
     public function test_closes_at_8_hours_when_entry_started_before_16h(): void
     {
         // Entry at 10:00 -> should close at 18:00 (8 hours later)
-        $yesterday = Carbon::yesterday()->setHour(10)->setMinute(0)->setSecond(0);
+        $yesterday = strtotime('yesterday 10:00:00');
 
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
@@ -72,8 +74,8 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
 
         $entry = DB::table('time_entries')->where('user_id', $this->user->id)->first();
 
-        $expectedSalida = $yesterday->copy()->addHours(8);
-        $this->assertEquals($expectedSalida->format('Y-m-d H:i:s'), $entry->salida);
+        $expectedSalida = $yesterday + (8 * 3600);
+        $this->assertEquals($expectedSalida, $entry->salida);
         $this->assertEquals('max_hours_exceeded', $entry->auto_close_reason);
         $this->assertTrue((bool) $entry->auto_closed);
     }
@@ -81,7 +83,8 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
     public function test_closes_at_end_of_day_when_entry_started_after_16h(): void
     {
         // Entry at 17:00 -> should close at 23:59:59 (end of day, before 8 hours)
-        $yesterday = Carbon::yesterday()->setHour(17)->setMinute(0)->setSecond(0);
+        $yesterday = strtotime('yesterday 17:00:00');
+        $yesterdayDate = date('Y-m-d', $yesterday);
 
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
@@ -97,8 +100,8 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
 
         $entry = DB::table('time_entries')->where('user_id', $this->user->id)->first();
 
-        $expectedSalida = $yesterday->copy()->endOfDay();
-        $this->assertEquals($expectedSalida->format('Y-m-d H:i:s'), $entry->salida);
+        $expectedSalida = strtotime($yesterdayDate.' 23:59:59');
+        $this->assertEquals($expectedSalida, $entry->salida);
         $this->assertEquals('end_of_day', $entry->auto_close_reason);
         $this->assertTrue((bool) $entry->auto_closed);
     }
@@ -106,7 +109,7 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
     public function test_does_not_close_entries_from_today(): void
     {
         // Entry from today should NOT be closed
-        $today = Carbon::today()->setHour(9)->setMinute(0)->setSecond(0);
+        $today = strtotime('today 09:00:00');
 
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
@@ -132,8 +135,8 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
 
     public function test_does_not_close_already_closed_entries(): void
     {
-        $yesterday = Carbon::yesterday()->setHour(10)->setMinute(0)->setSecond(0);
-        $salidaManual = $yesterday->copy()->setHour(18)->setMinute(0)->setSecond(0);
+        $yesterday = strtotime('yesterday 10:00:00');
+        $salidaManual = strtotime('yesterday 18:00:00');
 
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
@@ -158,7 +161,7 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
 
     public function test_creates_notification_for_affected_user(): void
     {
-        $yesterday = Carbon::yesterday()->setHour(10)->setMinute(0)->setSecond(0);
+        $yesterday = strtotime('yesterday 10:00:00');
 
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
@@ -183,36 +186,40 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
 
     public function test_handles_multiple_users_with_orphan_entries(): void
     {
+        $now = time();
         $user2 = User::create([
             'uuid' => Str::orderedUuid(),
             'name' => 'Test User 2',
             'email' => 'testuser2@test.com',
             'password' => bcrypt('password123'),
             'is_active' => true,
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
 
-        $yesterday = Carbon::yesterday()->setHour(10)->setMinute(0)->setSecond(0);
+        $yesterday10am = strtotime('yesterday 10:00:00');
+        $yesterday17pm = strtotime('yesterday 17:00:00');
 
         // Entry for user 1
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
-            'entrada' => $yesterday,
+            'entrada' => $yesterday10am,
             'salida' => null,
             'auto_closed' => false,
             'auto_close_reason' => null,
-            'created_at' => $yesterday,
-            'updated_at' => $yesterday,
+            'created_at' => $yesterday10am,
+            'updated_at' => $yesterday10am,
         ]);
 
         // Entry for user 2
         DB::table('time_entries')->insert([
             'user_id' => $user2->id,
-            'entrada' => $yesterday->copy()->setHour(17),
+            'entrada' => $yesterday17pm,
             'salida' => null,
             'auto_closed' => false,
             'auto_close_reason' => null,
-            'created_at' => $yesterday,
-            'updated_at' => $yesterday,
+            'created_at' => $yesterday10am,
+            'updated_at' => $yesterday10am,
         ]);
 
         $this->artisan('time-entries:close-orphans')
@@ -244,28 +251,31 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
 
     public function test_closes_orphan_considering_total_daily_hours(): void
     {
-        $yesterday = Carbon::yesterday();
+        $yesterday09am = strtotime('yesterday 09:00:00');
+        $yesterday13pm = strtotime('yesterday 13:00:00');
+        $yesterday14pm = strtotime('yesterday 14:00:00');
+        $yesterday18pm = strtotime('yesterday 18:00:00');
 
         // Closed entry: 09:00 - 13:00 (4 hours)
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
-            'entrada' => $yesterday->copy()->setHour(9)->setMinute(0)->setSecond(0),
-            'salida' => $yesterday->copy()->setHour(13)->setMinute(0)->setSecond(0),
+            'entrada' => $yesterday09am,
+            'salida' => $yesterday13pm,
             'auto_closed' => false,
             'auto_close_reason' => null,
-            'created_at' => $yesterday,
-            'updated_at' => $yesterday,
+            'created_at' => $yesterday09am,
+            'updated_at' => $yesterday09am,
         ]);
 
         // Orphan entry: 14:00 - ? (should close at 18:00 to complete 8h total)
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
-            'entrada' => $yesterday->copy()->setHour(14)->setMinute(0)->setSecond(0),
+            'entrada' => $yesterday14pm,
             'salida' => null,
             'auto_closed' => false,
             'auto_close_reason' => null,
-            'created_at' => $yesterday,
-            'updated_at' => $yesterday,
+            'created_at' => $yesterday14pm,
+            'updated_at' => $yesterday14pm,
         ]);
 
         $this->artisan('time-entries:close-orphans')->assertSuccessful();
@@ -276,36 +286,36 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
             ->first();
 
         // Should close at 18:00 (14:00 + 4h remaining = 18:00)
-        $expectedSalida = $yesterday->copy()->setHour(18)->setMinute(0)->setSecond(0);
-        $this->assertEquals($expectedSalida->format('Y-m-d H:i:s'), $orphanEntry->salida);
+        $this->assertEquals($yesterday18pm, $orphanEntry->salida);
         $this->assertEquals('max_hours_exceeded', $orphanEntry->auto_close_reason);
     }
 
     public function test_closes_orphan_at_entrada_when_daily_limit_already_reached(): void
     {
-        $yesterday = Carbon::yesterday();
+        $yesterday08am = strtotime('yesterday 08:00:00');
+        $yesterday16pm = strtotime('yesterday 16:00:00');
+        $yesterday17pm = strtotime('yesterday 17:00:00');
 
         // Closed entry: 08:00 - 16:00 (8 hours - full day)
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
-            'entrada' => $yesterday->copy()->setHour(8)->setMinute(0)->setSecond(0),
-            'salida' => $yesterday->copy()->setHour(16)->setMinute(0)->setSecond(0),
+            'entrada' => $yesterday08am,
+            'salida' => $yesterday16pm,
             'auto_closed' => false,
             'auto_close_reason' => null,
-            'created_at' => $yesterday,
-            'updated_at' => $yesterday,
+            'created_at' => $yesterday08am,
+            'updated_at' => $yesterday08am,
         ]);
 
         // Orphan entry: 17:00 - ? (already worked 8h, should close immediately)
-        $orphanEntrada = $yesterday->copy()->setHour(17)->setMinute(0)->setSecond(0);
         DB::table('time_entries')->insert([
             'user_id' => $this->user->id,
-            'entrada' => $orphanEntrada,
+            'entrada' => $yesterday17pm,
             'salida' => null,
             'auto_closed' => false,
             'auto_close_reason' => null,
-            'created_at' => $yesterday,
-            'updated_at' => $yesterday,
+            'created_at' => $yesterday17pm,
+            'updated_at' => $yesterday17pm,
         ]);
 
         $this->artisan('time-entries:close-orphans')->assertSuccessful();
@@ -316,7 +326,7 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
             ->first();
 
         // Should close at entrada time (17:00) since 8h already worked
-        $this->assertEquals($orphanEntrada->format('Y-m-d H:i:s'), $orphanEntry->salida);
+        $this->assertEquals($yesterday17pm, $orphanEntry->salida);
         $this->assertEquals('max_hours_exceeded', $orphanEntry->auto_close_reason);
     }
 

@@ -178,11 +178,11 @@
                         <tbody>
                             @foreach(collect($allRegistros)->sortByDesc(function($registro) { return $registro->startTime(); }) as $registro)
                             <tr>
-                                <td>{{ $registro->startTime()->format('d/m/Y') }}</td>
-                                <td>{{ $registro->startTime()->format('H:i:s') }}</td>
+                                <td>{{ $registro->startTimeFormatted('d/m/Y') }}</td>
+                                <td>{{ $registro->startTimeFormatted('H:i:s') }}</td>
                                 <td>
                                     @if($registro->endTime())
-                                        {{ $registro->endTime()->format('H:i:s') }}
+                                        {{ $registro->endTimeFormatted('H:i:s') }}
                                     @else
                                         <span style="color: var(--warning);">
                                             <i class="material-icons tiny">schedule</i> Abierto

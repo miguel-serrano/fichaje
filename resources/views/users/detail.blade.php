@@ -132,7 +132,7 @@
                             <span class="chip chip-warning live-timer-total"
                                   style="margin: 0; font-size: 1.1rem; font-weight: 600;"
                                   data-base-seconds="{{ $totalSegundosHoy }}"
-                                  data-start-time="{{ $registroAbierto->startTime()->getTimestamp() }}">
+                                  data-start-time="{{ $registroAbierto->startTime() }}">
                                 {{ gmdate('H:i:s', $totalSegundosHoy) }}
                             </span>
                         @else
@@ -160,11 +160,11 @@
                         <tbody>
                             @foreach(collect($allRegistros)->sortByDesc(function($registro) { return $registro->startTime(); }) as $registro)
                             <tr>
-                                <td>{{ $registro->startTime()->format('d/m/Y') }}</td>
-                                <td>{{ $registro->startTime()->format('H:i:s') }}</td>
+                                <td>{{ $registro->startTimeFormatted('d/m/Y') }}</td>
+                                <td>{{ $registro->startTimeFormatted('H:i:s') }}</td>
                                 <td>
                                     @if($registro->endTime())
-                                        {{ $registro->endTime()->format('H:i:s') }}
+                                        {{ $registro->endTimeFormatted('H:i:s') }}
                                     @else
                                         <span style="color: var(--warning);">
                                             <i class="material-icons tiny">schedule</i> Abierto
@@ -178,7 +178,7 @@
                                         </span>
                                     @else
                                         <span class="chip chip-warning live-timer"
-                                              data-start-time="{{ $registro->startTime()->getTimestamp() }}">
+                                              data-start-time="{{ $registro->startTime() }}">
                                             {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                         </span>
                                     @endif
@@ -415,11 +415,11 @@
                                     <tbody>
                                         @foreach(collect($monthlyRegistros)->sortByDesc(function($registro) { return $registro->startTime(); }) as $registro)
                                         <tr>
-                                            <td>{{ $registro->startTime()->format('d/m/Y') }}</td>
-                                            <td>{{ $registro->startTime()->format('H:i:s') }}</td>
+                                            <td>{{ $registro->startTimeFormatted('d/m/Y') }}</td>
+                                            <td>{{ $registro->startTimeFormatted('H:i:s') }}</td>
                                             <td>
                                                 @if($registro->endTime())
-                                                    {{ $registro->endTime()->format('H:i:s') }}
+                                                    {{ $registro->endTimeFormatted('H:i:s') }}
                                                 @else
                                                     <span style="color: var(--warning);">
                                                         <i class="material-icons tiny">schedule</i> Abierto
@@ -433,7 +433,7 @@
                                                     </span>
                                                 @else
                                                     <span class="chip chip-warning live-timer"
-                                                          data-start-time="{{ $registro->startTime()->getTimestamp() }}">
+                                                          data-start-time="{{ $registro->startTime() }}">
                                                         {{ gmdate('H:i:s', $registro->workedSeconds()) }}
                                                     </span>
                                                 @endif

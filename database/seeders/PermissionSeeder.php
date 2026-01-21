@@ -57,7 +57,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'Eliminar notificaciones', 'slug' => 'notification.delete', 'bounded_context' => 'Notification', 'description' => 'Eliminar notificaciones', 'is_system' => true],
         ];
 
-        $now = now();
+        $now = time();
         foreach ($permissions as &$permission) {
             $permission['created_at'] = $now;
             $permission['updated_at'] = $now;

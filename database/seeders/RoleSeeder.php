@@ -40,7 +40,7 @@ class RoleSeeder extends Seeder
             ],
         ];
 
-        $now = now();
+        $now = time();
         foreach ($roles as &$role) {
             $role['created_at'] = $now;
             $role['updated_at'] = $now;

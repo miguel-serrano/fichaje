@@ -9,7 +9,6 @@ use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\TimeEntry as TimeEntryModel;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
@@ -28,14 +27,16 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
     public function save(TimeEntry $timeEntry): TimeEntry
     {
         $entryId = $timeEntry->id()?->value();
+        $now = time();
 
-        DB::transaction(function () use ($timeEntry, &$entryId) {
+        DB::transaction(function () use ($timeEntry, &$entryId, $now) {
             $data = [
                 'user_id' => $timeEntry->userId()->value(),
-                'entrada' => $timeEntry->startTime()->format('Y-m-d H:i:s'),
-                'salida' => $timeEntry->endTime()?->format('Y-m-d H:i:s'),
+                'entrada' => $timeEntry->startTime(),
+                'salida' => $timeEntry->endTime(),
                 'auto_closed' => $timeEntry->isAutoClosed(),
                 'auto_close_reason' => $timeEntry->autoCloseReason(),
+                'updated_at' => $now,
             ];
 
             if ($entryId) {
@@ -44,6 +45,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
                     $model->update($data);
                 }
             } else {
+                $data['created_at'] = $now;
                 $model = TimeEntryModel::create($data);
                 $entryId = $model->id;
             }
@@ -64,10 +66,11 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
         if ($model) {
             $model->update([
                 'user_id' => $timeEntry->userId()->value(),
-                'entrada' => $timeEntry->startTime()->format('Y-m-d H:i:s'),
-                'salida' => $timeEntry->endTime()?->format('Y-m-d H:i:s'),
+                'entrada' => $timeEntry->startTime(),
+                'salida' => $timeEntry->endTime(),
                 'auto_closed' => $timeEntry->isAutoClosed(),
                 'auto_close_reason' => $timeEntry->autoCloseReason(),
+                'updated_at' => time(),
             ]);
         }
     }
@@ -77,17 +80,33 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
      */
     public function findOrphanEntries(): array
     {
+        // Timestamp de inicio del día actual (medianoche)
+        $todayStart = strtotime('today 00:00:00');
+
         return TimeEntryModel::whereNull('salida')
-            ->whereDate('entrada', '<', today())
+            ->where('entrada', '<', $todayStart)
             ->get()
             ->map(fn (TimeEntryModel $model) => $this->toDomainEntity($model))
             ->all();
     }
 
-    public function getWorkedSecondsByUserAndDate(UserId $userId, Carbon $date, ?TimeEntryId $excludeEntryId = null): int
+    /**
+     * Obtiene los segundos trabajados por un usuario en una fecha específica.
+     *
+     * @param UserId           $userId         ID del usuario
+     * @param int              $dateTimestamp  Timestamp Unix de la fecha (cualquier momento del día)
+     * @param TimeEntryId|null $excludeEntryId ID de entrada a excluir (opcional)
+     */
+    public function getWorkedSecondsByUserAndDate(UserId $userId, int $dateTimestamp, ?TimeEntryId $excludeEntryId = null): int
     {
+        // Calcular inicio y fin del día desde el timestamp
+        $dateString = date('Y-m-d', $dateTimestamp);
+        $dayStart = strtotime($dateString.' 00:00:00');
+        $dayEnd = strtotime($dateString.' 23:59:59');
+
         $query = TimeEntryModel::where('user_id', $userId->value())
-            ->whereDate('entrada', $date->toDateString())
+            ->where('entrada', '>=', $dayStart)
+            ->where('entrada', '<=', $dayEnd)
             ->whereNotNull('salida');
 
         if (null !== $excludeEntryId) {
@@ -98,15 +117,20 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
         $totalSeconds = 0;
 
         foreach ($entries as $entry) {
-            $entrada = Carbon::instance($entry->entrada);
-            $salida = Carbon::instance($entry->salida);
-            $totalSeconds += (int) $entrada->diffInSeconds($salida);
+            $totalSeconds += $entry->salida - $entry->entrada;
         }
 
         return $totalSeconds;
     }
 
-    public function closeWithAutoClosed(TimeEntryId $id, Carbon $closedAt, string $reason): void
+    /**
+     * Cierra una entrada de tiempo con auto-cierre.
+     *
+     * @param TimeEntryId $id       ID de la entrada
+     * @param int         $closedAt Timestamp Unix del momento de cierre
+     * @param string      $reason   Razón del auto-cierre
+     */
+    public function closeWithAutoClosed(TimeEntryId $id, int $closedAt, string $reason): void
     {
         $model = TimeEntryModel::find($id->value());
         if ($model) {
@@ -114,6 +138,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
                 'salida' => $closedAt,
                 'auto_closed' => true,
                 'auto_close_reason' => $reason,
+                'updated_at' => time(),
             ]);
         }
     }
@@ -123,8 +148,8 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
         return TimeEntry::fromPrimitives(
             $model->id,
             $model->user_id,
-            $model->entrada->format('Y-m-d H:i:s'),
-            $model->salida?->format('Y-m-d H:i:s'),
+            $model->entrada,
+            $model->salida,
             (bool) ($model->auto_closed ?? false),
             $model->auto_close_reason
         );

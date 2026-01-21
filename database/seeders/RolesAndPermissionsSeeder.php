@@ -14,6 +14,8 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     public function run(): void
     {
+        $now = time();
+
         // Create system roles
         $superAdmin = Role::firstOrCreate(
             ['slug' => 'super_admin'],
@@ -22,6 +24,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'description' => 'Acceso total al sistema',
                 'is_system' => true,
                 'hierarchy' => 100,
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
         );
 
@@ -32,6 +36,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'description' => 'Administrador del sistema',
                 'is_system' => true,
                 'hierarchy' => 90,
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
         );
 
@@ -42,6 +48,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'description' => 'Usuario empleado estándar',
                 'is_system' => true,
                 'hierarchy' => 10,
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
         );
 
@@ -60,12 +68,17 @@ class RolesAndPermissionsSeeder extends Seeder
                     'description' => $permData['description'],
                     'bounded_context' => 'Authorization',
                     'is_system' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]
             );
 
             // Assign authorization permissions to admin role
             if (! $admin->permissions()->where('permissions.id', $permission->id)->exists()) {
-                $admin->permissions()->attach($permission->id);
+                $admin->permissions()->attach($permission->id, [
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
             }
         }
 
@@ -73,7 +86,10 @@ class RolesAndPermissionsSeeder extends Seeder
         $adminUsers = User::where('is_admin', true)->get();
         foreach ($adminUsers as $user) {
             if (! $user->roles()->where('roles.id', $superAdmin->id)->exists()) {
-                $user->roles()->attach($superAdmin->id);
+                $user->roles()->attach($superAdmin->id, [
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
             }
         }
 

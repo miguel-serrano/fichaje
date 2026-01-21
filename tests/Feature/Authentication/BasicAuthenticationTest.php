@@ -155,8 +155,8 @@ class BasicAuthenticationTest extends TestCase
 
     public function test_daily_registration_limit_resets_next_day(): void
     {
-        // Crear 8 usuarios ayer usando DB para evitar timestamps automáticos
-        $yesterday = now()->subDay();
+        // Crear 8 usuarios ayer usando DB (Unix timestamps)
+        $yesterday = strtotime('yesterday');
         for ($i = 0; $i < 8; $i++) {
             \Illuminate\Support\Facades\DB::table('users')->insert([
                 'uuid' => \Illuminate\Support\Str::orderedUuid(),

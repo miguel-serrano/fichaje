@@ -115,7 +115,7 @@
                                 <a href="#" class="notification-item" data-id="{{ $notification->id }}" style="white-space: normal; line-height: 1.4; padding: 12px 16px;">
                                     <strong style="display: block; font-size: 13px;">{{ $notification->title }}</strong>
                                     <span style="font-size: 12px; color: #666;">{{ $notification->message }}</span>
-                                    <small style="display: block; color: #9e9e9e; margin-top: 4px;">{{ $notification->created_at->diffForHumans() }}</small>
+                                    <small style="display: block; color: #9e9e9e; margin-top: 4px;">{{ $notification->getCreatedAtCarbon()->diffForHumans() }}</small>
                                 </a>
                             </li>
                         @endforeach

@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\User;
 
-use App\DDD\User\Domain\Entity\User;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\Email;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
 {
-    private \App\Models\User $authenticatedUser;
+    private User $authenticatedUser;
 
     protected function setUp(): void
     {
@@ -22,11 +22,11 @@ class UserManagementTest extends TestCase
         $this->seed(\Database\Seeders\RolePermissionSeeder::class);
 
         // Crear y autenticar un usuario admin para todos los tests
-        $this->authenticatedUser = \App\Models\User::create([
-            'uuid' => \Illuminate\Support\Str::orderedUuid(),
+        $this->authenticatedUser = User::create([
+            'uuid' => Str::orderedUuid(),
             'name' => 'Admin Test User',
             'email' => 'admin@test.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => Hash::make('password123'),
             'is_active' => true,
         ]);
         $this->authenticatedUser->assignRole('super_admin');
@@ -45,12 +45,16 @@ class UserManagementTest extends TestCase
 
     public function test_can_view_specific_user(): void
     {
-        // Crear un usuario primero
-        $repository = app(UserRepositoryInterface::class);
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $repository->save($user);
+        // Crear un usuario usando el modelo Eloquent
+        $testUser = User::create([
+            'uuid' => Str::orderedUuid(),
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => false,
+        ]);
 
-        $response = $this->get("/user/{$savedUser->id()->value()}");
+        $response = $this->get("/user/{$testUser->id}");
 
         $response->assertStatus(200);
         $response->assertViewIs('users.show');
@@ -59,54 +63,62 @@ class UserManagementTest extends TestCase
 
     public function test_can_delete_user(): void
     {
-        // Crear un usuario primero
-        $repository = app(UserRepositoryInterface::class);
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $repository->save($user);
+        // Crear un usuario usando el modelo Eloquent
+        $testUser = User::create([
+            'uuid' => Str::orderedUuid(),
+            'name' => 'Test User',
+            'email' => 'delete-test@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => false,
+        ]);
 
-        $response = $this->delete("/user/{$savedUser->id()->value()}");
+        $response = $this->delete("/user/{$testUser->id}");
 
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario eliminado correctamente');
 
         // Verificar que el usuario fue eliminado
         $this->assertDatabaseMissing('users', [
-            'id' => $savedUser->id()->value(),
+            'id' => $testUser->id,
         ]);
     }
 
     public function test_can_toggle_user_active_status(): void
     {
         // Crear un usuario (is_active = false por defecto)
-        $repository = app(UserRepositoryInterface::class);
-        $user = User::create(new Email('toggle@example.com'), 'Toggle User');
-        $savedUser = $repository->save($user);
+        $testUser = User::create([
+            'uuid' => Str::orderedUuid(),
+            'name' => 'Toggle User',
+            'email' => 'toggle@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => false,
+        ]);
 
-        // Verificar que está inactivo inicialmente (nuevo comportamiento)
+        // Verificar que está inactivo inicialmente
         $this->assertDatabaseHas('users', [
-            'id' => $savedUser->id()->value(),
+            'id' => $testUser->id,
             'is_active' => false,
         ]);
 
         // Activar usuario
-        $response = $this->patch("/user/{$savedUser->id()->value()}/toggle-active");
+        $response = $this->patch("/user/{$testUser->id}/toggle-active");
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario activado correctamente');
 
         // Verificar que se activó
         $this->assertDatabaseHas('users', [
-            'id' => $savedUser->id()->value(),
+            'id' => $testUser->id,
             'is_active' => true,
         ]);
 
         // Desactivar usuario
-        $response = $this->patch("/user/{$savedUser->id()->value()}/toggle-active");
+        $response = $this->patch("/user/{$testUser->id}/toggle-active");
         $response->assertRedirect('/users');
         $response->assertSessionHas('success', 'Usuario desactivado correctamente');
 
         // Verificar que se desactivó
         $this->assertDatabaseHas('users', [
-            'id' => $savedUser->id()->value(),
+            'id' => $testUser->id,
             'is_active' => false,
         ]);
     }

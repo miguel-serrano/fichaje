@@ -13,7 +13,7 @@ class RolePermissionSeeder extends Seeder
         $permissions = DB::table('permissions')->pluck('id', 'slug');
 
         $rolePermissions = [];
-        $now = now();
+        $now = time();
 
         // Super Admin - todos los permisos
         foreach ($permissions as $permissionId) {

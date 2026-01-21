@@ -17,11 +17,15 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $now = time();
+
         return [
             'uuid' => (string) Str::orderedUuid(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'is_active' => true,
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
     }
 

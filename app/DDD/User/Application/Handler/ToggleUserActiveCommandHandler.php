@@ -14,7 +14,7 @@ class ToggleUserActiveCommandHandler
     ) {
     }
 
-    public function handle(ToggleUserActiveCommand $command): void
+    public function handle(ToggleUserActiveCommand $command): bool
     {
         $authenticatedUser = $this->userRepository->findByIdOrFail($command->authenticatedUserId);
 
@@ -22,8 +22,10 @@ class ToggleUserActiveCommandHandler
 
         $targetUser = $this->userRepository->findByIdOrFail($command->targetUserId);
 
-        $targetUser->toggleActive();
+        $newState = $targetUser->toggleActive();
 
         $this->userRepository->save($targetUser);
+
+        return $newState;
     }
 }

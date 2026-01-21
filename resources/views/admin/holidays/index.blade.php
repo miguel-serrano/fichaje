@@ -41,7 +41,7 @@
                                     <td>{{ $holiday->dateRange()->startDateFormatted('d/m/Y') }}</td>
                                     <td>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</td>
                                     <td>{{ $holiday->dateRange()->totalDays() }}</td>
-                                    <td>{{ $holiday->createdAt()->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $holiday->createdAtFormatted('d/m/Y H:i') }}</td>
                                     <td>
                                         <form action="{{ route('admin.holidays.approve', $holiday->id()->value()) }}" method="POST" style="display: inline;">
                                             @csrf
@@ -107,7 +107,7 @@
                                     <td>{{ $holiday->dateRange()->startDateFormatted('d/m/Y') }}</td>
                                     <td>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</td>
                                     <td>{{ $holiday->dateRange()->totalDays() }}</td>
-                                    <td>{{ $holiday->createdAt()->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $holiday->createdAtFormatted('d/m/Y H:i') }}</td>
                                     <td>
                                         <span class="chip chip-success">
                                             <i class="material-icons tiny">check</i> Aprobada

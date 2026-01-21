@@ -70,10 +70,11 @@ class CreateHolidayRequestTest extends TestCase
         $response->assertRedirect(route('holidays.index'));
         $response->assertSessionHas('success');
 
+        // Convert dates to Unix timestamps for comparison (database stores integers)
         $this->assertDatabaseHas('holiday_requests', [
             'user_id' => $user->id,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
+            'start_date' => strtotime($startDate.' 00:00:00'),
+            'end_date' => strtotime($endDate.' 00:00:00'),
             'status' => 'pending',
         ]);
     }

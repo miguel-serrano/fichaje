@@ -19,17 +19,23 @@ final class HolidayRequest
 
     private HolidayStatus $status;
 
-    private ?\DateTimeImmutable $createdAt;
+    /**
+     * Timestamp Unix de creación.
+     */
+    private ?int $createdAt;
 
-    private ?\DateTimeImmutable $updatedAt;
+    /**
+     * Timestamp Unix de última actualización.
+     */
+    private ?int $updatedAt;
 
     private function __construct(
         ?HolidayRequestId $id,
         UserId $userId,
         DateRange $dateRange,
         HolidayStatus $status,
-        ?\DateTimeImmutable $createdAt = null,
-        ?\DateTimeImmutable $updatedAt = null,
+        ?int $createdAt = null,
+        ?int $updatedAt = null,
     ) {
         $this->id = $id;
         $this->userId = $userId;
@@ -41,28 +47,30 @@ final class HolidayRequest
 
     public static function create(UserId $userId, DateRange $dateRange): self
     {
+        $now = time();
+
         return new self(
             null,
             $userId,
             $dateRange,
             HolidayStatus::Pending,
-            new \DateTimeImmutable(),
-            new \DateTimeImmutable()
+            $now,
+            $now
         );
     }
 
     /**
-     * @param array{id: int, user_id: int, start_date: string, end_date: string, status: string, created_at: ?string, updated_at: ?string} $data
+     * @param array{id: int, user_id: int, start_date: int, end_date: int, status: string, created_at: ?int, updated_at: ?int} $data
      */
     public static function fromPrimitives(array $data): self
     {
         return new self(
             new HolidayRequestId((int) $data['id']),
             new UserId((int) $data['user_id']),
-            DateRange::fromPersistence($data['start_date'], $data['end_date']),
+            DateRange::fromPersistence((int) $data['start_date'], (int) $data['end_date']),
             HolidayStatus::from($data['status']),
-            isset($data['created_at']) ? new \DateTimeImmutable($data['created_at']) : null,
-            isset($data['updated_at']) ? new \DateTimeImmutable($data['updated_at']) : null
+            isset($data['created_at']) ? (int) $data['created_at'] : null,
+            isset($data['updated_at']) ? (int) $data['updated_at'] : null
         );
     }
 
@@ -91,26 +99,48 @@ final class HolidayRequest
         return $this->status;
     }
 
-    public function createdAt(): ?\DateTimeImmutable
+    /**
+     * Obtiene el timestamp Unix de creación.
+     */
+    public function createdAt(): ?int
     {
         return $this->createdAt;
     }
 
-    public function updatedAt(): ?\DateTimeImmutable
+    /**
+     * Obtiene el timestamp Unix de última actualización.
+     */
+    public function updatedAt(): ?int
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * Formatea la fecha de creación.
+     */
+    public function createdAtFormatted(string $format = 'Y-m-d H:i:s'): ?string
+    {
+        return null !== $this->createdAt ? date($format, $this->createdAt) : null;
+    }
+
+    /**
+     * Formatea la fecha de actualización.
+     */
+    public function updatedAtFormatted(string $format = 'Y-m-d H:i:s'): ?string
+    {
+        return null !== $this->updatedAt ? date($format, $this->updatedAt) : null;
     }
 
     public function approve(): void
     {
         $this->status = HolidayStatus::Approved;
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = time();
     }
 
     public function reject(): void
     {
         $this->status = HolidayStatus::Rejected;
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = time();
     }
 
     public function isPending(): bool
@@ -129,18 +159,18 @@ final class HolidayRequest
     }
 
     /**
-     * @return array{id: ?int, user_id: int, start_date: string, end_date: string, status: string, created_at: ?string, updated_at: ?string}
+     * @return array{id: ?int, user_id: int, start_date: int, end_date: int, status: string, created_at: ?int, updated_at: ?int}
      */
     public function toArray(): array
     {
         return [
             'id' => $this->id?->value(),
             'user_id' => (int) $this->userId->value(),
-            'start_date' => $this->dateRange->startDateFormatted(),
-            'end_date' => $this->dateRange->endDateFormatted(),
+            'start_date' => $this->dateRange->startDate(),
+            'end_date' => $this->dateRange->endDate(),
             'status' => $this->status->value,
-            'created_at' => $this->createdAt?->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updatedAt?->format('Y-m-d H:i:s'),
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
         ];
     }
 }

@@ -2,12 +2,10 @@
 
 namespace Tests\Feature\Integration;
 
-use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\Email;
-use App\DDD\User\Domain\ValueObjects\UserId;
+use App\DDD\User\Domain\ValueObjects\Uuid;
 use App\Models\Role;
-use App\Models\User as EloquentUser;
+use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -19,7 +17,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
 
-    private EloquentUser $authenticatedUser;
+    private User $authenticatedUser;
 
     protected function setUp(): void
     {
@@ -32,7 +30,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $this->userRepository = $this->app->make(UserRepositoryInterface::class);
-        $this->authenticatedUser = EloquentUser::create([
+        $this->authenticatedUser = User::create([
             'uuid' => Str::orderedUuid(),
             'name' => 'Test User',
             'email' => 'user@test.com',
@@ -51,8 +49,14 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
     public function test_users_index_shows_user_list(): void
     {
-        $user = User::create(new Email('test@example.com'), 'Test User');
-        $savedUser = $this->userRepository->save($user);
+        // Crear usuario usando el modelo Eloquent
+        $testUser = User::create([
+            'uuid' => Str::orderedUuid(),
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => false,
+        ]);
 
         $response = $this->get('/users');
 
@@ -62,10 +66,10 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $users = $response->viewData('users');
         $this->assertNotEmpty($users);
 
-        $testUser = collect($users)->firstWhere('email', 'test@example.com');
-        $this->assertNotNull($testUser);
-        $this->assertEquals('test@example.com', $testUser['email']);
-        $this->assertEquals('Test User', $testUser['name']);
+        $foundUser = collect($users)->firstWhere('email', 'test@example.com');
+        $this->assertNotNull($foundUser);
+        $this->assertEquals('test@example.com', $foundUser['email']);
+        $this->assertEquals('Test User', $foundUser['name']);
     }
 
     public function test_complete_workflow_registro_horario(): void
@@ -95,25 +99,32 @@ class UserRegistroHorarioIntegrationTest extends TestCase
 
     public function test_user_deletion_handles_registro_horario_gracefully(): void
     {
-        $user = User::create(new Email('delete@example.com'), 'Delete User');
-        $savedUser = $this->userRepository->save($user);
+        // Crear usuario usando el modelo Eloquent
+        $testUser = User::create([
+            'uuid' => Str::orderedUuid(),
+            'name' => 'Delete User',
+            'email' => 'delete@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => false,
+        ]);
 
-        $userWithEntries = $this->userRepository->findById(new UserId($savedUser->id()->value()));
-        $userWithEntries->clockIn();
-        $this->userRepository->save($userWithEntries);
-        $userWithEntries->clockOut();
-        $this->userRepository->save($userWithEntries);
+        // Usar el repositorio para fichar con el usuario del dominio
+        $userEntity = $this->userRepository->findByUuid(new Uuid($testUser->uuid));
+        $userEntity->clockIn();
+        $this->userRepository->save($userEntity);
+        $userEntity->clockOut();
+        $this->userRepository->save($userEntity);
 
-        $deleteResponse = $this->delete("/user/{$savedUser->id()->value()}");
+        $deleteResponse = $this->delete("/user/{$testUser->id}");
         $deleteResponse->assertRedirect('/users');
         $deleteResponse->assertSessionHas('success');
 
         $this->assertDatabaseMissing('users', [
-            'id' => $savedUser->id()->value(),
+            'id' => $testUser->id,
         ]);
 
-        $this->assertDatabaseMissing('registro_horarios', [
-            'user_id' => $savedUser->id()->value(),
+        $this->assertDatabaseMissing('time_entries', [
+            'user_id' => $testUser->id,
         ]);
 
         $usersResponse = $this->get('/users');

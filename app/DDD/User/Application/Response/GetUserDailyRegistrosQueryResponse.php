@@ -37,18 +37,15 @@ class GetUserDailyRegistrosQueryResponse
     private function processRegistrosCerrados(Collection $registrosCerrados): void
     {
         foreach ($registrosCerrados as $registro) {
-            $fecha = date('Y-m-d', strtotime($registro->entrada));
-            $entrada = new \DateTime($registro->entrada);
-            $salida = new \DateTime($registro->salida);
-            $duracion = $salida->diff($entrada);
-
-            $segundosTrabajados = ($duracion->h * 3600) + ($duracion->i * 60) + $duracion->s;
+            // Los campos entrada y salida ahora son Unix timestamps (int)
+            $fecha = date('Y-m-d', $registro->entrada);
+            $segundosTrabajados = $registro->salida - $registro->entrada;
 
             $this->ensureDayExists($fecha);
 
             $this->registrosPorDia[$fecha]['registros'][] = [
-                'entrada' => date('H:i:s', strtotime($registro->entrada)),
-                'salida' => date('H:i:s', strtotime($registro->salida)),
+                'entrada' => date('H:i:s', $registro->entrada),
+                'salida' => date('H:i:s', $registro->salida),
                 'duracion' => TimeFormatter::formatTime($segundosTrabajados),
                 'abierto' => false,
             ];
@@ -66,18 +63,18 @@ class GetUserDailyRegistrosQueryResponse
     private function processRegistrosAbiertos(Collection $registrosAbiertos): void
     {
         foreach ($registrosAbiertos as $registro) {
-            $fecha = date('Y-m-d', strtotime($registro->entrada));
-            $entrada = new \DateTime($registro->entrada);
-            $segundosTrabajados = time() - $entrada->getTimestamp();
+            // Los campos entrada ahora son Unix timestamps (int)
+            $fecha = date('Y-m-d', $registro->entrada);
+            $segundosTrabajados = time() - $registro->entrada;
 
             $this->ensureDayExists($fecha);
 
             $this->registrosPorDia[$fecha]['registros'][] = [
-                'entrada' => date('H:i:s', strtotime($registro->entrada)),
+                'entrada' => date('H:i:s', $registro->entrada),
                 'salida' => null,
                 'duracion' => TimeFormatter::formatTime($segundosTrabajados),
                 'abierto' => true,
-                'entrada_timestamp' => $entrada->getTimestamp(),
+                'entrada_timestamp' => $registro->entrada,
             ];
 
             $this->registrosPorDia[$fecha]['total_segundos'] += $segundosTrabajados;

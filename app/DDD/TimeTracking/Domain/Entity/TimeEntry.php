@@ -4,7 +4,6 @@ namespace App\DDD\TimeTracking\Domain\Entity;
 
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use Carbon\Carbon;
 
 final class TimeEntry
 {
@@ -12,9 +11,15 @@ final class TimeEntry
 
     private UserId $userId;
 
-    private \DateTime $startTime;
+    /**
+     * Timestamp Unix de la hora de entrada.
+     */
+    private int $startTime;
 
-    private ?\DateTime $endTime;
+    /**
+     * Timestamp Unix de la hora de salida (nullable si está abierto).
+     */
+    private ?int $endTime;
 
     private bool $autoClosed;
 
@@ -23,8 +28,8 @@ final class TimeEntry
     private function __construct(
         ?TimeEntryId $id,
         UserId $userId,
-        \DateTime $startTime,
-        ?\DateTime $endTime,
+        int $startTime,
+        ?int $endTime,
         bool $autoClosed = false,
         ?string $autoCloseReason = null,
     ) {
@@ -41,26 +46,36 @@ final class TimeEntry
         return new self(
             null,
             $userId,
-            Carbon::now()->toDateTime(),
+            time(),
             null,
             false,
             null
         );
     }
 
+    /**
+     * Crea una entidad desde primitivos (para reconstruir desde persistencia).
+     *
+     * @param int|null    $id              ID del registro
+     * @param int         $userId          ID del usuario
+     * @param int         $startTime       Timestamp Unix de entrada
+     * @param int|null    $endTime         Timestamp Unix de salida (null si abierto)
+     * @param bool        $autoClosed      Si fue cerrado automáticamente
+     * @param string|null $autoCloseReason Razón del cierre automático
+     */
     public static function fromPrimitives(
         ?int $id,
         int $userId,
-        string $startTime,
-        ?string $endTime,
+        int $startTime,
+        ?int $endTime,
         bool $autoClosed = false,
         ?string $autoCloseReason = null,
     ): self {
         return new self(
             $id ? new TimeEntryId($id) : null,
             new UserId($userId),
-            new \DateTime($startTime),
-            $endTime ? new \DateTime($endTime) : null,
+            $startTime,
+            $endTime,
             $autoClosed,
             $autoCloseReason
         );
@@ -81,22 +96,49 @@ final class TimeEntry
         return $this->userId;
     }
 
-    public function startTime(): \DateTime
+    /**
+     * Obtiene el timestamp Unix de la hora de entrada.
+     */
+    public function startTime(): int
     {
         return $this->startTime;
     }
 
-    public function endTime(): ?\DateTime
+    /**
+     * Obtiene el timestamp Unix de la hora de salida.
+     */
+    public function endTime(): ?int
     {
         return $this->endTime;
     }
 
-    public function close(): void
+    /**
+     * Formatea la hora de entrada para mostrar.
+     */
+    public function startTimeFormatted(string $format = 'Y-m-d H:i:s'): string
     {
-        $this->endTime = Carbon::now()->toDateTime();
+        return date($format, $this->startTime);
     }
 
-    public function closeAt(\DateTime $closeTime, bool $autoClosed = false, ?string $autoCloseReason = null): void
+    /**
+     * Formatea la hora de salida para mostrar.
+     */
+    public function endTimeFormatted(string $format = 'Y-m-d H:i:s'): ?string
+    {
+        return null !== $this->endTime ? date($format, $this->endTime) : null;
+    }
+
+    public function close(): void
+    {
+        $this->endTime = time();
+    }
+
+    /**
+     * Cierra la entrada en un momento específico.
+     *
+     * @param int $closeTime Timestamp Unix del momento de cierre
+     */
+    public function closeAt(int $closeTime, bool $autoClosed = false, ?string $autoCloseReason = null): void
     {
         $this->endTime = $closeTime;
         $this->autoClosed = $autoClosed;
@@ -105,7 +147,7 @@ final class TimeEntry
 
     public function isOpen(): bool
     {
-        return $this->endTime === null;
+        return null === $this->endTime;
     }
 
     public function isAutoClosed(): bool
@@ -118,14 +160,18 @@ final class TimeEntry
         return $this->autoCloseReason;
     }
 
+    /**
+     * Calcula los segundos trabajados.
+     * Si la entrada está abierta, calcula hasta el momento actual.
+     */
     public function workedSeconds(): int
     {
         if ($this->startTime && $this->endTime) {
-            return $this->endTime->getTimestamp() - $this->startTime->getTimestamp();
+            return $this->endTime - $this->startTime;
         }
 
-        if ($this->startTime && $this->endTime === null) {
-            return Carbon::now()->getTimestamp() - $this->startTime->getTimestamp();
+        if ($this->startTime && null === $this->endTime) {
+            return time() - $this->startTime;
         }
 
         return 0;
@@ -136,8 +182,8 @@ final class TimeEntry
         return [
             'id' => $this->id ? $this->id->value() : null,
             'user_id' => $this->userId->value(),
-            'entrada' => $this->startTime->format('Y-m-d H:i:s'),
-            'salida' => $this->endTime ? $this->endTime->format('Y-m-d H:i:s') : null,
+            'entrada' => $this->startTime,
+            'salida' => $this->endTime,
             'auto_closed' => $this->autoClosed,
             'auto_close_reason' => $this->autoCloseReason,
         ];

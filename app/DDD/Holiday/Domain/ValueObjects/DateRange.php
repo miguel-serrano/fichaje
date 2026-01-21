@@ -8,13 +8,21 @@ use App\DDD\Holiday\Domain\Exceptions\InvalidHolidayDateRangeException;
 
 final class DateRange
 {
-    private \DateTimeImmutable $startDate;
+    private const SECONDS_PER_DAY = 86400;
 
-    private \DateTimeImmutable $endDate;
+    /**
+     * Timestamp Unix de la fecha de inicio (medianoche).
+     */
+    private int $startDate;
+
+    /**
+     * Timestamp Unix de la fecha de fin (medianoche).
+     */
+    private int $endDate;
 
     private function __construct(
-        \DateTimeImmutable $startDate,
-        \DateTimeImmutable $endDate,
+        int $startDate,
+        int $endDate,
         bool $skipDateValidation = false,
     ) {
         $this->validate($startDate, $endDate, $skipDateValidation);
@@ -22,31 +30,56 @@ final class DateRange
         $this->endDate = $endDate;
     }
 
+    /**
+     * Crea un DateRange desde strings de fecha (Y-m-d).
+     * Valida que la fecha de inicio no esté en el pasado.
+     */
     public static function fromStrings(string $startDate, string $endDate): self
     {
-        return new self(
-            new \DateTimeImmutable($startDate),
-            new \DateTimeImmutable($endDate)
-        );
+        $start = self::parseToMidnightTimestamp($startDate);
+        $end = self::parseToMidnightTimestamp($endDate);
+
+        return new self($start, $end);
     }
 
-    public static function fromPersistence(string $startDate, string $endDate): self
+    /**
+     * Crea un DateRange desde timestamps Unix.
+     */
+    public static function fromTimestamps(int $startDate, int $endDate): self
     {
-        $start = new \DateTimeImmutable($startDate);
-        $end = new \DateTimeImmutable($endDate);
+        return new self($startDate, $endDate);
+    }
 
-        if ($end < $start) {
+    /**
+     * Crea un DateRange desde persistencia (timestamps Unix).
+     * No valida si la fecha está en el pasado.
+     */
+    public static function fromPersistence(int $startDate, int $endDate): self
+    {
+        if ($endDate < $startDate) {
             throw InvalidHolidayDateRangeException::endDateBeforeStartDate();
         }
 
-        $instance = new self($start, $end, skipDateValidation: true);
+        return new self($startDate, $endDate, skipDateValidation: true);
+    }
 
-        return $instance;
+    /**
+     * Convierte un string de fecha a timestamp de medianoche.
+     */
+    private static function parseToMidnightTimestamp(string $date): int
+    {
+        $timestamp = strtotime($date.' 00:00:00');
+
+        if (false === $timestamp) {
+            throw new \InvalidArgumentException("No se puede parsear la fecha: {$date}");
+        }
+
+        return $timestamp;
     }
 
     private function validate(
-        \DateTimeImmutable $startDate,
-        \DateTimeImmutable $endDate,
+        int $startDate,
+        int $endDate,
         bool $skipDateValidation = false,
     ): void {
         if ($endDate < $startDate) {
@@ -54,40 +87,58 @@ final class DateRange
         }
 
         if (!$skipDateValidation) {
-            $today = new \DateTimeImmutable('today');
+            $today = strtotime('today 00:00:00');
             if ($startDate < $today) {
                 throw InvalidHolidayDateRangeException::startDateInPast();
             }
         }
     }
 
-    public function startDate(): \DateTimeImmutable
+    /**
+     * Obtiene el timestamp Unix de la fecha de inicio.
+     */
+    public function startDate(): int
     {
         return $this->startDate;
     }
 
-    public function endDate(): \DateTimeImmutable
+    /**
+     * Obtiene el timestamp Unix de la fecha de fin.
+     */
+    public function endDate(): int
     {
         return $this->endDate;
     }
 
+    /**
+     * Formatea la fecha de inicio.
+     */
     public function startDateFormatted(string $format = 'Y-m-d'): string
     {
-        return $this->startDate->format($format);
+        return date($format, $this->startDate);
     }
 
+    /**
+     * Formatea la fecha de fin.
+     */
     public function endDateFormatted(string $format = 'Y-m-d'): string
     {
-        return $this->endDate->format($format);
+        return date($format, $this->endDate);
     }
 
+    /**
+     * Verifica si este rango se solapa con otro.
+     */
     public function overlaps(self $other): bool
     {
         return $this->startDate <= $other->endDate && $this->endDate >= $other->startDate;
     }
 
+    /**
+     * Calcula el total de días en el rango (inclusivo).
+     */
     public function totalDays(): int
     {
-        return (int) $this->startDate->diff($this->endDate)->days + 1;
+        return (int) (($this->endDate - $this->startDate) / self::SECONDS_PER_DAY) + 1;
     }
 }

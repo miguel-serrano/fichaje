@@ -18,13 +18,15 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
     public function save(HolidayRequest $request): HolidayRequest
     {
         $requestId = $request->id()?->value();
+        $now = time();
 
-        DB::transaction(function () use ($request, &$requestId) {
+        DB::transaction(function () use ($request, &$requestId, $now) {
             $data = [
                 'user_id' => $request->userId()->value(),
-                'start_date' => $request->dateRange()->startDateFormatted(),
-                'end_date' => $request->dateRange()->endDateFormatted(),
+                'start_date' => $request->dateRange()->startDate(),
+                'end_date' => $request->dateRange()->endDate(),
                 'status' => $request->status()->value,
+                'updated_at' => $now,
             ];
 
             if ($requestId) {
@@ -34,6 +36,7 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
                 }
                 $model->update($data);
             } else {
+                $data['created_at'] = $now;
                 $model = HolidayRequestModel::create($data);
                 $requestId = $model->id;
             }
@@ -116,8 +119,9 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
         $query = HolidayRequestModel::where('user_id', $userId->value())
             ->whereIn('status', ['pending', 'approved'])
             ->where(function ($q) use ($range) {
-                $q->where('start_date', '<=', $range->endDateFormatted())
-                    ->where('end_date', '>=', $range->startDateFormatted());
+                // Los timestamps se comparan directamente (enteros)
+                $q->where('start_date', '<=', $range->endDate())
+                    ->where('end_date', '>=', $range->startDate());
             });
 
         if ($excludeId) {
@@ -137,11 +141,11 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
         return HolidayRequest::fromPrimitives([
             'id' => $model->id,
             'user_id' => $model->user_id,
-            'start_date' => $model->start_date->format('Y-m-d'),
-            'end_date' => $model->end_date->format('Y-m-d'),
+            'start_date' => $model->start_date,
+            'end_date' => $model->end_date,
             'status' => $model->status,
-            'created_at' => $model->created_at?->toDateTimeString(),
-            'updated_at' => $model->updated_at?->toDateTimeString(),
+            'created_at' => $model->created_at,
+            'updated_at' => $model->updated_at,
         ]);
     }
 }

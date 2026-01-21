@@ -19,13 +19,15 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function save(User $user): User
     {
         $userId = $user->id()?->value();
+        $now = time();
 
-        DB::transaction(function () use ($user, &$userId) {
+        DB::transaction(function () use ($user, &$userId, $now) {
             $data = [
                 'uuid' => $user->uuid()->value(),
                 'email' => $user->email()->value(),
                 'name' => $user->name()->value(),
                 'is_active' => $user->isActive(),
+                'updated_at' => $now,
             ];
 
             if ($user->password()) {
@@ -39,6 +41,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 }
                 $model->update($data);
             } else {
+                $data['created_at'] = $now;
                 $model = UserModel::create($data);
                 $userId = $model->id;
             }
@@ -46,15 +49,17 @@ class EloquentUserRepository implements UserRepositoryInterface
             foreach ($user->timeEntries() as $entry) {
                 $entryData = [
                     'user_id' => $userId,
-                    'entrada' => $entry->startTime()->format('Y-m-d H:i:s'),
-                    'salida' => $entry->endTime()?->format('Y-m-d H:i:s'),
+                    'entrada' => $entry->startTime(),
+                    'salida' => $entry->endTime(),
                     'auto_closed' => $entry->isAutoClosed(),
                     'auto_close_reason' => $entry->autoCloseReason(),
+                    'updated_at' => $now,
                 ];
 
                 if ($entry->id()) {
                     TimeEntryModel::where('id', $entry->id()->value())->update($entryData);
                 } else {
+                    $entryData['created_at'] = $now;
                     $newEntry = TimeEntryModel::create($entryData);
                     $entry->setId(new TimeEntryId($newEntry->id));
                 }
@@ -142,14 +147,25 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function countTodayRegistrations(): int
     {
-        return UserModel::whereDate('created_at', today())->count();
+        // Calcular rango del día actual en timestamps
+        $todayStart = strtotime('today 00:00:00');
+        $todayEnd = strtotime('today 23:59:59');
+
+        return UserModel::where('created_at', '>=', $todayStart)
+            ->where('created_at', '<=', $todayEnd)
+            ->count();
     }
 
     /** @return array<array-key, mixed> */
     public function findTodayTimeEntriesByUserId(UserId $id): array
     {
+        // Calcular rango del día actual en timestamps
+        $todayStart = strtotime('today 00:00:00');
+        $todayEnd = strtotime('today 23:59:59');
+
         return TimeEntryModel::where('user_id', $id->value())
-            ->whereDate('entrada', today())
+            ->where('entrada', '>=', $todayStart)
+            ->where('entrada', '<=', $todayEnd)
             ->get()
             ->toArray();
     }
@@ -171,6 +187,10 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $userId = $id->value();
 
+        // Calcular rango del día actual en timestamps
+        $todayStart = strtotime('today 00:00:00');
+        $todayEnd = strtotime('today 23:59:59');
+
         return [
             'cerrados' => TimeEntryModel::where('user_id', $userId)
                 ->whereNotNull('salida')
@@ -178,7 +198,8 @@ class EloquentUserRepository implements UserRepositoryInterface
                 ->get(),
             'abiertos' => TimeEntryModel::where('user_id', $userId)
                 ->whereNull('salida')
-                ->whereDate('entrada', today())
+                ->where('entrada', '>=', $todayStart)
+                ->where('entrada', '<=', $todayEnd)
                 ->orderBy('entrada', 'desc')
                 ->get(),
         ];
@@ -189,8 +210,8 @@ class EloquentUserRepository implements UserRepositoryInterface
         $timeEntries = $model->timeEntries->map(fn ($entry) => [
             'id' => $entry->id,
             'user_id' => $entry->user_id,
-            'entrada' => $entry->entrada->format('Y-m-d H:i:s'),
-            'salida' => $entry->salida?->format('Y-m-d H:i:s'),
+            'entrada' => $entry->entrada,
+            'salida' => $entry->salida,
             'auto_closed' => $entry->auto_closed,
             'auto_close_reason' => $entry->auto_close_reason,
         ])->toArray();

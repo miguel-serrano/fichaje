@@ -10,7 +10,6 @@ use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use App\Models\TimeEntry as TimeEntryModel;
 use App\Models\User as UserModel;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
@@ -79,13 +78,14 @@ class CloseUserOrphanTimeEntryCommand extends Command
         $maxSecondsDaily = self::MAX_HOURS * 3600;
 
         foreach ($orphanEntries as $entry) {
-            $entrada = Carbon::parse($entry->entrada);
-            $endOfDay = $entrada->copy()->endOfDay();
+            $entrada = $entry->entrada;
+            $entradaDate = date('Y-m-d', $entrada);
+            $endOfDay = strtotime($entradaDate.' 23:59:59');
 
             // Calcular segundos ya trabajados ese día (otros fichajes cerrados)
             $workedSecondsToday = $this->getWorkedSecondsByUserAndDate(
                 $entry->user_id,
-                $entrada->toDateString(),
+                $entrada,
                 $entry->id
             );
 
@@ -95,9 +95,9 @@ class CloseUserOrphanTimeEntryCommand extends Command
                 $salida = $entrada;
                 $reason = 'max_hours_exceeded';
             } else {
-                $maxHoursLimit = $entrada->copy()->addSeconds($remainingSeconds);
+                $maxHoursLimit = $entrada + $remainingSeconds;
 
-                if ($maxHoursLimit->lt($endOfDay)) {
+                if ($maxHoursLimit < $endOfDay) {
                     $salida = $maxHoursLimit;
                     $reason = 'max_hours_exceeded';
                 } else {
@@ -112,18 +112,18 @@ class CloseUserOrphanTimeEntryCommand extends Command
                     'salida' => $salida,
                     'auto_closed' => true,
                     'auto_close_reason' => $reason,
-                    'updated_at' => now(),
+                    'updated_at' => time(),
                 ]);
 
             $closedEntries[] = [
                 'entry_id' => $entry->id,
-                'entrada' => $entrada->toDateTimeString(),
-                'salida' => $salida->toDateTimeString(),
+                'entrada' => date('Y-m-d H:i:s', $entrada),
+                'salida' => date('Y-m-d H:i:s', $salida),
                 'reason' => $reason,
             ];
 
             $workedHours = gmdate('H:i:s', $workedSecondsToday);
-            $this->line("  - Fichaje #{$entry->id}: {$entrada->format('d/m/Y H:i')} → cerrado a {$salida->format('H:i:s')} (ya trabajado: {$workedHours})");
+            $this->line("  - Fichaje #{$entry->id}: ".date('d/m/Y H:i', $entrada).' → cerrado a '.date('H:i:s', $salida)." (ya trabajado: {$workedHours})");
         }
 
         // Notificar al usuario
@@ -146,11 +146,16 @@ class CloseUserOrphanTimeEntryCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function getWorkedSecondsByUserAndDate(int $userId, string $date, ?int $excludeEntryId = null): int
+    private function getWorkedSecondsByUserAndDate(int $userId, int $dateTimestamp, ?int $excludeEntryId = null): int
     {
+        $dateString = date('Y-m-d', $dateTimestamp);
+        $dayStart = strtotime($dateString.' 00:00:00');
+        $dayEnd = strtotime($dateString.' 23:59:59');
+
         $query = $this->timeEntriesQuery()
             ->where('user_id', $userId)
-            ->whereDate('entrada', $date)
+            ->where('entrada', '>=', $dayStart)
+            ->where('entrada', '<=', $dayEnd)
             ->whereNotNull('salida');
 
         if (null !== $excludeEntryId) {
@@ -161,9 +166,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
         $totalSeconds = 0;
 
         foreach ($entries as $entry) {
-            $entrada = Carbon::parse($entry->entrada);
-            $salida = Carbon::parse($entry->salida);
-            $totalSeconds += $entrada->diffInSeconds($salida);
+            $totalSeconds += $entry->salida - $entry->entrada;
         }
 
         return $totalSeconds;
@@ -181,17 +184,17 @@ class CloseUserOrphanTimeEntryCommand extends Command
     {
         if (1 === count($entries)) {
             $entry = $entries[0];
-            $entrada = Carbon::parse($entry['entrada']);
-            $salida = Carbon::parse($entry['salida']);
+            $entradaTimestamp = strtotime($entry['entrada']);
+            $salidaTimestamp = strtotime($entry['salida']);
             $reason = 'max_hours_exceeded' === $entry['reason']
                 ? 'al alcanzar el límite de 8 horas diarias'
                 : 'al final del día';
 
             return sprintf(
                 'Entrada: %s a las %s. Cerrado automáticamente a las %s %s.',
-                $entrada->format('d/m/Y'),
-                $entrada->format('H:i'),
-                $salida->format('H:i'),
+                date('d/m/Y', $entradaTimestamp),
+                date('H:i', $entradaTimestamp),
+                date('H:i', $salidaTimestamp),
                 $reason
             );
         }

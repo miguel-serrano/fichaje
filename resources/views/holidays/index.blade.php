@@ -93,7 +93,7 @@
                                             {{ $holiday->status()->label() }}
                                         </span>
                                     </td>
-                                    <td>{{ $holiday->createdAt()->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $holiday->createdAtFormatted('d/m/Y H:i') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

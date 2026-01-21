@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class DateRangeTest extends TestCase
 {
-    public function testCanCreateValidDateRange(): void
+    public function test_can_create_valid_date_range(): void
     {
         $startDate = (new DateTimeImmutable('+1 day'))->format('Y-m-d');
         $endDate = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
@@ -22,7 +22,7 @@ class DateRangeTest extends TestCase
         $this->assertEquals($endDate, $dateRange->endDateFormatted());
     }
 
-    public function testCanCreateFromStrings(): void
+    public function test_can_create_from_strings(): void
     {
         $startDate = (new DateTimeImmutable('+1 day'))->format('Y-m-d');
         $endDate = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
@@ -33,7 +33,7 @@ class DateRangeTest extends TestCase
         $this->assertEquals($endDate, $dateRange->endDateFormatted());
     }
 
-    public function testThrowsExceptionWhenEndDateIsBeforeStartDate(): void
+    public function test_throws_exception_when_end_date_is_before_start_date(): void
     {
         $this->expectException(InvalidHolidayDateRangeException::class);
         $this->expectExceptionMessage('La fecha de fin debe ser posterior a la fecha de inicio');
@@ -44,7 +44,7 @@ class DateRangeTest extends TestCase
         DateRange::fromStrings($startDate, $endDate);
     }
 
-    public function testThrowsExceptionWhenStartDateIsInPast(): void
+    public function test_throws_exception_when_start_date_is_in_past(): void
     {
         $this->expectException(InvalidHolidayDateRangeException::class);
         $this->expectExceptionMessage('La fecha de inicio no puede ser anterior a hoy');
@@ -55,7 +55,7 @@ class DateRangeTest extends TestCase
         DateRange::fromStrings($startDate, $endDate);
     }
 
-    public function testCalculatesTotalDaysCorrectly(): void
+    public function test_calculates_total_days_correctly(): void
     {
         $startDate = (new DateTimeImmutable('+1 day'))->format('Y-m-d');
         $endDate = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
@@ -65,29 +65,29 @@ class DateRangeTest extends TestCase
         $this->assertEquals(5, $dateRange->totalDays());
     }
 
-    public function testFromPersistenceAllowsPastDates(): void
+    public function test_from_persistence_allows_past_dates(): void
     {
-        $startDate = (new DateTimeImmutable('-30 days'))->format('Y-m-d');
-        $endDate = (new DateTimeImmutable('-25 days'))->format('Y-m-d');
+        $startDate = strtotime('-30 days 00:00:00');
+        $endDate = strtotime('-25 days 00:00:00');
 
         $dateRange = DateRange::fromPersistence($startDate, $endDate);
 
-        $this->assertEquals($startDate, $dateRange->startDateFormatted());
-        $this->assertEquals($endDate, $dateRange->endDateFormatted());
+        $this->assertEquals(date('Y-m-d', $startDate), $dateRange->startDateFormatted());
+        $this->assertEquals(date('Y-m-d', $endDate), $dateRange->endDateFormatted());
     }
 
-    public function testFromPersistenceStillValidatesEndDateBeforeStartDate(): void
+    public function test_from_persistence_still_validates_end_date_before_start_date(): void
     {
         $this->expectException(InvalidHolidayDateRangeException::class);
         $this->expectExceptionMessage('La fecha de fin debe ser posterior a la fecha de inicio');
 
-        $startDate = (new DateTimeImmutable('-20 days'))->format('Y-m-d');
-        $endDate = (new DateTimeImmutable('-25 days'))->format('Y-m-d');
+        $startDate = strtotime('-20 days 00:00:00');
+        $endDate = strtotime('-25 days 00:00:00');
 
         DateRange::fromPersistence($startDate, $endDate);
     }
 
-    public function testDetectsOverlappingRanges(): void
+    public function test_detects_overlapping_ranges(): void
     {
         $range1 = DateRange::fromStrings(
             (new DateTimeImmutable('+1 day'))->format('Y-m-d'),
@@ -103,7 +103,7 @@ class DateRangeTest extends TestCase
         $this->assertTrue($range2->overlaps($range1));
     }
 
-    public function testDetectsNonOverlappingRanges(): void
+    public function test_detects_non_overlapping_ranges(): void
     {
         $range1 = DateRange::fromStrings(
             (new DateTimeImmutable('+1 day'))->format('Y-m-d'),
