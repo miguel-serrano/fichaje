@@ -157,10 +157,10 @@ class RegistroHorarioTest extends TestCase
 
         $this->assertNotNull($openRegistro);
 
-        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $openRegistro->id]));
+        $response = $this->post(route('registro_horario.salida'));
 
         $response->assertRedirect(route('user.me'));
-        $response->assertSessionHas('success', 'Fichaje cerrado correctamente');
+        $response->assertSessionHas('success', 'Salida registrada correctamente');
 
         $this->assertDatabaseMissing('time_entries', [
             'id' => $openRegistro->id,
@@ -168,29 +168,9 @@ class RegistroHorarioTest extends TestCase
         ]);
     }
 
-    public function test_cannot_cerrar_registro_if_entry_not_found(): void
+    public function test_cannot_cerrar_registro_if_no_open_entry(): void
     {
-        $registroId = 999;
-
-        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $registroId]));
-
-        $response->assertRedirect(route('user.me'));
-        $response->assertSessionHas('error');
-    }
-
-    public function test_cannot_cerrar_registro_if_entry_already_closed(): void
-    {
-        $this->post('/registro-horario/entrada');
-        $this->post('/registro-horario/salida');
-
-        $closedRegistro = \App\Models\TimeEntry::query()
-            ->where('user_id', $this->authenticatedUser->id)
-            ->whereNotNull('salida')
-            ->first();
-
-        $this->assertNotNull($closedRegistro);
-
-        $response = $this->post(route('registro_horario.salida', ['registroHorarioId' => $closedRegistro->id]));
+        $response = $this->post(route('registro_horario.salida'));
 
         $response->assertRedirect(route('user.me'));
         $response->assertSessionHas('error');

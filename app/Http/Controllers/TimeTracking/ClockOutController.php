@@ -21,7 +21,7 @@ class ClockOutController extends Controller
     ) {
     }
 
-    public function __invoke(?int $registroHorarioId = null): RedirectResponse
+    public function __invoke(): RedirectResponse
     {
         try {
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
@@ -38,15 +38,11 @@ class ClockOutController extends Controller
             }
 
             $this->commandBus->dispatch(
-                ClockOutCommand::create($user->uuid()->value(), $registroHorarioId)
+                ClockOutCommand::create($user->uuid()->value())
             );
 
-            $successMessage = null !== $registroHorarioId
-                ? 'Fichaje cerrado correctamente'
-                : 'Salida registrada correctamente';
-
             return redirect()->route('user.me')
-                ->with('success', $successMessage);
+                ->with('success', 'Salida registrada correctamente');
         } catch (\Exception $e) {
             return redirect()->route('user.me')
                 ->with('error', $e->getMessage());

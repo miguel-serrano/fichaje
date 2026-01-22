@@ -207,9 +207,8 @@
                                 </td>
                                 <td class="right-align">
                                     @if($registro->isOpen())
-                                        <form action="{{ route('registro_horario.salida', ['registroHorarioId' => $registro->id()->value()]) }}" method="POST" style="display: inline;">
+                                        <form action="{{ route('registro_horario.salida') }}" method="POST" style="display: inline;">
                                             @csrf
-                                            <input type="hidden" name="userUuid" value="{{ $user->uuid()->value() }}">
                                             <button type="submit" class="btn-small waves-effect waves-light btn-claude">
                                                 <i class="material-icons left">check</i>Cerrar
                                             </button>

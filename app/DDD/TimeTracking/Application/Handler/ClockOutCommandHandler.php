@@ -23,9 +23,6 @@ class ClockOutCommandHandler
 
         $this->permissionChecker->assertHasPermission($user, TimeTrackingPermission::ClockOut->value);
 
-        $this->service->clockOut(
-            $command->userUuid->value(),
-            $command->timeEntryId?->value()
-        );
+        $this->service->clockOut($command->userUuid->value());
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
-use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\UserDeletionFailedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
@@ -44,25 +43,6 @@ class EloquentUserRepository implements UserRepositoryInterface
                 $data['created_at'] = $now;
                 $model = UserModel::create($data);
                 $userId = $model->id;
-            }
-
-            foreach ($user->timeEntries() as $entry) {
-                $entryData = [
-                    'user_id' => $userId,
-                    'entrada' => $entry->startTime(),
-                    'salida' => $entry->endTime(),
-                    'auto_closed' => $entry->isAutoClosed(),
-                    'auto_close_reason' => $entry->autoCloseReason(),
-                    'updated_at' => $now,
-                ];
-
-                if ($entry->id()) {
-                    TimeEntryModel::where('id', $entry->id()->value())->update($entryData);
-                } else {
-                    $entryData['created_at'] = $now;
-                    $newEntry = TimeEntryModel::create($entryData);
-                    $entry->setId(new TimeEntryId($newEntry->id));
-                }
             }
         });
 

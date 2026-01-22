@@ -5,22 +5,46 @@ declare(strict_types=1);
 namespace App\DDD\TimeTracking\Application\Service;
 
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
-use App\DDD\TimeTracking\Domain\Exceptions\DailyTimeEntryLimitExceededException;
+use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
+use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
+use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
-use App\DDD\User\Domain\Entity\User;
+use App\DDD\TimeTracking\Domain\Services\DailyLimitValidatorService;
+use App\DDD\TimeTracking\Domain\Services\OrphanTimeEntryCloserService;
+use App\DDD\TimeTracking\Domain\Services\TimeEntryCalculationService;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Illuminate\Support\Facades\Log;
 
 final class TimeTrackingService
 {
-    private const MAX_HOURS = 8;
-
-    public function __construct(
+    private function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
         private PermissionCheckerInterface $permissionChecker,
+        private TimeEntryCalculationService $calculationService,
+        private DailyLimitValidatorService $dailyLimitValidator,
+        private OrphanTimeEntryCloserService $orphanCloser,
     ) {
+    }
+
+    public static function create(
+        UserRepositoryInterface $userRepository,
+        TimeEntryRepositoryInterface $timeEntryRepository,
+        PermissionCheckerInterface $permissionChecker,
+    ): self {
+        $calculationService = TimeEntryCalculationService::create();
+        $dailyLimitValidator = DailyLimitValidatorService::create($calculationService);
+        $orphanCloser = OrphanTimeEntryCloserService::create();
+
+        return new self(
+            $userRepository,
+            $timeEntryRepository,
+            $permissionChecker,
+            $calculationService,
+            $dailyLimitValidator,
+            $orphanCloser
+        );
     }
 
     public function clockIn(Uuid $userUuid): void
@@ -31,16 +55,20 @@ final class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        if (!$this->permissionChecker->isSuperAdmin($user)) {
-            $this->ensureDailyLimitNotExceeded($user);
+        if ($this->calculationService->hasOpenEntry($user->timeEntries())) {
+            throw new OpenTimeEntryAlreadyExistsException();
         }
 
-        $user->clockIn();
+        if (!$this->permissionChecker->isSuperAdmin($user)) {
+            $this->dailyLimitValidator->ensureDailyLimitNotExceeded($user->timeEntries());
+        }
 
-        $this->userRepository->save($user);
+        $timeEntry = TimeEntry::create($user->id());
+
+        $this->timeEntryRepository->save($timeEntry);
     }
 
-    public function clockOut(string $userUuid, ?int $timeEntryId = null): void
+    public function clockOut(string $userUuid): void
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
 
@@ -48,29 +76,15 @@ final class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        if (null !== $timeEntryId) {
-            $entryToClose = null;
-            foreach ($user->timeEntries() as $entry) {
-                if ($entry->id() && $entry->id()->value() === $timeEntryId) {
-                    $entryToClose = $entry;
-                    break;
-                }
-            }
+        $openEntry = $this->calculationService->findOpenEntry($user->timeEntries());
 
-            if (!$entryToClose) {
-                throw new \InvalidArgumentException('Registro horario no encontrado.');
-            }
-
-            if (!$entryToClose->isOpen()) {
-                throw new \InvalidArgumentException('El registro horario ya está cerrado.');
-            }
-
-            $entryToClose->close();
-        } else {
-            $user->clockOut();
+        if (!$openEntry) {
+            throw new NoOpenTimeEntryException();
         }
 
-        $this->userRepository->save($user);
+        $openEntry->close();
+
+        $this->timeEntryRepository->update($openEntry);
     }
 
     public function getAccumulatedSeconds(string $userUuid): int
@@ -81,16 +95,7 @@ final class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        $todayDate = date('Y-m-d');
-        $suma = 0;
-
-        foreach ($user->timeEntries() as $entry) {
-            if (date('Y-m-d', $entry->startTime()) === $todayDate) {
-                $suma += $entry->workedSeconds();
-            }
-        }
-
-        return $suma;
+        return $this->calculationService->calculateTodayAccumulatedSeconds($user->timeEntries());
     }
 
     public function hasOpenTimeEntry(string $userUuid): bool
@@ -101,13 +106,7 @@ final class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        foreach ($user->timeEntries() as $entry) {
-            if ($entry->isOpen()) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->calculationService->hasOpenEntry($user->timeEntries());
     }
 
     /**
@@ -123,46 +122,21 @@ final class TimeTrackingService
         $closedByUser = [];
 
         foreach ($orphanEntries as $entry) {
-            $entrada = $entry->startTime();
-            $entradaDate = date('Y-m-d', $entrada);
-            $endOfDay = strtotime($entradaDate.' 23:59:59');
-            $maxSecondsDaily = self::MAX_HOURS * 3600;
-
             $workedSecondsToday = $this->timeEntryRepository->getWorkedSecondsByUserAndDate(
                 $entry->userId(),
-                $entrada,
+                $entry->startTime(),
                 $entry->id()
             );
 
-            $remainingSeconds = $maxSecondsDaily - $workedSecondsToday;
-
-            if ($remainingSeconds <= 0) {
-                $salida = $entrada;
-                $reason = 'max_hours_exceeded';
-            } else {
-                $maxHoursLimit = $entrada + $remainingSeconds;
-
-                if ($maxHoursLimit < $endOfDay) {
-                    $salida = $maxHoursLimit;
-                    $reason = 'max_hours_exceeded';
-                } else {
-                    $salida = $endOfDay;
-                    $reason = 'end_of_day';
-                }
-            }
+            $closureResult = $this->orphanCloser->calculateClosure($entry, $workedSecondsToday);
 
             $this->timeEntryRepository->closeWithAutoClosed(
-                $entry->id(),
-                $salida,
-                $reason
+                $closureResult->entryId(),
+                $closureResult->closeTime(),
+                $closureResult->reason()
             );
 
-            $closedByUser[$entry->userId()->value()][] = [
-                'entry_id' => $entry->id()->value(),
-                'entrada' => date('Y-m-d H:i:s', $entrada),
-                'salida' => date('Y-m-d H:i:s', $salida),
-                'reason' => $reason,
-            ];
+            $closedByUser[$entry->userId()->value()][] = $closureResult->toArray();
         }
 
         Log::info('Fichajes huérfanos cerrados', [
@@ -171,21 +145,5 @@ final class TimeTrackingService
         ]);
 
         return $closedByUser;
-    }
-
-    private function ensureDailyLimitNotExceeded(User $user): void
-    {
-        $todayDate = date('Y-m-d');
-        $todayEntries = 0;
-
-        foreach ($user->timeEntries() as $entry) {
-            if (date('Y-m-d', $entry->startTime()) === $todayDate) {
-                ++$todayEntries;
-            }
-        }
-
-        if ($todayEntries >= DailyTimeEntryLimitExceededException::MAX_DAILY_ENTRIES) {
-            throw DailyTimeEntryLimitExceededException::withCount($todayEntries);
-        }
     }
 }

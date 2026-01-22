@@ -101,6 +101,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/registro-horario', ViewTimeTrackingController::class)->name('registro_horario.index');
         Route::post('/registro-horario/entrada', ClockInController::class)->name('registro_horario.entrada');
-        Route::post('/registro-horario/salida/{registroHorarioId?}', ClockOutController::class)->name('registro_horario.salida');
+        Route::post('/registro-horario/salida', ClockOutController::class)->name('registro_horario.salida');
     });
 });
