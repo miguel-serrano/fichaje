@@ -152,25 +152,23 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function countTodayRegistrations(): int
     {
-        $todayStart = strtotime('today 00:00:00');
-        $todayEnd = strtotime('today 23:59:59');
+        $today = $this->todayBounds();
 
         return $this->query()
-            ->where('created_at', '>=', $todayStart)
-            ->where('created_at', '<=', $todayEnd)
+            ->where('created_at', '>=', $today['start'])
+            ->where('created_at', '<=', $today['end'])
             ->count();
     }
 
     /** @return array<array-key, mixed> */
     public function findTodayTimeEntriesByUserId(UserId $id): array
     {
-        $todayStart = strtotime('today 00:00:00');
-        $todayEnd = strtotime('today 23:59:59');
+        $today = $this->todayBounds();
 
         return $this->timeEntryQuery()
             ->where('user_id', $id->value())
-            ->where('entrada', '>=', $todayStart)
-            ->where('entrada', '<=', $todayEnd)
+            ->where('entrada', '>=', $today['start'])
+            ->where('entrada', '<=', $today['end'])
             ->get()
             ->map(fn (\stdClass $row) => (array) $row)
             ->toArray();
@@ -206,8 +204,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function findDailyTimeEntriesByUserId(UserId $id): array
     {
         $userId = $id->value();
-        $todayStart = strtotime('today 00:00:00');
-        $todayEnd = strtotime('today 23:59:59');
+        $today = $this->todayBounds();
 
         return [
             'cerrados' => $this->timeEntryQuery()
@@ -218,10 +215,19 @@ class EloquentUserRepository implements UserRepositoryInterface
             'abiertos' => $this->timeEntryQuery()
                 ->where('user_id', $userId)
                 ->whereNull('salida')
-                ->where('entrada', '>=', $todayStart)
-                ->where('entrada', '<=', $todayEnd)
+                ->where('entrada', '>=', $today['start'])
+                ->where('entrada', '<=', $today['end'])
                 ->orderBy('entrada', 'desc')
                 ->get(),
+        ];
+    }
+
+    /** @return array{start: int, end: int} */
+    private function todayBounds(): array
+    {
+        return [
+            'start' => strtotime('today 00:00:00'),
+            'end' => strtotime('today 23:59:59'),
         ];
     }
 
