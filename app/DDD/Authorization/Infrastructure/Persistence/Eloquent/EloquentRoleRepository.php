@@ -155,7 +155,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
         }
     }
 
-    public function assignRoleToUser(UserId $userId, RoleSlug $slug): void
+    public function assignRoleToUserBySystem(UserId $userId, RoleSlug $slug): void
     {
         $role = $this->findBySlugOrFail($slug);
 

@@ -36,7 +36,7 @@ final class RegisterCommandHandler
 
         $user = $this->userRepository->save($user);
 
-        $this->roleRepository->assignRoleToUser(
+        $this->roleRepository->assignRoleToUserBySystem(
             $user->id(),
             new RoleSlug(self::DEFAULT_ROLE_SLUG)
         );

@@ -33,5 +33,5 @@ interface RoleRepositoryInterface
      */
     public function syncPermissions(RoleId $roleId, array $permissionIds): void;
 
-    public function assignRoleToUser(UserId $userId, RoleSlug $slug): void;
+    public function assignRoleToUserBySystem(UserId $userId, RoleSlug $slug): void;
 }
