@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\TimeTracking;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\TimeTracking\Application\Command\ClockInCommand;
-use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
+use App\DDD\User\Domain\Exceptions\UserNotActiveException;
 use App\Http\Controllers\Controller;
-use App\Models\User as EloquentUser;
 use Illuminate\Http\RedirectResponse;
 
 class ClockInController extends Controller
@@ -17,7 +15,6 @@ class ClockInController extends Controller
     public function __construct(
         private CommandBusInterface $commandBus,
         private QueryBusInterface $queryBus,
-        private PermissionCheckerInterface $permissionChecker,
     ) {
     }
 
@@ -26,23 +23,15 @@ class ClockInController extends Controller
         try {
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $eloquentUser = EloquentUser::query()->where('uuid', $user->uuid()->value())->first();
-            if (!$eloquentUser || !$eloquentUser->is_active) {
-                return redirect()->route('user.me')
-                    ->with('error', 'Tu cuenta está inactiva. Contacta con un administrador para activarla.');
-            }
-
-            if (!$this->permissionChecker->hasPermission($user, TimeTrackingPermission::ClockIn->value)) {
-                return redirect()->route('user.me')
-                    ->with('error', 'No tienes permisos para fichar entrada.');
-            }
-
             $this->commandBus->dispatch(
                 ClockInCommand::create($user->uuid()->value())
             );
 
             return redirect()->route('user.me')
                 ->with('success', 'Entrada registrada correctamente');
+        } catch (UserNotActiveException) {
+            return redirect()->route('bienvenido')
+                ->with('error', 'Tu cuenta está pendiente de activación, en breve se activará.');
         } catch (\Exception $e) {
             return redirect()->route('user.me')
                 ->with('error', $e->getMessage());

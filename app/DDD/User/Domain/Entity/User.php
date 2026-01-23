@@ -7,6 +7,7 @@ use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
+use App\DDD\User\Domain\Exceptions\UserNotActiveException;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\Name;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -127,6 +128,18 @@ final class User
         $this->isActive = !$this->isActive;
 
         return $this->isActive;
+    }
+
+    /**
+     * Verifica que el usuario esté activo.
+     *
+     * @throws UserNotActiveException si el usuario no está activo
+     */
+    public function ensureIsActive(): void
+    {
+        if (!$this->isActive) {
+            throw UserNotActiveException::forUuid($this->uuid);
+        }
     }
 
     /** @return TimeEntry[] */

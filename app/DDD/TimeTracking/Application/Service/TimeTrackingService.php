@@ -12,6 +12,7 @@ use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\Services\DailyLimitValidatorService;
 use App\DDD\TimeTracking\Domain\Services\OrphanTimeEntryCloserService;
 use App\DDD\TimeTracking\Domain\Services\TimeEntryCalculationService;
+use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Psr\Log\LoggerInterface;
@@ -48,6 +49,51 @@ final class TimeTrackingService
             $orphanCloser,
             $logger
         );
+    }
+
+    /**
+     * Valida que el usuario puede fichar entrada.
+     *
+     * @throws OpenTimeEntryAlreadyExistsException                                 si ya tiene una entrada abierta
+     * @throws \App\DDD\TimeTracking\Domain\Exceptions\DailyLimitExceededException si excede el límite diario
+     */
+    public function ensureCanClockIn(User $user): void
+    {
+        if ($this->calculationService->hasOpenEntry($user->timeEntries())) {
+            throw new OpenTimeEntryAlreadyExistsException();
+        }
+
+        if (!$this->permissionChecker->isSuperAdmin($user)) {
+            $this->dailyLimitValidator->ensureDailyLimitNotExceeded($user->timeEntries());
+        }
+    }
+
+    /**
+     * Valida que el usuario puede fichar salida.
+     *
+     * @throws NoOpenTimeEntryException si no tiene una entrada abierta
+     */
+    public function ensureCanClockOut(User $user): void
+    {
+        if (!$this->calculationService->hasOpenEntry($user->timeEntries())) {
+            throw new NoOpenTimeEntryException();
+        }
+    }
+
+    /**
+     * Obtiene la entrada abierta del usuario.
+     *
+     * @throws NoOpenTimeEntryException si no tiene una entrada abierta
+     */
+    public function getOpenEntry(User $user): TimeEntry
+    {
+        $openEntry = $this->calculationService->findOpenEntry($user->timeEntries());
+
+        if (!$openEntry) {
+            throw new NoOpenTimeEntryException();
+        }
+
+        return $openEntry;
     }
 
     public function clockIn(Uuid $userUuid): void
