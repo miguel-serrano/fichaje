@@ -78,33 +78,21 @@ final class HolidayRequest
         return $this->status;
     }
 
-    /**
-     * Obtiene el timestamp Unix de creación.
-     */
     public function createdAt(): ?int
     {
         return $this->createdAt;
     }
 
-    /**
-     * Obtiene el timestamp Unix de última actualización.
-     */
     public function updatedAt(): ?int
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Formatea la fecha de creación.
-     */
     public function createdAtFormatted(string $format = 'Y-m-d H:i:s'): ?string
     {
         return null !== $this->createdAt ? date($format, $this->createdAt) : null;
     }
 
-    /**
-     * Formatea la fecha de actualización.
-     */
     public function updatedAtFormatted(string $format = 'Y-m-d H:i:s'): ?string
     {
         return null !== $this->updatedAt ? date($format, $this->updatedAt) : null;

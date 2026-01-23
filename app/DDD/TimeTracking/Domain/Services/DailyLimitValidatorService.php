@@ -7,9 +7,6 @@ namespace App\DDD\TimeTracking\Domain\Services;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\DailyTimeEntryLimitExceededException;
 
-/**
- * Servicio de dominio para validar límites diarios de fichajes.
- */
 final class DailyLimitValidatorService
 {
     public const MAX_DAILY_ENTRIES = 8;
@@ -25,11 +22,9 @@ final class DailyLimitValidatorService
     }
 
     /**
-     * Verifica que el usuario no haya excedido el límite diario de fichajes.
+     * @param TimeEntry[] $timeEntries
      *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo del usuario
-     *
-     * @throws DailyTimeEntryLimitExceededException Si se excedió el límite
+     * @throws DailyTimeEntryLimitExceededException
      */
     public function ensureDailyLimitNotExceeded(array $timeEntries): void
     {
@@ -41,9 +36,7 @@ final class DailyLimitValidatorService
     }
 
     /**
-     * Verifica si el usuario puede crear un nuevo fichaje hoy.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo del usuario
+     * @param TimeEntry[] $timeEntries
      */
     public function canCreateNewEntry(array $timeEntries): bool
     {
@@ -53,9 +46,7 @@ final class DailyLimitValidatorService
     }
 
     /**
-     * Obtiene el número de fichajes restantes para hoy.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo del usuario
+     * @param TimeEntry[] $timeEntries
      */
     public function remainingEntriesForToday(array $timeEntries): int
     {

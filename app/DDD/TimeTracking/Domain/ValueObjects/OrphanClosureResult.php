@@ -6,9 +6,6 @@ namespace App\DDD\TimeTracking\Domain\ValueObjects;
 
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 
-/**
- * Resultado del cálculo de cierre para una entrada huérfana.
- */
 final class OrphanClosureResult
 {
     private function __construct(

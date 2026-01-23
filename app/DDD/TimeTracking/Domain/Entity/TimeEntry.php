@@ -32,16 +32,6 @@ final class TimeEntry
         );
     }
 
-    /**
-     * Crea una entidad desde primitivos (para reconstruir desde persistencia).
-     *
-     * @param int|null    $id              ID del registro
-     * @param int         $userId          ID del usuario
-     * @param int         $startTime       Timestamp Unix de entrada
-     * @param int|null    $endTime         Timestamp Unix de salida (null si abierto)
-     * @param bool        $autoClosed      Si fue cerrado automáticamente
-     * @param string|null $autoCloseReason Razón del cierre automático
-     */
     public static function fromPrimitives(
         ?int $id,
         int $userId,
@@ -75,33 +65,21 @@ final class TimeEntry
         return $this->userId;
     }
 
-    /**
-     * Obtiene el timestamp Unix de la hora de entrada.
-     */
     public function startTime(): int
     {
         return $this->startTime;
     }
 
-    /**
-     * Obtiene el timestamp Unix de la hora de salida.
-     */
     public function endTime(): ?int
     {
         return $this->endTime;
     }
 
-    /**
-     * Formatea la hora de entrada para mostrar.
-     */
     public function startTimeFormatted(string $format = 'Y-m-d H:i:s'): string
     {
         return date($format, $this->startTime);
     }
 
-    /**
-     * Formatea la hora de salida para mostrar.
-     */
     public function endTimeFormatted(string $format = 'Y-m-d H:i:s'): ?string
     {
         return null !== $this->endTime ? date($format, $this->endTime) : null;
@@ -112,11 +90,6 @@ final class TimeEntry
         $this->endTime = UnixTimestamp::now()->value();
     }
 
-    /**
-     * Cierra la entrada en un momento específico.
-     *
-     * @param int $closeTime Timestamp Unix del momento de cierre
-     */
     public function closeAt(int $closeTime, bool $autoClosed = false, ?string $autoCloseReason = null): void
     {
         $this->endTime = $closeTime;
@@ -139,10 +112,6 @@ final class TimeEntry
         return $this->autoCloseReason;
     }
 
-    /**
-     * Calcula los segundos trabajados.
-     * Si la entrada está abierta, calcula hasta el momento actual.
-     */
     public function workedSeconds(): int
     {
         if ($this->startTime && $this->endTime) {

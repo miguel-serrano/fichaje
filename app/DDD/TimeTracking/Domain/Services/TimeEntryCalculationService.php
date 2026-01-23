@@ -6,9 +6,6 @@ namespace App\DDD\TimeTracking\Domain\Services;
 
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 
-/**
- * Servicio de dominio para cálculos relacionados con entradas de tiempo.
- */
 final class TimeEntryCalculationService
 {
     private function __construct()
@@ -21,10 +18,7 @@ final class TimeEntryCalculationService
     }
 
     /**
-     * Calcula los segundos trabajados para una fecha específica.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo
-     * @param string      $date        Fecha en formato Y-m-d
+     * @param TimeEntry[] $timeEntries
      */
     public function calculateAccumulatedSecondsForDate(array $timeEntries, string $date): int
     {
@@ -40,9 +34,7 @@ final class TimeEntryCalculationService
     }
 
     /**
-     * Calcula los segundos trabajados para hoy.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo
+     * @param TimeEntry[] $timeEntries
      */
     public function calculateTodayAccumulatedSeconds(array $timeEntries): int
     {
@@ -50,10 +42,7 @@ final class TimeEntryCalculationService
     }
 
     /**
-     * Cuenta las entradas de tiempo para una fecha específica.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo
-     * @param string      $date        Fecha en formato Y-m-d
+     * @param TimeEntry[] $timeEntries
      */
     public function countEntriesForDate(array $timeEntries, string $date): int
     {
@@ -69,9 +58,7 @@ final class TimeEntryCalculationService
     }
 
     /**
-     * Cuenta las entradas de tiempo para hoy.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo
+     * @param TimeEntry[] $timeEntries
      */
     public function countTodayEntries(array $timeEntries): int
     {
@@ -79,9 +66,7 @@ final class TimeEntryCalculationService
     }
 
     /**
-     * Verifica si hay alguna entrada abierta.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo
+     * @param TimeEntry[] $timeEntries
      */
     public function hasOpenEntry(array $timeEntries): bool
     {
@@ -95,9 +80,7 @@ final class TimeEntryCalculationService
     }
 
     /**
-     * Obtiene la entrada abierta si existe.
-     *
-     * @param TimeEntry[] $timeEntries Lista de entradas de tiempo
+     * @param TimeEntry[] $timeEntries
      */
     public function findOpenEntry(array $timeEntries): ?TimeEntry
     {

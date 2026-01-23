@@ -19,9 +19,6 @@ class TimeFormatter
         '12' => 'Diciembre',
     ];
 
-    /**
-     * Formats seconds to HH:MM:SS format.
-     */
     public static function formatTime(int $seconds): string
     {
         $hours = floor($seconds / 3600);
@@ -33,9 +30,6 @@ class TimeFormatter
                str_pad((string) $remainingSeconds, 2, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Formats a year-month string (YYYY-MM) to "Month YYYY" format in Spanish.
-     */
     public static function formatMonth(string $yearMonth): string
     {
         [$year, $month] = explode('-', $yearMonth);
