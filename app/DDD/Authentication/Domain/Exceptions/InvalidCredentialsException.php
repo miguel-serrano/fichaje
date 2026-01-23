@@ -6,6 +6,6 @@ final class InvalidCredentialsException extends \Exception
 {
     public function __construct()
     {
-        parent::__construct('The provided credentials are invalid.');
+        parent::__construct('Las credenciales proporcionadas no son válidas');
     }
 }

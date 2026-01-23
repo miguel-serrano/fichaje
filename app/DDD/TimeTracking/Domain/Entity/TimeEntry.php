@@ -2,6 +2,7 @@
 
 namespace App\DDD\TimeTracking\Domain\Entity;
 
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 
@@ -46,7 +47,7 @@ final class TimeEntry
         return new self(
             null,
             $userId,
-            time(),
+            UnixTimestamp::now()->value(),
             null,
             false,
             null
@@ -130,7 +131,7 @@ final class TimeEntry
 
     public function close(): void
     {
-        $this->endTime = time();
+        $this->endTime = UnixTimestamp::now()->value();
     }
 
     /**
@@ -171,7 +172,7 @@ final class TimeEntry
         }
 
         if ($this->startTime && null === $this->endTime) {
-            return time() - $this->startTime;
+            return UnixTimestamp::now()->value() - $this->startTime;
         }
 
         return 0;

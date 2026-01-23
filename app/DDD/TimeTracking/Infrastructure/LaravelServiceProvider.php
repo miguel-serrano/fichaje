@@ -8,6 +8,7 @@ use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Infrastructure\Persistence\Eloquent\EloquentTimeEntryRepository;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
+use Psr\Log\LoggerInterface;
 
 class LaravelServiceProvider extends ServiceProvider
 {
@@ -22,7 +23,8 @@ class LaravelServiceProvider extends ServiceProvider
             return TimeTrackingService::create(
                 $app->make(UserRepositoryInterface::class),
                 $app->make(TimeEntryRepositoryInterface::class),
-                $app->make(PermissionCheckerInterface::class)
+                $app->make(PermissionCheckerInterface::class),
+                $app->make(LoggerInterface::class)
             );
         });
     }

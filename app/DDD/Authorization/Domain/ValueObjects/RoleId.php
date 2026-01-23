@@ -9,7 +9,7 @@ final class RoleId extends IntValueObject
     protected function validate(): void
     {
         if ($this->value <= 0) {
-            throw new \InvalidArgumentException('RoleId must be a positive integer');
+            throw new \InvalidArgumentException('El ID de rol debe ser un entero positivo');
         }
     }
 }

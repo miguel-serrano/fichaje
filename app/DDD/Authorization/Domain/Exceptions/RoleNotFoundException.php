@@ -6,11 +6,11 @@ class RoleNotFoundException extends \Exception
 {
     public static function withId(int $id): self
     {
-        return new self("Role with ID {$id} not found");
+        return new self("Rol con ID {$id} no encontrado");
     }
 
     public static function withSlug(string $slug): self
     {
-        return new self("Role with slug '{$slug}' not found");
+        return new self("Rol con slug '{$slug}' no encontrado");
     }
 }

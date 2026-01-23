@@ -9,11 +9,11 @@ final class PermissionSlug extends StringValueObject
     protected function validate(): void
     {
         if (empty($this->value)) {
-            throw new \InvalidArgumentException('Permission slug cannot be empty');
+            throw new \InvalidArgumentException('El slug del permiso no puede estar vacío');
         }
 
         if (!preg_match('/^[a-z]+\.[a-z_]+$/', $this->value)) {
-            throw new \InvalidArgumentException('Permission slug must follow format: context.action (e.g., user.create, timetracking.view_all)');
+            throw new \InvalidArgumentException('El slug del permiso debe seguir el formato: contexto.acción (ej: user.create, timetracking.view_all)');
         }
     }
 

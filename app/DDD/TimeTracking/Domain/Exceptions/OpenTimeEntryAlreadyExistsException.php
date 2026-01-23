@@ -4,13 +4,13 @@ namespace App\DDD\TimeTracking\Domain\Exceptions;
 
 class OpenTimeEntryAlreadyExistsException extends \Exception
 {
-    public function __construct(string $message = 'An open time entry already exists.')
+    public function __construct(string $message = 'Ya existe una entrada de tiempo abierta')
     {
         parent::__construct($message);
     }
 
     public static function forUser(string $userUuid): self
     {
-        return new self("An open time entry already exists for user {$userUuid}");
+        return new self("Ya existe una entrada abierta para el usuario {$userUuid}");
     }
 }

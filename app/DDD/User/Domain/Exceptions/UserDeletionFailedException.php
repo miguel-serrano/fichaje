@@ -8,6 +8,6 @@ class UserDeletionFailedException extends \Exception
 {
     public static function withId(UserId $userId): self
     {
-        return new self("Failed to delete user with ID {$userId->value()}");
+        return new self("Error al eliminar el usuario con ID {$userId->value()}");
     }
 }

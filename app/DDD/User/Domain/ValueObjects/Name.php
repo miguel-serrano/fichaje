@@ -14,11 +14,11 @@ final class Name extends StringValueObject
     protected function validate(): void
     {
         if ('' === trim($this->value)) {
-            throw new \InvalidArgumentException('Name cannot be empty.');
+            throw new \InvalidArgumentException('El nombre no puede estar vacío');
         }
 
         if (strlen($this->value) > 255) {
-            throw new \InvalidArgumentException('Name cannot exceed 255 characters.');
+            throw new \InvalidArgumentException('El nombre no puede exceder 255 caracteres');
         }
     }
 }

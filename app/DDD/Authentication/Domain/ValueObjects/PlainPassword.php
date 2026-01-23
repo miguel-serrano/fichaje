@@ -14,7 +14,7 @@ final class PlainPassword extends StringValueObject
     protected function validate(): void
     {
         if (strlen($this->value) < 8) {
-            throw new \InvalidArgumentException('Password must be at least 8 characters long.');
+            throw new \InvalidArgumentException('La contraseña debe tener al menos 8 caracteres');
         }
     }
 }

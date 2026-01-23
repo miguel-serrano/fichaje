@@ -13,6 +13,7 @@ use App\DDD\User\Domain\ValueObjects\Uuid;
 use Illuminate\Support\Str;
 use Mockery;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class RegistroHorarioServiceTest extends TestCase
 {
@@ -22,6 +23,8 @@ class RegistroHorarioServiceTest extends TestCase
 
     private PermissionCheckerInterface $permissionChecker;
 
+    private LoggerInterface $logger;
+
     private TimeTrackingService $service;
 
     protected function setUp(): void
@@ -30,14 +33,19 @@ class RegistroHorarioServiceTest extends TestCase
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
         $this->timeEntryRepository = Mockery::mock(TimeEntryRepositoryInterface::class);
         $this->permissionChecker = Mockery::mock(PermissionCheckerInterface::class);
+        $this->logger = Mockery::mock(LoggerInterface::class);
 
         // Por defecto, los usuarios no son super_admin
         $this->permissionChecker->shouldReceive('isSuperAdmin')->andReturn(false)->byDefault();
 
+        // Permitir cualquier llamada a logger
+        $this->logger->shouldReceive('info')->byDefault();
+
         $this->service = TimeTrackingService::create(
             $this->userRepository,
             $this->timeEntryRepository,
-            $this->permissionChecker
+            $this->permissionChecker,
+            $this->logger
         );
     }
 
@@ -168,7 +176,7 @@ class RegistroHorarioServiceTest extends TestCase
             ->andReturn($user);
 
         $this->expectException(NoOpenTimeEntryException::class);
-        $this->expectExceptionMessage('No open time entry exists to close.');
+        $this->expectExceptionMessage('No hay una entrada de tiempo abierta para cerrar');
 
         $this->service->clockOut($userUuidValue);
     }

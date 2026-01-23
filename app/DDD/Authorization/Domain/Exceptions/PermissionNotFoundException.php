@@ -6,11 +6,11 @@ class PermissionNotFoundException extends \Exception
 {
     public static function withId(int $id): self
     {
-        return new self("Permission with ID {$id} not found");
+        return new self("Permiso con ID {$id} no encontrado");
     }
 
     public static function withSlug(string $slug): self
     {
-        return new self("Permission with slug '{$slug}' not found");
+        return new self("Permiso con slug '{$slug}' no encontrado");
     }
 }

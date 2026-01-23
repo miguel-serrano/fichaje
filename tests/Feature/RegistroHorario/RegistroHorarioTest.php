@@ -75,7 +75,7 @@ class RegistroHorarioTest extends TestCase
         $response = $this->post('/registro-horario/entrada');
 
         $response->assertRedirect(route('user.me'));
-        $response->assertSessionHas('error', 'An open time entry already exists.');
+        $response->assertSessionHas('error', 'Ya existe una entrada de tiempo abierta');
     }
 
     public function test_can_fichar_salida(): void
@@ -98,7 +98,7 @@ class RegistroHorarioTest extends TestCase
         $response = $this->post('/registro-horario/salida');
 
         $response->assertRedirect(route('user.me'));
-        $response->assertSessionHas('error', 'No open time entry exists to close.');
+        $response->assertSessionHas('error', 'No hay una entrada de tiempo abierta para cerrar');
     }
 
     public function test_registro_horario_with_multiple_entries(): void

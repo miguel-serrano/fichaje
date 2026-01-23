@@ -14,7 +14,7 @@ use App\DDD\TimeTracking\Domain\Services\OrphanTimeEntryCloserService;
 use App\DDD\TimeTracking\Domain\Services\TimeEntryCalculationService;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 final class TimeTrackingService
 {
@@ -25,6 +25,7 @@ final class TimeTrackingService
         private TimeEntryCalculationService $calculationService,
         private DailyLimitValidatorService $dailyLimitValidator,
         private OrphanTimeEntryCloserService $orphanCloser,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -32,6 +33,7 @@ final class TimeTrackingService
         UserRepositoryInterface $userRepository,
         TimeEntryRepositoryInterface $timeEntryRepository,
         PermissionCheckerInterface $permissionChecker,
+        LoggerInterface $logger,
     ): self {
         $calculationService = TimeEntryCalculationService::create();
         $dailyLimitValidator = DailyLimitValidatorService::create($calculationService);
@@ -43,7 +45,8 @@ final class TimeTrackingService
             $permissionChecker,
             $calculationService,
             $dailyLimitValidator,
-            $orphanCloser
+            $orphanCloser,
+            $logger
         );
     }
 
@@ -139,7 +142,7 @@ final class TimeTrackingService
             $closedByUser[$entry->userId()->value()][] = $closureResult->toArray();
         }
 
-        Log::info('Fichajes huérfanos cerrados', [
+        $this->logger->info('Fichajes huérfanos cerrados', [
             'total' => count($orphanEntries),
             'users_affected' => count($closedByUser),
         ]);

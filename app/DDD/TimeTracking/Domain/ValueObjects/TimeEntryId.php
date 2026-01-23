@@ -14,7 +14,7 @@ final class TimeEntryId extends IntValueObject
     protected function validate(): void
     {
         if ($this->value <= 0) {
-            throw new \InvalidArgumentException('TimeEntryId must be a positive integer');
+            throw new \InvalidArgumentException('El ID de entrada debe ser un entero positivo');
         }
     }
 }

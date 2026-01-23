@@ -6,6 +6,6 @@ final class UserNotAuthenticatedException extends \Exception
 {
     public function __construct()
     {
-        parent::__construct('User is not authenticated.');
+        parent::__construct('El usuario no está autenticado');
     }
 }

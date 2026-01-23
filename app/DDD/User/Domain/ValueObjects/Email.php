@@ -2,24 +2,37 @@
 
 namespace App\DDD\User\Domain\ValueObjects;
 
-use MichaelRubel\ValueObjects\Collection\Complex\Email as BaseEmail;
+use App\DDD\Shared\Domain\ValueObject\StringValueObject;
 
 /**
  * @method static static make(string $value)
  * @method static static from(string $value)
  * @method static static makeOrNull(string|null $value)
  */
-final class Email extends BaseEmail
+final class Email extends StringValueObject
 {
+    public function __construct(string $value)
+    {
+        // Sanitizar ANTES de asignar el valor (inmutabilidad)
+        $sanitizedValue = strtolower(trim($value));
+
+        parent::__construct($sanitizedValue);
+    }
+
     protected function validate(): void
     {
-        if (!filter_var($this->value(), FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Invalid email format');
+        if (!filter_var($this->value, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Formato de email inválido');
         }
     }
 
-    protected function sanitize(): void
+    public function domain(): string
     {
-        $this->value = strtolower(trim($this->value()));
+        return explode('@', $this->value)[1] ?? '';
+    }
+
+    public function localPart(): string
+    {
+        return explode('@', $this->value)[0] ?? '';
     }
 }
