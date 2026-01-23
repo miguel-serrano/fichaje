@@ -12,16 +12,27 @@ use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use App\Models\TimeEntry as TimeEntryModel;
 use App\Models\User as UserModel;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
+    private string $userTable;
+
+    private string $timeEntryTable;
+
+    public function __construct(private ConnectionInterface $connection)
+    {
+        $this->userTable = UserModel::tableName();
+        $this->timeEntryTable = TimeEntryModel::tableName();
+    }
+
     public function save(User $user): User
     {
         $userId = $user->id()?->value();
         $now = UnixTimestamp::now()->value();
 
-        DB::transaction(function () use ($user, &$userId, $now) {
+        $this->connection->transaction(function () use ($user, &$userId, $now) {
             $data = [
                 'uuid' => $user->uuid()->value(),
                 'email' => $user->email()->value(),
@@ -35,15 +46,14 @@ class EloquentUserRepository implements UserRepositoryInterface
             }
 
             if ($userId) {
-                $model = UserModel::find($userId);
-                if (!$model) {
+                $exists = $this->query()->where('id', $userId)->exists();
+                if (!$exists) {
                     throw new UserNotFoundException("User {$userId} not found");
                 }
-                $model->update($data);
+                $this->query()->where('id', $userId)->update($data);
             } else {
                 $data['created_at'] = $now;
-                $model = UserModel::create($data);
-                $userId = $model->id;
+                $userId = $this->query()->insertGetId($data);
             }
         });
 
@@ -52,13 +62,15 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function findById(UserId $id): ?User
     {
-        $model = UserModel::with('timeEntries')->find($id->value());
+        $row = $this->query()->where('id', $id->value())->first();
 
-        if (!$model) {
+        if (!$row) {
             return null;
         }
 
-        return $this->toDomainEntity($model);
+        $timeEntries = $this->getTimeEntriesForUser($id->value());
+
+        return $this->toDomainEntity($row, $timeEntries);
     }
 
     public function findByIdOrFail(UserId $id): User
@@ -74,13 +86,15 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function findByUuid(Uuid $uuid): ?User
     {
-        $model = UserModel::with('timeEntries')->where('uuid', $uuid->value())->first();
+        $row = $this->query()->where('uuid', $uuid->value())->first();
 
-        if (!$model) {
+        if (!$row) {
             return null;
         }
 
-        return $this->toDomainEntity($model);
+        $timeEntries = $this->getTimeEntriesForUser($row->id);
+
+        return $this->toDomainEntity($row, $timeEntries);
     }
 
     public function findByUuidOrFail(Uuid $uuid): User
@@ -96,24 +110,34 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function existsByEmail(Email $email): bool
     {
-        return UserModel::where('email', $email->value())->exists();
+        return $this->query()->where('email', $email->value())->exists();
     }
 
     /** @return User[] */
     public function findAll(): array
     {
-        return UserModel::with('timeEntries')
-            ->get()
-            ->map(fn (UserModel $model) => $this->toDomainEntity($model))
-            ->toArray();
+        $rows = $this->query()->get();
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $userIds = $rows->pluck('id')->toArray();
+        $allTimeEntries = $this->getTimeEntriesForUsers($userIds);
+
+        return $rows->map(function (\stdClass $row) use ($allTimeEntries) {
+            $timeEntries = $allTimeEntries[$row->id] ?? [];
+
+            return $this->toDomainEntity($row, $timeEntries);
+        })->toArray();
     }
 
     public function delete(UserId $id): void
     {
-        $deleted = DB::transaction(function () use ($id) {
-            TimeEntryModel::where('user_id', $id->value())->delete();
+        $deleted = $this->connection->transaction(function () use ($id) {
+            $this->timeEntryQuery()->where('user_id', $id->value())->delete();
 
-            return UserModel::where('id', $id->value())->delete() > 0;
+            return $this->query()->where('id', $id->value())->delete() > 0;
         });
 
         if (!$deleted) {
@@ -123,16 +147,16 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function count(): int
     {
-        return UserModel::count();
+        return $this->query()->count();
     }
 
     public function countTodayRegistrations(): int
     {
-        // Calcular rango del día actual en timestamps
         $todayStart = strtotime('today 00:00:00');
         $todayEnd = strtotime('today 23:59:59');
 
-        return UserModel::where('created_at', '>=', $todayStart)
+        return $this->query()
+            ->where('created_at', '>=', $todayStart)
             ->where('created_at', '<=', $todayEnd)
             ->count();
     }
@@ -140,25 +164,40 @@ class EloquentUserRepository implements UserRepositoryInterface
     /** @return array<array-key, mixed> */
     public function findTodayTimeEntriesByUserId(UserId $id): array
     {
-        // Calcular rango del día actual en timestamps
         $todayStart = strtotime('today 00:00:00');
         $todayEnd = strtotime('today 23:59:59');
 
-        return TimeEntryModel::where('user_id', $id->value())
+        return $this->timeEntryQuery()
+            ->where('user_id', $id->value())
             ->where('entrada', '>=', $todayStart)
             ->where('entrada', '<=', $todayEnd)
             ->get()
+            ->map(fn (\stdClass $row) => (array) $row)
             ->toArray();
     }
 
     /** @return User[] */
     public function findAdmins(): array
     {
-        return UserModel::with('timeEntries')
-            ->whereHas('roles', fn ($query) => $query->whereIn('slug', ['super_admin', 'admin']))
-            ->get()
-            ->map(fn (UserModel $model) => $this->toDomainEntity($model))
+        $adminUserIds = $this->connection->table('user_role')
+            ->join('roles', 'user_role.role_id', '=', 'roles.id')
+            ->whereIn('roles.slug', ['super_admin', 'admin'])
+            ->pluck('user_role.user_id')
+            ->unique()
             ->toArray();
+
+        if (empty($adminUserIds)) {
+            return [];
+        }
+
+        $rows = $this->query()->whereIn('id', $adminUserIds)->get();
+        $allTimeEntries = $this->getTimeEntriesForUsers($adminUserIds);
+
+        return $rows->map(function (\stdClass $row) use ($allTimeEntries) {
+            $timeEntries = $allTimeEntries[$row->id] ?? [];
+
+            return $this->toDomainEntity($row, $timeEntries);
+        })->toArray();
     }
 
     /**
@@ -167,17 +206,17 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function findDailyTimeEntriesByUserId(UserId $id): array
     {
         $userId = $id->value();
-
-        // Calcular rango del día actual en timestamps
         $todayStart = strtotime('today 00:00:00');
         $todayEnd = strtotime('today 23:59:59');
 
         return [
-            'cerrados' => TimeEntryModel::where('user_id', $userId)
+            'cerrados' => $this->timeEntryQuery()
+                ->where('user_id', $userId)
                 ->whereNotNull('salida')
                 ->orderBy('entrada', 'desc')
                 ->get(),
-            'abiertos' => TimeEntryModel::where('user_id', $userId)
+            'abiertos' => $this->timeEntryQuery()
+                ->where('user_id', $userId)
                 ->whereNull('salida')
                 ->where('entrada', '>=', $todayStart)
                 ->where('entrada', '<=', $todayEnd)
@@ -186,23 +225,71 @@ class EloquentUserRepository implements UserRepositoryInterface
         ];
     }
 
-    private function toDomainEntity(UserModel $model): User
+    private function query(): Builder
     {
-        $timeEntries = $model->timeEntries->map(fn ($entry) => [
-            'id' => $entry->id,
-            'user_id' => $entry->user_id,
-            'entrada' => $entry->entrada,
-            'salida' => $entry->salida,
-            'auto_closed' => $entry->auto_closed,
-            'auto_close_reason' => $entry->auto_close_reason,
-        ])->toArray();
+        return $this->connection->table($this->userTable);
+    }
 
+    private function timeEntryQuery(): Builder
+    {
+        return $this->connection->table($this->timeEntryTable);
+    }
+
+    /**
+     * @return array<array-key, mixed>
+     */
+    private function getTimeEntriesForUser(int $userId): array
+    {
+        return $this->timeEntryQuery()
+            ->where('user_id', $userId)
+            ->get()
+            ->map(fn (\stdClass $entry) => [
+                'id' => $entry->id,
+                'user_id' => $entry->user_id,
+                'entrada' => $entry->entrada,
+                'salida' => $entry->salida,
+                'auto_closed' => $entry->auto_closed,
+                'auto_close_reason' => $entry->auto_close_reason,
+            ])->toArray();
+    }
+
+    /**
+     * @param array<int> $userIds
+     *
+     * @return array<int, array<array-key, mixed>>
+     */
+    private function getTimeEntriesForUsers(array $userIds): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+
+        return $this->timeEntryQuery()
+            ->whereIn('user_id', $userIds)
+            ->get()
+            ->groupBy('user_id')
+            ->map(fn ($entries) => $entries->map(fn (\stdClass $entry) => [
+                'id' => $entry->id,
+                'user_id' => $entry->user_id,
+                'entrada' => $entry->entrada,
+                'salida' => $entry->salida,
+                'auto_closed' => $entry->auto_closed,
+                'auto_close_reason' => $entry->auto_close_reason,
+            ])->toArray())
+            ->toArray();
+    }
+
+    /**
+     * @param array<array-key, mixed> $timeEntries
+     */
+    private function toDomainEntity(\stdClass $row, array $timeEntries): User
+    {
         return User::fromPrimitives(
-            $model->id,
-            $model->uuid,
-            $model->email,
-            $model->name,
-            $model->is_active ?? true,
+            $row->id,
+            $row->uuid,
+            $row->email,
+            $row->name,
+            $row->is_active ?? true,
             $timeEntries
         );
     }

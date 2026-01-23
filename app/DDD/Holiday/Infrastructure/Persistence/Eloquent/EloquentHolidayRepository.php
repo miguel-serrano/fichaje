@@ -12,16 +12,24 @@ use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
 use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\HolidayRequest as HolidayRequestModel;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class EloquentHolidayRepository implements HolidayRepositoryInterface
 {
+    private string $tableName;
+
+    public function __construct(private ConnectionInterface $connection)
+    {
+        $this->tableName = HolidayRequestModel::tableName();
+    }
+
     public function save(HolidayRequest $request): HolidayRequest
     {
         $requestId = $request->id()?->value();
         $now = UnixTimestamp::now()->value();
 
-        DB::transaction(function () use ($request, &$requestId, $now) {
+        $this->connection->transaction(function () use ($request, &$requestId, $now) {
             $data = [
                 'user_id' => $request->userId()->value(),
                 'start_date' => $request->dateRange()->startDate(),
@@ -31,15 +39,14 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
             ];
 
             if ($requestId) {
-                $model = HolidayRequestModel::find($requestId);
-                if (!$model) {
+                $exists = $this->query()->where('id', $requestId)->exists();
+                if (!$exists) {
                     throw HolidayRequestNotFoundException::withId($requestId);
                 }
-                $model->update($data);
+                $this->query()->where('id', $requestId)->update($data);
             } else {
                 $data['created_at'] = $now;
-                $model = HolidayRequestModel::create($data);
-                $requestId = $model->id;
+                $requestId = $this->query()->insertGetId($data);
             }
         });
 
@@ -48,13 +55,13 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
 
     public function findById(HolidayRequestId $id): ?HolidayRequest
     {
-        $model = HolidayRequestModel::find($id->value());
+        $row = $this->query()->where('id', $id->value())->first();
 
-        if (!$model) {
+        if (!$row) {
             return null;
         }
 
-        return $this->toDomainEntity($model);
+        return $this->toDomainEntity($row);
     }
 
     public function findByIdOrFail(HolidayRequestId $id): HolidayRequest
@@ -73,10 +80,11 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findByUserId(UserId $userId): array
     {
-        return HolidayRequestModel::where('user_id', $userId->value())
+        return $this->query()
+            ->where('user_id', $userId->value())
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn (HolidayRequestModel $model) => $this->toDomainEntity($model))
+            ->map(fn (\stdClass $row) => $this->toDomainEntity($row))
             ->toArray();
     }
 
@@ -85,10 +93,11 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findPending(): array
     {
-        return HolidayRequestModel::where('status', 'pending')
+        return $this->query()
+            ->where('status', 'pending')
             ->orderBy('created_at', 'asc')
             ->get()
-            ->map(fn (HolidayRequestModel $model) => $this->toDomainEntity($model))
+            ->map(fn (\stdClass $row) => $this->toDomainEntity($row))
             ->toArray();
     }
 
@@ -97,10 +106,11 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findApproved(): array
     {
-        return HolidayRequestModel::where('status', 'approved')
+        return $this->query()
+            ->where('status', 'approved')
             ->orderBy('start_date', 'asc')
             ->get()
-            ->map(fn (HolidayRequestModel $model) => $this->toDomainEntity($model))
+            ->map(fn (\stdClass $row) => $this->toDomainEntity($row))
             ->toArray();
     }
 
@@ -109,18 +119,19 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
      */
     public function findAll(): array
     {
-        return HolidayRequestModel::orderBy('created_at', 'desc')
+        return $this->query()
+            ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn (HolidayRequestModel $model) => $this->toDomainEntity($model))
+            ->map(fn (\stdClass $row) => $this->toDomainEntity($row))
             ->toArray();
     }
 
     public function hasOverlapping(UserId $userId, DateRange $range, ?HolidayRequestId $excludeId = null): bool
     {
-        $query = HolidayRequestModel::where('user_id', $userId->value())
+        $query = $this->query()
+            ->where('user_id', $userId->value())
             ->whereIn('status', ['pending', 'approved'])
             ->where(function ($q) use ($range) {
-                // Los timestamps se comparan directamente (enteros)
                 $q->where('start_date', '<=', $range->endDate())
                     ->where('end_date', '>=', $range->startDate());
             });
@@ -134,19 +145,24 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
 
     public function delete(HolidayRequestId $id): bool
     {
-        return HolidayRequestModel::where('id', $id->value())->delete() > 0;
+        return $this->query()->where('id', $id->value())->delete() > 0;
     }
 
-    private function toDomainEntity(HolidayRequestModel $model): HolidayRequest
+    private function query(): Builder
+    {
+        return $this->connection->table($this->tableName);
+    }
+
+    private function toDomainEntity(\stdClass $row): HolidayRequest
     {
         return HolidayRequest::fromPrimitives([
-            'id' => $model->id,
-            'user_id' => $model->user_id,
-            'start_date' => $model->start_date,
-            'end_date' => $model->end_date,
-            'status' => $model->status,
-            'created_at' => $model->created_at,
-            'updated_at' => $model->updated_at,
+            'id' => $row->id,
+            'user_id' => $row->user_id,
+            'start_date' => $row->start_date,
+            'end_date' => $row->end_date,
+            'status' => $row->status,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
     }
 }

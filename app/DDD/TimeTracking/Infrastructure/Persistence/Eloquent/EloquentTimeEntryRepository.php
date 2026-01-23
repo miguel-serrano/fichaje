@@ -10,19 +10,27 @@ use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\TimeEntry as TimeEntryModel;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 
 class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
 {
+    private string $tableName;
+
+    public function __construct(private ConnectionInterface $connection)
+    {
+        $this->tableName = TimeEntryModel::tableName();
+    }
+
     public function findById(TimeEntryId $id): ?TimeEntry
     {
-        $model = TimeEntryModel::find($id->value());
+        $row = $this->query()->where('id', $id->value())->first();
 
-        if (!$model) {
+        if (!$row) {
             return null;
         }
 
-        return $this->toDomainEntity($model);
+        return $this->toDomainEntity($row);
     }
 
     public function save(TimeEntry $timeEntry): TimeEntry
@@ -30,7 +38,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
         $entryId = $timeEntry->id()?->value();
         $now = UnixTimestamp::now()->value();
 
-        DB::transaction(function () use ($timeEntry, &$entryId, $now) {
+        $this->connection->transaction(function () use ($timeEntry, &$entryId, $now) {
             $data = [
                 'user_id' => $timeEntry->userId()->value(),
                 'entrada' => $timeEntry->startTime(),
@@ -41,14 +49,10 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
             ];
 
             if ($entryId) {
-                $model = TimeEntryModel::find($entryId);
-                if ($model) {
-                    $model->update($data);
-                }
+                $this->query()->where('id', $entryId)->update($data);
             } else {
                 $data['created_at'] = $now;
-                $model = TimeEntryModel::create($data);
-                $entryId = $model->id;
+                $entryId = $this->query()->insertGetId($data);
             }
         });
 
@@ -63,17 +67,14 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
             throw new \InvalidArgumentException('Cannot update a TimeEntry without an ID');
         }
 
-        $model = TimeEntryModel::find($timeEntry->id()->value());
-        if ($model) {
-            $model->update([
-                'user_id' => $timeEntry->userId()->value(),
-                'entrada' => $timeEntry->startTime(),
-                'salida' => $timeEntry->endTime(),
-                'auto_closed' => $timeEntry->isAutoClosed(),
-                'auto_close_reason' => $timeEntry->autoCloseReason(),
-                'updated_at' => UnixTimestamp::now()->value(),
-            ]);
-        }
+        $this->query()->where('id', $timeEntry->id()->value())->update([
+            'user_id' => $timeEntry->userId()->value(),
+            'entrada' => $timeEntry->startTime(),
+            'salida' => $timeEntry->endTime(),
+            'auto_closed' => $timeEntry->isAutoClosed(),
+            'auto_close_reason' => $timeEntry->autoCloseReason(),
+            'updated_at' => UnixTimestamp::now()->value(),
+        ]);
     }
 
     /**
@@ -81,13 +82,13 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
      */
     public function findOrphanEntries(): array
     {
-        // Timestamp de inicio del día actual (medianoche)
         $todayStart = strtotime('today 00:00:00');
 
-        return TimeEntryModel::whereNull('salida')
+        return $this->query()
+            ->whereNull('salida')
             ->where('entrada', '<', $todayStart)
             ->get()
-            ->map(fn (TimeEntryModel $model) => $this->toDomainEntity($model))
+            ->map(fn (\stdClass $row) => $this->toDomainEntity($row))
             ->all();
     }
 
@@ -100,12 +101,12 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
      */
     public function getWorkedSecondsByUserAndDate(UserId $userId, int $dateTimestamp, ?TimeEntryId $excludeEntryId = null): int
     {
-        // Calcular inicio y fin del día desde el timestamp
         $dateString = date('Y-m-d', $dateTimestamp);
         $dayStart = strtotime($dateString.' 00:00:00');
         $dayEnd = strtotime($dateString.' 23:59:59');
 
-        $query = TimeEntryModel::where('user_id', $userId->value())
+        $query = $this->query()
+            ->where('user_id', $userId->value())
             ->where('entrada', '>=', $dayStart)
             ->where('entrada', '<=', $dayEnd)
             ->whereNotNull('salida');
@@ -133,26 +134,28 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
      */
     public function closeWithAutoClosed(TimeEntryId $id, int $closedAt, string $reason): void
     {
-        $model = TimeEntryModel::find($id->value());
-        if ($model) {
-            $model->update([
-                'salida' => $closedAt,
-                'auto_closed' => true,
-                'auto_close_reason' => $reason,
-                'updated_at' => UnixTimestamp::now()->value(),
-            ]);
-        }
+        $this->query()->where('id', $id->value())->update([
+            'salida' => $closedAt,
+            'auto_closed' => true,
+            'auto_close_reason' => $reason,
+            'updated_at' => UnixTimestamp::now()->value(),
+        ]);
     }
 
-    private function toDomainEntity(TimeEntryModel $model): TimeEntry
+    private function query(): Builder
+    {
+        return $this->connection->table($this->tableName);
+    }
+
+    private function toDomainEntity(\stdClass $row): TimeEntry
     {
         return TimeEntry::fromPrimitives(
-            $model->id,
-            $model->user_id,
-            $model->entrada,
-            $model->salida,
-            (bool) ($model->auto_closed ?? false),
-            $model->auto_close_reason
+            $row->id,
+            $row->user_id,
+            $row->entrada,
+            $row->salida,
+            (bool) ($row->auto_closed ?? false),
+            $row->auto_close_reason
         );
     }
 }
