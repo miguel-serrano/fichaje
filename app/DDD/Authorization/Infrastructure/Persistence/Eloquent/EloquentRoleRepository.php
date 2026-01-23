@@ -155,6 +155,18 @@ class EloquentRoleRepository implements RoleRepositoryInterface
         }
     }
 
+    public function assignRoleToUser(UserId $userId, RoleSlug $slug): void
+    {
+        $role = $this->findBySlugOrFail($slug);
+
+        $now = time();
+
+        $this->connection->table($this->userRoleTable)->updateOrInsert(
+            ['user_id' => $userId->value(), 'role_id' => $role->id()->value()],
+            ['created_at' => $now, 'updated_at' => $now]
+        );
+    }
+
     private function query(): Builder
     {
         return $this->connection->table($this->roleTable);

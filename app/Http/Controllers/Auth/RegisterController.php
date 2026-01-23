@@ -9,7 +9,6 @@ use App\DDD\User\Domain\Exceptions\UserAlreadyExistsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
 {
@@ -20,17 +19,14 @@ class RegisterController extends Controller
 
     public function __invoke(RegisterRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-
         try {
-            $command = RegisterCommand::create(
-                $validated['name'],
-                $validated['email'],
-                $validated['password']
+            $this->commandBus->dispatch(
+                RegisterCommand::create(
+                    $request->validated('name'),
+                    $request->validated('email'),
+                    $request->validated('password')
+                )
             );
-            $user = $this->commandBus->dispatch($command);
-
-            Auth::loginUsingId($user->id()->value());
 
             $request->session()->regenerate();
 
