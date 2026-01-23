@@ -13,7 +13,6 @@ final class Email extends StringValueObject
 {
     public function __construct(string $value)
     {
-        // Sanitizar ANTES de asignar el valor (inmutabilidad)
         $sanitizedValue = strtolower(trim($value));
 
         parent::__construct($sanitizedValue);

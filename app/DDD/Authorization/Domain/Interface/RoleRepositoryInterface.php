@@ -33,8 +33,5 @@ interface RoleRepositoryInterface
      */
     public function syncPermissions(RoleId $roleId, array $permissionIds): void;
 
-    /**
-     * Asigna un rol a un usuario (operación de sistema, sin verificación de permisos).
-     */
     public function assignRoleToUser(UserId $userId, RoleSlug $slug): void;
 }

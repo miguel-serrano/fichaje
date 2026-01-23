@@ -26,26 +26,21 @@ final class RegisterCommandHandler
 
     public function handle(RegisterCommand $command): User
     {
-        // 1. Validar políticas de creación (email único, límites)
         $this->creationPolicy->canCreateUser($command->email);
 
-        // 2. Crear entidad de dominio con password hasheado
         $user = User::create(
             email: $command->email,
             name: $command->name,
             hashedPassword: $this->passwordHasher->hash($command->password)
         );
 
-        // 3. Persistir usuario
         $user = $this->userRepository->save($user);
 
-        // 4. Asignar rol de empleado por defecto
         $this->roleRepository->assignRoleToUser(
             $user->id(),
             new RoleSlug(self::DEFAULT_ROLE_SLUG)
         );
 
-        // 5. Autenticar usuario en la sesión
         $this->authenticationService->login($user);
 
         return $user;

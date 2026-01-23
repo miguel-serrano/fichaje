@@ -37,7 +37,6 @@ class GetUserDailyRegistrosQueryResponse
     private function processRegistrosCerrados(Collection $registrosCerrados): void
     {
         foreach ($registrosCerrados as $registro) {
-            // Los campos entrada y salida ahora son Unix timestamps (int)
             $fecha = date('Y-m-d', $registro->entrada);
             $segundosTrabajados = $registro->salida - $registro->entrada;
 
@@ -63,7 +62,6 @@ class GetUserDailyRegistrosQueryResponse
     private function processRegistrosAbiertos(Collection $registrosAbiertos): void
     {
         foreach ($registrosAbiertos as $registro) {
-            // Los campos entrada ahora son Unix timestamps (int)
             $fecha = date('Y-m-d', $registro->entrada);
             $segundosTrabajados = time() - $registro->entrada;
 

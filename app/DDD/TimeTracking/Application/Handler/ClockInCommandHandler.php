@@ -22,22 +22,16 @@ class ClockInCommandHandler
 
     public function handle(ClockInCommand $command): void
     {
-        // 1. Obtener usuario (ÚNICA consulta a BD)
         $user = $this->userRepository->findByUuidOrFail($command->userUuid);
-
-        // 2. Verificar que el usuario está activo (lógica de dominio)
         $user->ensureIsActive();
 
-        // 3. Verificar permisos de autorización
         $this->permissionChecker->assertHasPermission(
             $user,
             TimeTrackingPermission::ClockIn->value
         );
 
-        // 4. Validar reglas de negocio (entrada abierta, límite diario)
         $this->service->ensureCanClockIn($user);
 
-        // 5. Crear entidad de dominio y persistir
         $timeEntry = TimeEntry::create($user->id());
         $this->timeEntryRepository->save($timeEntry);
     }

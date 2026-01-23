@@ -21,26 +21,19 @@ class ClockOutCommandHandler
 
     public function handle(ClockOutCommand $command): void
     {
-        // 1. Obtener usuario (ÚNICA consulta a BD)
         $user = $this->userRepository->findByUuidOrFail($command->userUuid);
-
-        // 2. Verificar que el usuario está activo (lógica de dominio)
         $user->ensureIsActive();
 
-        // 3. Verificar permisos de autorización
         $this->permissionChecker->assertHasPermission(
             $user,
             TimeTrackingPermission::ClockOut->value
         );
 
-        // 4. Validar reglas de negocio (debe tener entrada abierta)
         $this->service->ensureCanClockOut($user);
 
-        // 5. Obtener entrada abierta y cerrarla
         $openEntry = $this->service->getOpenEntry($user);
         $openEntry->close();
 
-        // 6. Persistir
         $this->timeEntryRepository->update($openEntry);
     }
 }
