@@ -8,38 +8,16 @@ use App\DDD\User\Domain\ValueObjects\UserId;
 
 final class TimeEntry
 {
-    private ?TimeEntryId $id;
-
-    private UserId $userId;
-
-    /**
-     * Timestamp Unix de la hora de entrada.
-     */
-    private int $startTime;
-
-    /**
-     * Timestamp Unix de la hora de salida (nullable si está abierto).
-     */
-    private ?int $endTime;
-
-    private bool $autoClosed;
-
-    private ?string $autoCloseReason;
-
     private function __construct(
-        ?TimeEntryId $id,
-        UserId $userId,
-        int $startTime,
-        ?int $endTime,
-        bool $autoClosed = false,
-        ?string $autoCloseReason = null,
+        private ?TimeEntryId $id,
+        private UserId $userId,
+        /** Timestamp Unix de la hora de entrada. */
+        private int $startTime,
+        /** Timestamp Unix de la hora de salida (nullable si está abierto). */
+        private ?int $endTime,
+        private bool $autoClosed = false,
+        private ?string $autoCloseReason = null,
     ) {
-        $this->id = $id;
-        $this->userId = $userId;
-        $this->startTime = $startTime;
-        $this->endTime = $endTime;
-        $this->autoClosed = $autoClosed;
-        $this->autoCloseReason = $autoCloseReason;
     }
 
     public static function create(UserId $userId): self

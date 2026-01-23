@@ -15,37 +15,16 @@ use App\DDD\User\Domain\ValueObjects\Uuid;
 
 final class User
 {
-    private ?UserId $id;
-
-    private Uuid $uuid;
-
-    private Email $email;
-
-    private Name $name;
-
-    private bool $isActive;
-
-    private ?HashedPassword $password;
-
-    /** @var TimeEntry[] */
-    private array $timeEntries;
-
     private function __construct(
-        ?UserId $id,
-        Uuid $uuid,
-        Email $email,
-        Name $name,
-        bool $isActive = true,
-        ?HashedPassword $password = null,
-        array $timeEntries = [],
+        private ?UserId $id,
+        private Uuid $uuid,
+        private Email $email,
+        private Name $name,
+        private bool $isActive = true,
+        private ?HashedPassword $password = null,
+        /** @var TimeEntry[] */
+        private array $timeEntries = [],
     ) {
-        $this->id = $id;
-        $this->uuid = $uuid;
-        $this->email = $email;
-        $this->name = $name;
-        $this->isActive = $isActive;
-        $this->password = $password;
-        $this->timeEntries = $timeEntries;
     }
 
     public static function create(Email $email, Name $name, HashedPassword $hashedPassword): self

@@ -12,38 +12,16 @@ use App\DDD\User\Domain\ValueObjects\UserId;
 
 final class HolidayRequest
 {
-    private ?HolidayRequestId $id;
-
-    private UserId $userId;
-
-    private DateRange $dateRange;
-
-    private HolidayStatus $status;
-
-    /**
-     * Timestamp Unix de creación.
-     */
-    private ?int $createdAt;
-
-    /**
-     * Timestamp Unix de última actualización.
-     */
-    private ?int $updatedAt;
-
     private function __construct(
-        ?HolidayRequestId $id,
-        UserId $userId,
-        DateRange $dateRange,
-        HolidayStatus $status,
-        ?int $createdAt = null,
-        ?int $updatedAt = null,
+        private ?HolidayRequestId $id,
+        private UserId $userId,
+        private DateRange $dateRange,
+        private HolidayStatus $status,
+        /** Timestamp Unix de creación. */
+        private ?int $createdAt = null,
+        /** Timestamp Unix de última actualización. */
+        private ?int $updatedAt = null,
     ) {
-        $this->id = $id;
-        $this->userId = $userId;
-        $this->dateRange = $dateRange;
-        $this->status = $status;
-        $this->createdAt = $createdAt;
-        $this->updatedAt = $updatedAt;
     }
 
     public static function create(UserId $userId, DateRange $dateRange): self
