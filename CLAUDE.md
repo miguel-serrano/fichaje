@@ -208,11 +208,14 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Tests should test all of the happy paths, failure paths, and weird paths.
 - You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files, these are core to the application.
 
-### Protección de Datos
-- NUNCA borrar datos de ninguna tabla de la base de datos durante los tests
-- Los tests deben usar transacciones (trait `RefreshDatabase` con `--without-database-wipe` o `DatabaseTransactions`) para no afectar datos existentes
-- NO usar `migrate:fresh` ni truncar tablas en tests
-- Si un test necesita datos, usar factories para crear datos temporales que se revierten con la transacción
+### Protección de Datos (CRÍTICO)
+- **Base de datos de testing**: Los tests usan `laravel_testing`, NO `laravel` (producción)
+- **phpunit.xml**: `DB_DATABASE=laravel_testing` - NUNCA cambiar a `laravel`
+- **DatabaseTransactions**: El `TestCase` base incluye este trait - hace rollback automático
+- NUNCA usar `RefreshDatabase` - borra y recrea tablas
+- NO usar `migrate:fresh` en producción
+- Si un test necesita datos, usar factories (se revierten con rollback)
+- **Documentación completa**: `.claude/docs/testing-database.md`
 
 ### Running Tests
 - Run the minimal number of tests, using an appropriate filter, before finalizing.
@@ -345,6 +348,7 @@ app/DDD/
 ## Referencias
 
 - **Bounded Context User (referencia para refactorizar)**: `.claude/docs/refactor-feb.md`
+- **Base de datos de testing**: `.claude/docs/testing-database.md`
 - **Debugging**: `/telescope`
 - **Pre-commit hook**: php-cs-fixer con reglas `@Symfony`
 - **Skill disponible**: `/php-fixer-symfony`

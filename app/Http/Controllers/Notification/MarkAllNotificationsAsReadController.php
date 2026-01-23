@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Notification;
 
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
@@ -13,7 +14,7 @@ class MarkAllNotificationsAsReadController extends Controller
     {
         Notification::where('user_id', auth()->id())
             ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+            ->update(['read_at' => UnixTimestamp::now()->value()]);
 
         if (request()->wantsJson()) {
             return response()->json(['success' => true]);

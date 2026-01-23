@@ -7,6 +7,7 @@ use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
 use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionId;
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\Permission as PermissionModel;
@@ -40,7 +41,7 @@ class UpdatePermissionCommandHandler
             ->update([
                 'name' => $command->name,
                 'description' => $command->description,
-                'updated_at' => now(),
+                'updated_at' => UnixTimestamp::now()->value(),
             ]);
 
         $updatedPermission = $this->permissionRepository->findByIdOrFail(new PermissionId($command->permissionId));

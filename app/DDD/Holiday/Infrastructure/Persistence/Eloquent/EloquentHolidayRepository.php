@@ -9,6 +9,7 @@ use App\DDD\Holiday\Domain\Exceptions\HolidayRequestNotFoundException;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\HolidayRequest as HolidayRequestModel;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class EloquentHolidayRepository implements HolidayRepositoryInterface
     public function save(HolidayRequest $request): HolidayRequest
     {
         $requestId = $request->id()?->value();
-        $now = time();
+        $now = UnixTimestamp::now()->value();
 
         DB::transaction(function () use ($request, &$requestId, $now) {
             $data = [

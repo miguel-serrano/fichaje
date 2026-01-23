@@ -2,6 +2,7 @@
 
 namespace App\DDD\User\Infrastructure\Persistence\Eloquent;
 
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Exceptions\UserDeletionFailedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
@@ -18,7 +19,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function save(User $user): User
     {
         $userId = $user->id()?->value();
-        $now = time();
+        $now = UnixTimestamp::now()->value();
 
         DB::transaction(function () use ($user, &$userId, $now) {
             $data = [

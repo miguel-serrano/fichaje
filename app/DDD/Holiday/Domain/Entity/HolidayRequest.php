@@ -7,6 +7,7 @@ namespace App\DDD\Holiday\Domain\Entity;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayStatus;
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\ValueObjects\UserId;
 
 final class HolidayRequest
@@ -47,7 +48,7 @@ final class HolidayRequest
 
     public static function create(UserId $userId, DateRange $dateRange): self
     {
-        $now = time();
+        $now = UnixTimestamp::now()->value();
 
         return new self(
             null,
@@ -134,13 +135,13 @@ final class HolidayRequest
     public function approve(): void
     {
         $this->status = HolidayStatus::Approved;
-        $this->updatedAt = time();
+        $this->updatedAt = UnixTimestamp::now()->value();
     }
 
     public function reject(): void
     {
         $this->status = HolidayStatus::Rejected;
-        $this->updatedAt = time();
+        $this->updatedAt = UnixTimestamp::now()->value();
     }
 
     public function isPending(): bool

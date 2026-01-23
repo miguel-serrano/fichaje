@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Infrastructure\Persistence\Eloquent;
 
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
@@ -27,7 +28,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
     public function save(TimeEntry $timeEntry): TimeEntry
     {
         $entryId = $timeEntry->id()?->value();
-        $now = time();
+        $now = UnixTimestamp::now()->value();
 
         DB::transaction(function () use ($timeEntry, &$entryId, $now) {
             $data = [
@@ -70,7 +71,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
                 'salida' => $timeEntry->endTime(),
                 'auto_closed' => $timeEntry->isAutoClosed(),
                 'auto_close_reason' => $timeEntry->autoCloseReason(),
-                'updated_at' => time(),
+                'updated_at' => UnixTimestamp::now()->value(),
             ]);
         }
     }
@@ -138,7 +139,7 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
                 'salida' => $closedAt,
                 'auto_closed' => true,
                 'auto_close_reason' => $reason,
-                'updated_at' => time(),
+                'updated_at' => UnixTimestamp::now()->value(),
             ]);
         }
     }

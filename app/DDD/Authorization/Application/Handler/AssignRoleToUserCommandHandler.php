@@ -7,6 +7,7 @@ use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleSlug;
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\UserRole;
@@ -34,7 +35,7 @@ class AssignRoleToUserCommandHandler
 
         $this->connection->table(UserRole::tableName())->updateOrInsert(
             ['user_id' => $command->targetUserId, 'role_id' => $role->id()->value()],
-            ['created_at' => now(), 'updated_at' => now()]
+            ['created_at' => UnixTimestamp::now()->value(), 'updated_at' => UnixTimestamp::now()->value()]
         );
     }
 }

@@ -7,6 +7,7 @@ use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleId;
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\Role as RoleModel;
@@ -41,7 +42,7 @@ class UpdateRoleCommandHandler
                 'name' => $command->name,
                 'description' => $command->description,
                 'hierarchy' => $command->hierarchy,
-                'updated_at' => now(),
+                'updated_at' => UnixTimestamp::now()->value(),
             ]);
 
         $updatedRole = $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
