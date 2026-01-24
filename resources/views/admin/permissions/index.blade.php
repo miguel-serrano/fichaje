@@ -37,7 +37,46 @@
                                 <md-icon class="expand-icon">expand_more</md-icon>
                             </summary>
                             <div class="collapsible-content">
-                                <div class="overflow-x-auto">
+                                {{-- Mobile view: Cards --}}
+                                <div class="hide-on-med-and-up">
+                                    @foreach($permissions as $permission)
+                                    <div class="permission-card-mobile">
+                                        <div class="permission-card-header">
+                                            <div>
+                                                <span class="permission-card-name">{{ $permission['name'] }}</span>
+                                                <code class="text-secondary permission-card-slug" style="font-size: 0.75rem;">{{ $permission['slug'] }}</code>
+                                            </div>
+                                            @if($permission['is_system'])
+                                                <span class="status-badge status-badge-warning">Sistema</span>
+                                            @else
+                                                <span class="status-badge status-badge-success">Personalizado</span>
+                                            @endif
+                                        </div>
+                                        @if($permission['description'])
+                                            <div class="permission-card-description">{{ $permission['description'] }}</div>
+                                        @endif
+                                        @if(!$permission['is_system'])
+                                            <div class="permission-card-actions">
+                                                <md-filled-tonal-button href="{{ route('admin.permissions.edit', $permission['id']) }}">
+                                                    <md-icon slot="icon">edit</md-icon>
+                                                    Editar
+                                                </md-filled-tonal-button>
+                                                <form action="{{ route('admin.permissions.destroy', $permission['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar este permiso?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <md-outlined-button type="submit" style="--md-outlined-button-outline-color: var(--error); --md-outlined-button-label-text-color: var(--error);">
+                                                        <md-icon slot="icon">delete</md-icon>
+                                                        Eliminar
+                                                    </md-outlined-button>
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                                {{-- Desktop view: Table --}}
+                                <div class="hide-on-small-only">
                                     <table class="striped">
                                         <thead>
                                             <tr>

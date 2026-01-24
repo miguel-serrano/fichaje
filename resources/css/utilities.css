@@ -181,3 +181,411 @@
 
 /* Lists */
 .list-none { list-style: none !important; }
+
+/* ===== RESPONSIVE UTILITIES ===== */
+
+/* Hide on small screens (up to 600px) */
+@media (max-width: 600px) {
+    .hide-on-small-only {
+        display: none !important;
+    }
+}
+
+/* Hide on medium and up (601px and above) */
+@media (min-width: 601px) {
+    .hide-on-med-and-up {
+        display: none !important;
+    }
+}
+
+/* Hide on medium only (601px to 992px) */
+@media (min-width: 601px) and (max-width: 992px) {
+    .hide-on-med-only {
+        display: none !important;
+    }
+}
+
+/* Hide on large and up (993px and above) */
+@media (min-width: 993px) {
+    .hide-on-large-only {
+        display: none !important;
+    }
+}
+
+/* ===== MOBILE CARD LAYOUTS ===== */
+
+/* Holiday card for mobile view */
+.holiday-card-mobile {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.holiday-card-mobile:last-child {
+    margin-bottom: 0;
+}
+
+.holiday-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.holiday-days {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+
+.holiday-card-dates {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.holiday-date-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.holiday-date-item md-icon {
+    color: var(--md-sys-color-primary);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.holiday-date-item span {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.holiday-date-arrow {
+    color: var(--md-sys-color-outline);
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.holiday-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+}
+
+.holiday-card-footer md-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* User card for mobile view */
+.user-card-mobile {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.user-card-mobile:last-child {
+    margin-bottom: 0;
+}
+
+.user-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+.user-card-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--claude-primary);
+    text-decoration: none;
+}
+
+.user-card-name:hover {
+    text-decoration: underline;
+}
+
+.user-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.user-card-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-card-info md-icon {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.user-card-info span,
+.user-card-info code {
+    word-break: break-all;
+}
+
+.user-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+/* Admin Holiday card for mobile view */
+.admin-holiday-card-mobile {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.admin-holiday-card-mobile:last-child {
+    margin-bottom: 0;
+}
+
+.admin-holiday-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+.admin-holiday-user {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.admin-holiday-user md-icon {
+    color: var(--md-sys-color-primary);
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    margin-top: 2px;
+}
+
+.admin-holiday-card-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 16px;
+    padding: 12px 0;
+    margin-top: 12px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.admin-holiday-card-info span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.admin-holiday-card-info md-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.admin-holiday-card-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+/* Fichaje card for mobile view */
+.fichaje-card-mobile {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.fichaje-card-mobile:last-child {
+    margin-bottom: 0;
+}
+
+.fichaje-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.fichaje-card-date {
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+
+.fichaje-card-times {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.fichaje-time-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.fichaje-time-item .label {
+    font-size: 0.75rem;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
+}
+
+.fichaje-time-item .value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.fichaje-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+/* Mini fichaje card for collapsible content */
+.fichaje-mini-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    gap: 12px;
+}
+
+.fichaje-mini-card:last-child {
+    border-bottom: none;
+}
+
+.fichaje-mini-times {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.fichaje-mini-time {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fichaje-mini-time md-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.fichaje-mini-time span {
+    font-size: 0.9375rem;
+    font-weight: 500;
+}
+
+.fichaje-mini-arrow {
+    color: var(--md-sys-color-outline);
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.fichaje-mini-duration {
+    flex-shrink: 0;
+}
+
+/* Permission card for mobile view */
+.permission-card-mobile {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.permission-card-mobile:last-child {
+    margin-bottom: 0;
+}
+
+.permission-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.permission-card-header > div:first-child {
+    min-width: 0;
+    flex: 1;
+}
+
+.permission-card-header > .status-badge {
+    flex-shrink: 0;
+}
+
+.permission-card-name {
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+
+.permission-card-slug {
+    display: block;
+    margin-top: 4px;
+}
+
+.permission-card-description {
+    font-size: 0.875rem;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 8px 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.permission-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}

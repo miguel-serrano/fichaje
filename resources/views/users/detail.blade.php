@@ -134,7 +134,64 @@
                 @if(isset($allRegistros) && count($allRegistros) > 0)
                     <p class="text-secondary" style="margin-top: 10px;">Total de {{ count($allRegistros) }} {{ count($allRegistros) == 1 ? 'registro' : 'registros' }}</p>
 
-                    <div class="overflow-x-auto">
+                    {{-- Mobile view: Cards --}}
+                    <div class="hide-on-med-and-up">
+                        @foreach(collect($allRegistros)->sortByDesc(function($registro) { return $registro->startTime(); }) as $registro)
+                        <div class="fichaje-card-mobile">
+                            <div class="fichaje-card-header">
+                                <span class="fichaje-card-date">{{ $registro->startTimeFormatted('d/m/Y') }}</span>
+                                @if($registro->isOpen())
+                                    <span class="status-badge status-badge-warning">Abierto</span>
+                                @else
+                                    <span class="status-badge status-badge-success">Cerrado</span>
+                                @endif
+                            </div>
+                            <div class="fichaje-card-times">
+                                <div class="fichaje-time-item">
+                                    <span class="label">Entrada</span>
+                                    <span class="value">{{ $registro->startTimeFormatted('H:i:s') }}</span>
+                                </div>
+                                <div class="fichaje-time-item">
+                                    <span class="label">Salida</span>
+                                    <span class="value">
+                                        @if($registro->endTime())
+                                            {{ $registro->endTimeFormatted('H:i:s') }}
+                                        @else
+                                            <span style="color: var(--warning);">--:--:--</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="fichaje-time-item">
+                                    <span class="label">Duracion</span>
+                                    @if($registro->endTime())
+                                        <span class="status-badge status-badge-info" style="margin: 0;">
+                                            {{ gmdate('H:i:s', $registro->workedSeconds()) }}
+                                        </span>
+                                    @else
+                                        <span class="status-badge status-badge-warning live-timer" style="margin: 0;"
+                                              data-start-time="{{ $registro->startTime() }}">
+                                            {{ gmdate('H:i:s', $registro->workedSeconds()) }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            @if($registro->isOpen())
+                            <div class="fichaje-card-footer">
+                                <form action="{{ route('registro_horario.salida') }}" method="POST" style="width: 100%;">
+                                    @csrf
+                                    <md-filled-tonal-button type="submit" style="width: 100%;">
+                                        <md-icon slot="icon">check</md-icon>
+                                        Cerrar fichaje
+                                    </md-filled-tonal-button>
+                                </form>
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Desktop view: Table --}}
+                    <div class="hide-on-small-only">
                         <table class="striped highlight">
                             <thead>
                                 <tr>
@@ -254,49 +311,88 @@
                                     <md-icon class="expand-icon">expand_more</md-icon>
                                 </summary>
                                 <div class="collapsible-content">
-                                    <table class="striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Entrada</th>
-                                                <th>Salida</th>
-                                                <th>Duración</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($dia['registros'] as $registro)
-                                            <tr>
-                                                <td>
-                                                    <md-icon class="text-claude" style="font-size: 14px;">login</md-icon>
-                                                    {{ $registro['entrada'] }}
-                                                </td>
-                                                <td>
+                                    {{-- Mobile view: List --}}
+                                    <div class="hide-on-med-and-up">
+                                        @foreach($dia['registros'] as $registro)
+                                        <div class="fichaje-mini-card">
+                                            <div class="fichaje-mini-times">
+                                                <div class="fichaje-mini-time">
+                                                    <md-icon class="text-claude">login</md-icon>
+                                                    <span>{{ $registro['entrada'] }}</span>
+                                                </div>
+                                                <md-icon class="fichaje-mini-arrow">arrow_forward</md-icon>
+                                                <div class="fichaje-mini-time">
                                                     @if(!empty($registro['abierto']))
-                                                        <span style="color: var(--warning);">
-                                                            <md-icon style="font-size: 14px;">schedule</md-icon> Abierto
-                                                        </span>
+                                                        <md-icon style="color: var(--warning);">schedule</md-icon>
+                                                        <span style="color: var(--warning);">Abierto</span>
                                                     @else
-                                                        <md-icon style="font-size: 14px; color: var(--error);">logout</md-icon>
-                                                        {{ $registro['salida'] }}
+                                                        <md-icon style="color: var(--error);">logout</md-icon>
+                                                        <span>{{ $registro['salida'] }}</span>
                                                     @endif
-                                                </td>
-                                                <td>
-                                                    @if(!empty($registro['abierto']))
-                                                        <span class="status-badge status-badge-warning live-timer"
-                                                              data-start-time="{{ $registro['entrada_timestamp'] }}">
-                                                            <md-icon style="font-size: 14px;">timer</md-icon>
-                                                            {{ $registro['duracion'] }}
-                                                        </span>
-                                                    @else
-                                                        <span class="status-badge status-badge-success">
-                                                            <md-icon style="font-size: 14px;">timer</md-icon>
-                                                            {{ $registro['duracion'] }}
-                                                        </span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="fichaje-mini-duration">
+                                                @if(!empty($registro['abierto']))
+                                                    <span class="status-badge status-badge-warning live-timer"
+                                                          data-start-time="{{ $registro['entrada_timestamp'] }}">
+                                                        {{ $registro['duracion'] }}
+                                                    </span>
+                                                @else
+                                                    <span class="status-badge status-badge-success">
+                                                        {{ $registro['duracion'] }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- Desktop view: Table --}}
+                                    <div class="hide-on-small-only">
+                                        <table class="striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Entrada</th>
+                                                    <th>Salida</th>
+                                                    <th>Duración</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($dia['registros'] as $registro)
+                                                <tr>
+                                                    <td>
+                                                        <md-icon class="text-claude" style="font-size: 14px;">login</md-icon>
+                                                        {{ $registro['entrada'] }}
+                                                    </td>
+                                                    <td>
+                                                        @if(!empty($registro['abierto']))
+                                                            <span style="color: var(--warning);">
+                                                                <md-icon style="font-size: 14px;">schedule</md-icon> Abierto
+                                                            </span>
+                                                        @else
+                                                            <md-icon style="font-size: 14px; color: var(--error);">logout</md-icon>
+                                                            {{ $registro['salida'] }}
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if(!empty($registro['abierto']))
+                                                            <span class="status-badge status-badge-warning live-timer"
+                                                                  data-start-time="{{ $registro['entrada_timestamp'] }}">
+                                                                <md-icon style="font-size: 14px;">timer</md-icon>
+                                                                {{ $registro['duracion'] }}
+                                                            </span>
+                                                        @else
+                                                            <span class="status-badge status-badge-success">
+                                                                <md-icon style="font-size: 14px;">timer</md-icon>
+                                                                {{ $registro['duracion'] }}
+                                                            </span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </details>
                         </li>

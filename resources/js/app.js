@@ -33,29 +33,17 @@ import '@material/web/textfield/filled-text-field.js';
 // Toast notifications
 import { toast } from './toast.js';
 
-// Flatpickr for date picking (MaterializeCSS datepicker replacement)
-import flatpickr from 'flatpickr';
-import { Spanish } from 'flatpickr/dist/l10n/es.js';
+// Material Date Picker
+import { MaterialDatePicker, initDatePicker, formatDisplayDate } from './date-picker.js';
 
-// Configure flatpickr defaults
-flatpickr.localize(Spanish);
-
-// Make toast globally available
+// Make utilities globally available
 window.toast = toast;
+window.MaterialDatePicker = MaterialDatePicker;
+window.initDatePicker = initDatePicker;
+window.formatDisplayDate = formatDisplayDate;
 
-// Initialize flatpickr on elements with data-flatpickr attribute
+// Initialize md-menu anchors
 document.addEventListener('DOMContentLoaded', () => {
-    // Auto-initialize flatpickr
-    document.querySelectorAll('[data-flatpickr]').forEach(el => {
-        const options = {
-            dateFormat: 'Y-m-d',
-            allowInput: true,
-            ...JSON.parse(el.dataset.flatpickr || '{}')
-        };
-        flatpickr(el, options);
-    });
-
-    // Initialize md-menu anchors
     document.querySelectorAll('md-menu[anchor]').forEach(menu => {
         const anchorId = menu.getAttribute('anchor');
         const anchor = document.getElementById(anchorId);

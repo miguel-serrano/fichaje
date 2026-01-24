@@ -14,34 +14,27 @@
                 </span>
                 <form action="{{ route('holidays.store') }}" method="POST" id="holiday-form">
                     @csrf
+                    <input type="hidden" name="start_date" id="start_date_input" value="{{ old('start_date') }}">
+                    <input type="hidden" name="end_date" id="end_date_input" value="{{ old('end_date') }}">
+
                     <div class="row">
                         <div class="col s12 m6" style="margin-bottom: 16px;">
-                            <md-outlined-text-field
-                                id="start_date"
-                                name="start_date"
-                                type="text"
-                                label="Fecha de inicio"
-                                value="{{ old('start_date') }}"
-                                required
-                                style="width: 100%;"
-                                data-flatpickr='{"minDate": "today"}'
-                            >
-                                <md-icon slot="leading-icon">today</md-icon>
-                            </md-outlined-text-field>
+                            <label class="text-secondary" style="margin-bottom: 8px; display: block;">Fecha de inicio*</label>
+                            <button type="button" class="md-date-chip" id="start_date_trigger" autocomplete="off">
+                                <md-icon>today</md-icon>
+                                <span class="md-date-chip-text" id="start_date_display">
+                                    <span class="md-date-chip-placeholder">Seleccionar fecha</span>
+                                </span>
+                            </button>
                         </div>
                         <div class="col s12 m6" style="margin-bottom: 16px;">
-                            <md-outlined-text-field
-                                id="end_date"
-                                name="end_date"
-                                type="text"
-                                label="Fecha de fin"
-                                value="{{ old('end_date') }}"
-                                required
-                                style="width: 100%;"
-                                data-flatpickr='{"minDate": "today"}'
-                            >
-                                <md-icon slot="leading-icon">event</md-icon>
-                            </md-outlined-text-field>
+                            <label class="text-secondary" style="margin-bottom: 8px; display: block;">Fecha de fin*</label>
+                            <button type="button" class="md-date-chip" id="end_date_trigger" autocomplete="off">
+                                <md-icon>event</md-icon>
+                                <span class="md-date-chip-text" id="end_date_display">
+                                    <span class="md-date-chip-placeholder">Seleccionar fecha</span>
+                                </span>
+                            </button>
                         </div>
                     </div>
                     <div class="row">
@@ -79,7 +72,44 @@
                 @if(empty($holidays))
                     <p class="text-secondary">No tienes solicitudes de vacaciones.</p>
                 @else
-                    <div class="overflow-x-auto">
+                    {{-- Mobile view: Cards --}}
+                    <div class="hide-on-med-and-up">
+                        @foreach($holidays as $holiday)
+                            @php
+                                $statusClass = match($holiday->status()->value) {
+                                    'approved' => 'status-badge-success',
+                                    'rejected' => 'status-badge-error',
+                                    default => 'status-badge-warning',
+                                };
+                            @endphp
+                            <div class="holiday-card-mobile">
+                                <div class="holiday-card-header">
+                                    <span class="status-badge {{ $statusClass }}">
+                                        {{ $holiday->status()->label() }}
+                                    </span>
+                                    <span class="holiday-days">{{ $holiday->dateRange()->totalDays() }} {{ $holiday->dateRange()->totalDays() == 1 ? 'dia' : 'dias' }}</span>
+                                </div>
+                                <div class="holiday-card-dates">
+                                    <div class="holiday-date-item">
+                                        <md-icon>flight_takeoff</md-icon>
+                                        <span>{{ $holiday->dateRange()->startDateFormatted('d/m/Y') }}</span>
+                                    </div>
+                                    <md-icon class="holiday-date-arrow">arrow_forward</md-icon>
+                                    <div class="holiday-date-item">
+                                        <md-icon>flight_land</md-icon>
+                                        <span>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</span>
+                                    </div>
+                                </div>
+                                <div class="holiday-card-footer">
+                                    <md-icon>schedule</md-icon>
+                                    <span class="text-secondary">Solicitado: {{ $holiday->createdAtFormatted('d/m/Y H:i') }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Desktop view: Table --}}
+                    <div class="hide-on-small-only">
                         <table class="striped">
                             <thead>
                                 <tr>
@@ -124,53 +154,65 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize flatpickr with date linking
-    const startInput = document.getElementById('start_date');
-    const endInput = document.getElementById('end_date');
+    const startInput = document.getElementById('start_date_input');
+    const endInput = document.getElementById('end_date_input');
+    const startDisplay = document.getElementById('start_date_display');
+    const endDisplay = document.getElementById('end_date_display');
+    const startTrigger = document.getElementById('start_date_trigger');
+    const endTrigger = document.getElementById('end_date_trigger');
 
-    if (startInput && endInput) {
-        const startPicker = flatpickr(startInput, {
-            dateFormat: 'Y-m-d',
-            minDate: 'today',
-            allowInput: true,
-            onChange: function(selectedDates) {
-                if (selectedDates[0]) {
-                    endPicker.set('minDate', selectedDates[0]);
-                    if (endPicker.selectedDates[0] && endPicker.selectedDates[0] < selectedDates[0]) {
-                        endPicker.setDate(selectedDates[0]);
-                    }
-                }
+    if (!startTrigger || !endTrigger) return;
+
+    let endPicker = null;
+
+    // Start date picker
+    const startPicker = window.initDatePicker(startInput, {
+        trigger: startTrigger,
+        displayElement: startDisplay,
+        minDate: new Date(),
+        onSelect: function(date) {
+            startDisplay.innerHTML = window.formatDisplayDate(date);
+            // Update end date min to be >= start date
+            if (endPicker) {
+                endPicker.setMinDate(date);
             }
-        });
+        }
+    });
 
-        const endPicker = flatpickr(endInput, {
-            dateFormat: 'Y-m-d',
-            minDate: 'today',
-            allowInput: true
-        });
-    }
+    // End date picker
+    endPicker = window.initDatePicker(endInput, {
+        trigger: endTrigger,
+        displayElement: endDisplay,
+        minDate: new Date(),
+        getMinDate: function() {
+            // Dynamically get min date from start date
+            if (startInput.value) {
+                return new Date(startInput.value);
+            }
+            return new Date();
+        }
+    });
 
-    // Handle form submission
+    // Set initial values if present
+    @if(old('start_date'))
+    const oldStartDate = new Date('{{ old('start_date') }}');
+    startDisplay.innerHTML = window.formatDisplayDate(oldStartDate);
+    @endif
+
+    @if(old('end_date'))
+    const oldEndDate = new Date('{{ old('end_date') }}');
+    endDisplay.innerHTML = window.formatDisplayDate(oldEndDate);
+    @endif
+
+    // Form validation
     const form = document.getElementById('holiday-form');
     if (form) {
         form.addEventListener('submit', function(e) {
-            const startField = document.getElementById('start_date');
-            const endField = document.getElementById('end_date');
-
-            // Create hidden inputs with the values from md-outlined-text-field
-            ['start_date', 'end_date'].forEach(function(fieldName) {
-                const field = document.getElementById(fieldName);
-                if (field && field.value) {
-                    let hiddenInput = form.querySelector('input[name="' + fieldName + '"][type="hidden"]');
-                    if (!hiddenInput) {
-                        hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = fieldName;
-                        form.appendChild(hiddenInput);
-                    }
-                    hiddenInput.value = field.value;
-                }
-            });
+            if (!startInput.value || !endInput.value) {
+                e.preventDefault();
+                window.toast.error('Por favor selecciona ambas fechas');
+                return false;
+            }
         });
     }
 });

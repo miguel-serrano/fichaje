@@ -14,7 +14,63 @@
                 @if(empty($pendingWithUsers))
                     <p class="text-secondary">No hay solicitudes pendientes.</p>
                 @else
-                    <div class="overflow-x-auto">
+                    {{-- Mobile view: Cards --}}
+                    <div class="hide-on-med-and-up">
+                        @foreach($pendingWithUsers as $item)
+                            @php
+                                $holiday = $item['holiday'];
+                                $user = $item['user'];
+                            @endphp
+                            <div class="admin-holiday-card-mobile">
+                                <div class="admin-holiday-card-header">
+                                    <div class="admin-holiday-user">
+                                        <md-icon>person</md-icon>
+                                        <div>
+                                            <strong>{{ $user ? $user->name() : 'Usuario desconocido' }}</strong>
+                                            @if($user)
+                                                <br><small class="text-secondary">{{ $user->email()->value() }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-badge-warning">Pendiente</span>
+                                </div>
+                                <div class="holiday-card-dates">
+                                    <div class="holiday-date-item">
+                                        <md-icon>flight_takeoff</md-icon>
+                                        <span>{{ $holiday->dateRange()->startDateFormatted('d/m/Y') }}</span>
+                                    </div>
+                                    <md-icon class="holiday-date-arrow">arrow_forward</md-icon>
+                                    <div class="holiday-date-item">
+                                        <md-icon>flight_land</md-icon>
+                                        <span>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</span>
+                                    </div>
+                                </div>
+                                <div class="admin-holiday-card-info">
+                                    <span><md-icon>event</md-icon> {{ $holiday->dateRange()->totalDays() }} {{ $holiday->dateRange()->totalDays() == 1 ? 'dia' : 'dias' }}</span>
+                                    <span><md-icon>schedule</md-icon> {{ $holiday->createdAtFormatted('d/m/Y') }}</span>
+                                </div>
+                                <div class="admin-holiday-card-actions">
+                                    <form action="{{ route('admin.holidays.approve', $holiday->id()->value()) }}" method="POST" style="flex: 1;">
+                                        @csrf
+                                        <md-filled-button type="submit" style="--md-filled-button-container-color: var(--success); width: 100%;">
+                                            <md-icon slot="icon">check</md-icon>
+                                            Aprobar
+                                        </md-filled-button>
+                                    </form>
+                                    <form action="{{ route('admin.holidays.reject', $holiday->id()->value()) }}" method="POST" style="flex: 1;">
+                                        @csrf
+                                        <md-filled-button type="submit" style="--md-filled-button-container-color: var(--error); width: 100%;">
+                                            <md-icon slot="icon">close</md-icon>
+                                            Rechazar
+                                        </md-filled-button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Desktop view: Table --}}
+                    <div class="hide-on-small-only">
                         <table class="striped">
                             <thead>
                                 <tr>
@@ -81,7 +137,47 @@
                 @if(empty($approvedWithUsers))
                     <p class="text-secondary">No hay vacaciones aprobadas.</p>
                 @else
-                    <div class="overflow-x-auto">
+                    {{-- Mobile view: Cards --}}
+                    <div class="hide-on-med-and-up">
+                        @foreach($approvedWithUsers as $item)
+                            @php
+                                $holiday = $item['holiday'];
+                                $user = $item['user'];
+                            @endphp
+                            <div class="admin-holiday-card-mobile">
+                                <div class="admin-holiday-card-header">
+                                    <div class="admin-holiday-user">
+                                        <md-icon>person</md-icon>
+                                        <div>
+                                            <strong>{{ $user ? $user->name() : 'Usuario desconocido' }}</strong>
+                                            @if($user)
+                                                <br><small class="text-secondary">{{ $user->email()->value() }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-badge-success">Aprobada</span>
+                                </div>
+                                <div class="holiday-card-dates">
+                                    <div class="holiday-date-item">
+                                        <md-icon>flight_takeoff</md-icon>
+                                        <span>{{ $holiday->dateRange()->startDateFormatted('d/m/Y') }}</span>
+                                    </div>
+                                    <md-icon class="holiday-date-arrow">arrow_forward</md-icon>
+                                    <div class="holiday-date-item">
+                                        <md-icon>flight_land</md-icon>
+                                        <span>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</span>
+                                    </div>
+                                </div>
+                                <div class="admin-holiday-card-info">
+                                    <span><md-icon>event</md-icon> {{ $holiday->dateRange()->totalDays() }} {{ $holiday->dateRange()->totalDays() == 1 ? 'dia' : 'dias' }}</span>
+                                    <span><md-icon>schedule</md-icon> {{ $holiday->createdAtFormatted('d/m/Y') }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Desktop view: Table --}}
+                    <div class="hide-on-small-only">
                         <table class="striped">
                             <thead>
                                 <tr>

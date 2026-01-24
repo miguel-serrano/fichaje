@@ -23,7 +23,65 @@
                 <div class="row">
                     <div class="col s12">
                         @if(count($users) > 0)
-                            <div class="overflow-x-auto">
+                            {{-- Mobile view: Cards --}}
+                            <div class="hide-on-med-and-up">
+                                @foreach($users as $user)
+                                <div class="user-card-mobile">
+                                    <div class="user-card-header">
+                                        <a href="{{ route('user.show', $user['id']) }}" class="user-card-name">{{ $user['name'] }}</a>
+                                        @if($user['is_active'])
+                                            <span class="status-badge status-badge-success">Activo</span>
+                                        @else
+                                            <span class="status-badge status-badge-error">Inactivo</span>
+                                        @endif
+                                    </div>
+                                    <div class="user-card-body">
+                                        <div class="user-card-info">
+                                            <md-icon>email</md-icon>
+                                            <span class="text-secondary">{{ $user['email'] }}</span>
+                                        </div>
+                                        <div class="user-card-info">
+                                            <md-icon>fingerprint</md-icon>
+                                            <code class="text-secondary" style="font-size: 0.75rem;">{{ Str::limit($user['uuid'], 18) }}</code>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-actions">
+                                        <md-filled-tonal-button href="{{ route('user.show', $user['id']) }}">
+                                            <md-icon slot="icon">visibility</md-icon>
+                                            Ver
+                                        </md-filled-tonal-button>
+                                        @if($isAdmin)
+                                            <form action="{{ route('user.toggle-active', $user['id']) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                @method('PATCH')
+                                                @if($user['is_active'])
+                                                    <md-outlined-button type="submit" style="--md-outlined-button-outline-color: var(--error); --md-outlined-button-label-text-color: var(--error);">
+                                                        <md-icon slot="icon">block</md-icon>
+                                                    </md-outlined-button>
+                                                @else
+                                                    <md-outlined-button type="submit" style="--md-outlined-button-outline-color: var(--success); --md-outlined-button-label-text-color: var(--success);">
+                                                        <md-icon slot="icon">check_circle</md-icon>
+                                                    </md-outlined-button>
+                                                @endif
+                                            </form>
+                                            <md-icon-button
+                                                type="button"
+                                                class="btn-delete-user"
+                                                title="Eliminar"
+                                                style="--md-icon-button-icon-color: var(--error);"
+                                                data-user-id="{{ $user['id'] }}"
+                                                data-user-name="{{ $user['name'] }}"
+                                            >
+                                                <md-icon>delete</md-icon>
+                                            </md-icon-button>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+
+                            {{-- Desktop view: Table --}}
+                            <div class="hide-on-small-only">
                                 <table class="striped highlight">
                                     <thead>
                                         <tr>
