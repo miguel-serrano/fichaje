@@ -16,11 +16,14 @@
 
                 <form action="{{ route('login') }}" method="POST" id="login-form">
                     @csrf
+                    {{-- Hidden inputs for form submission (Material Web compatibility) --}}
+                    <input type="hidden" name="email" id="email-hidden" value="{{ old('email') }}">
+                    <input type="hidden" name="password" id="password-hidden" value="">
+
                     <div class="row">
                         <div class="col s12" style="margin-bottom: 16px;">
                             <md-outlined-text-field
                                 id="email"
-                                name="email"
                                 type="email"
                                 label="Email"
                                 autocomplete="email"
@@ -37,7 +40,6 @@
                         <div class="col s12" style="margin-bottom: 16px;">
                             <md-outlined-text-field
                                 id="password"
-                                name="password"
                                 type="password"
                                 label="Contraseña"
                                 autocomplete="current-password"
@@ -67,35 +69,28 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle form submission with Material Web text fields
+    // Sync Material Web text fields with hidden inputs in real-time
+    const emailField = document.getElementById('email');
+    const passwordField = document.getElementById('password');
+    const emailHidden = document.getElementById('email-hidden');
+    const passwordHidden = document.getElementById('password-hidden');
+
+    if (emailField && emailHidden) {
+        emailField.addEventListener('input', () => emailHidden.value = emailField.value);
+        // Initial sync in case of autofill
+        emailHidden.value = emailField.value;
+    }
+
+    if (passwordField && passwordHidden) {
+        passwordField.addEventListener('input', () => passwordHidden.value = passwordField.value);
+    }
+
+    // Also sync on form submit as backup
     const form = document.getElementById('login-form');
     if (form) {
-        form.addEventListener('submit', function(e) {
-            const emailField = document.getElementById('email');
-            const passwordField = document.getElementById('password');
-
-            // Create hidden inputs with the values from md-outlined-text-field
-            if (emailField && emailField.value) {
-                let hiddenEmail = form.querySelector('input[name="email"][type="hidden"]');
-                if (!hiddenEmail) {
-                    hiddenEmail = document.createElement('input');
-                    hiddenEmail.type = 'hidden';
-                    hiddenEmail.name = 'email';
-                    form.appendChild(hiddenEmail);
-                }
-                hiddenEmail.value = emailField.value;
-            }
-
-            if (passwordField && passwordField.value) {
-                let hiddenPassword = form.querySelector('input[name="password"][type="hidden"]');
-                if (!hiddenPassword) {
-                    hiddenPassword = document.createElement('input');
-                    hiddenPassword.type = 'hidden';
-                    hiddenPassword.name = 'password';
-                    form.appendChild(hiddenPassword);
-                }
-                hiddenPassword.value = passwordField.value;
-            }
+        form.addEventListener('submit', function() {
+            if (emailField && emailHidden) emailHidden.value = emailField.value;
+            if (passwordField && passwordHidden) passwordHidden.value = passwordField.value;
         });
     }
 });

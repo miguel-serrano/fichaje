@@ -16,11 +16,16 @@
 
                 <form action="{{ route('register') }}" method="POST" id="register-form">
                     @csrf
+                    {{-- Hidden inputs for form submission (Material Web compatibility) --}}
+                    <input type="hidden" name="name" id="name-hidden" value="{{ old('name') }}">
+                    <input type="hidden" name="email" id="email-hidden" value="{{ old('email') }}">
+                    <input type="hidden" name="password" id="password-hidden" value="">
+                    <input type="hidden" name="password_confirmation" id="password_confirmation-hidden" value="">
+
                     <div class="row">
                         <div class="col s12" style="margin-bottom: 16px;">
                             <md-outlined-text-field
                                 id="name"
-                                name="name"
                                 type="text"
                                 label="Nombre"
                                 autocomplete="name"
@@ -37,7 +42,6 @@
                         <div class="col s12" style="margin-bottom: 16px;">
                             <md-outlined-text-field
                                 id="email"
-                                name="email"
                                 type="email"
                                 label="Email"
                                 autocomplete="email"
@@ -54,7 +58,6 @@
                         <div class="col s12" style="margin-bottom: 16px;">
                             <md-outlined-text-field
                                 id="password"
-                                name="password"
                                 type="password"
                                 label="Contraseña"
                                 autocomplete="new-password"
@@ -70,7 +73,6 @@
                         <div class="col s12" style="margin-bottom: 16px;">
                             <md-outlined-text-field
                                 id="password_confirmation"
-                                name="password_confirmation"
                                 type="password"
                                 label="Confirmar Contraseña"
                                 autocomplete="new-password"
@@ -99,24 +101,28 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle form submission with Material Web text fields
+    const fields = ['name', 'email', 'password', 'password_confirmation'];
+
+    // Sync Material Web text fields with hidden inputs in real-time
+    fields.forEach(function(fieldName) {
+        const field = document.getElementById(fieldName);
+        const hidden = document.getElementById(fieldName + '-hidden');
+
+        if (field && hidden) {
+            field.addEventListener('input', () => hidden.value = field.value);
+            // Initial sync
+            hidden.value = field.value;
+        }
+    });
+
+    // Also sync on form submit as backup
     const form = document.getElementById('register-form');
     if (form) {
-        form.addEventListener('submit', function(e) {
-            const fields = ['name', 'email', 'password', 'password_confirmation'];
-
+        form.addEventListener('submit', function() {
             fields.forEach(function(fieldName) {
                 const field = document.getElementById(fieldName);
-                if (field && field.value) {
-                    let hiddenInput = form.querySelector('input[name="' + fieldName + '"][type="hidden"]');
-                    if (!hiddenInput) {
-                        hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = fieldName;
-                        form.appendChild(hiddenInput);
-                    }
-                    hiddenInput.value = field.value;
-                }
+                const hidden = document.getElementById(fieldName + '-hidden');
+                if (field && hidden) hidden.value = field.value;
             });
         });
     }
