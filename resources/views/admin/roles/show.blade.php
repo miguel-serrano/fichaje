@@ -10,16 +10,18 @@
                 <div class="row" style="margin-bottom: 0;">
                     <div class="col s12 m8">
                         <span class="card-title">{{ $role['name'] }}</span>
-                        <p class="grey-text"><code>{{ $role['slug'] }}</code></p>
+                        <p class="text-secondary"><code>{{ $role['slug'] }}</code></p>
                     </div>
                     <div class="col s12 m4 right-align">
-                        <a href="{{ route('admin.roles.index') }}" class="btn-flat waves-effect">
-                            <i class="material-icons left">arrow_back</i>Volver
-                        </a>
+                        <md-text-button href="{{ route('admin.roles.index') }}">
+                            <md-icon slot="icon">arrow_back</md-icon>
+                            Volver
+                        </md-text-button>
                         @if(!$role['is_system'])
-                            <a href="{{ route('admin.roles.edit', $role['id']) }}" class="btn waves-effect waves-light blue">
-                                <i class="material-icons left">edit</i>Editar
-                            </a>
+                            <md-filled-tonal-button href="{{ route('admin.roles.edit', $role['id']) }}">
+                                <md-icon slot="icon">edit</md-icon>
+                                Editar
+                            </md-filled-tonal-button>
                         @endif
                     </div>
                 </div>
@@ -28,20 +30,20 @@
 
                 <div class="row">
                     <div class="col s12 m6">
-                        <h6 class="grey-text text-darken-1">Descripción</h6>
+                        <h6 class="text-secondary">Descripción</h6>
                         <p>{{ $role['description'] ?: 'Sin descripción' }}</p>
                     </div>
                     <div class="col s6 m3">
-                        <h6 class="grey-text text-darken-1">Jerarquía</h6>
+                        <h6 class="text-secondary">Jerarquía</h6>
                         <p>{{ $role['hierarchy'] }}</p>
                     </div>
                     <div class="col s6 m3">
-                        <h6 class="grey-text text-darken-1">Tipo</h6>
+                        <h6 class="text-secondary">Tipo</h6>
                         <p>
                             @if($role['is_system'])
-                                <span class="chip amber lighten-4 amber-text text-darken-2">Sistema</span>
+                                <span class="status-badge status-badge-warning">Sistema</span>
                             @else
-                                <span class="chip green lighten-4 green-text text-darken-2">Personalizado</span>
+                                <span class="status-badge status-badge-success">Personalizado</span>
                             @endif
                         </p>
                     </div>
@@ -56,30 +58,32 @@
         <div class="card">
             <div class="card-content">
                 <span class="card-title">
-                    <i class="material-icons left">vpn_key</i>
+                    <md-icon style="margin-right: 8px;">vpn_key</md-icon>
                     Permisos del Rol
                 </span>
 
-                <form action="{{ route('admin.roles.permissions.sync', $role['id']) }}" method="POST">
+                <form action="{{ route('admin.roles.permissions.sync', $role['id']) }}" method="POST" id="permissions-form">
                     @csrf
                     @method('PUT')
 
                     @foreach($permissionsByContext as $context => $permissions)
                     <div class="section">
-                        <h6 class="grey-text text-darken-1">
-                            <i class="material-icons tiny">folder</i> {{ $context }}
+                        <h6 class="text-secondary">
+                            <md-icon style="font-size: 14px;">folder</md-icon> {{ $context }}
                             <span class="badge">{{ count($permissions) }}</span>
                         </h6>
                         <div class="row">
                             @foreach($permissions as $permission)
-                            <div class="col s12 m6 l4">
-                                <label>
-                                    <input type="checkbox" name="permissions[]" value="{{ $permission['id'] }}"
+                            <div class="col s12 m6 l4" style="margin-bottom: 12px;">
+                                <label class="d-flex align-center gap-2 cursor-pointer">
+                                    <md-checkbox
+                                        name="permissions[]"
+                                        value="{{ $permission['id'] }}"
                                         {{ in_array($permission['id'], $rolePermissionIds) ? 'checked' : '' }}
-                                        class="filled-in" />
+                                    ></md-checkbox>
                                     <span>
                                         {{ $permission['name'] }}
-                                        <br><small class="grey-text">{{ $permission['slug'] }}</small>
+                                        <br><small class="text-secondary">{{ $permission['slug'] }}</small>
                                     </span>
                                 </label>
                             </div>
@@ -90,13 +94,40 @@
                     @endforeach
 
                     <div class="section right-align">
-                        <button type="submit" class="btn waves-effect waves-light light-green">
-                            <i class="material-icons left">save</i>Guardar Cambios
-                        </button>
+                        <md-filled-button type="submit" style="--md-filled-button-container-color: var(--success);">
+                            <md-icon slot="icon">save</md-icon>
+                            Guardar Cambios
+                        </md-filled-button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('permissions-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Get all checked md-checkbox elements and create hidden inputs
+            const checkboxes = form.querySelectorAll('md-checkbox');
+            const existingHidden = form.querySelectorAll('input[name="permissions[]"][type="hidden"]');
+            existingHidden.forEach(el => el.remove());
+
+            checkboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'permissions[]';
+                    hiddenInput.value = checkbox.value;
+                    form.appendChild(hiddenInput);
+                }
+            });
+        });
+    }
+});
+</script>
 @endsection

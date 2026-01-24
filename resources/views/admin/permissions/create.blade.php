@@ -10,87 +10,108 @@
                 <div class="row" style="margin-bottom: 0;">
                     <div class="col s12">
                         <span class="card-title">
-                            <i class="material-icons left">add_circle</i>
+                            <md-icon style="margin-right: 8px;">add_circle</md-icon>
                             Crear Nuevo Permiso
                         </span>
-                        <p class="grey-text">Define un nuevo permiso para el sistema.</p>
+                        <p class="text-secondary">Define un nuevo permiso para el sistema.</p>
                     </div>
                 </div>
 
                 <div class="divider" style="margin: 20px 0;"></div>
 
                 @if(session('error'))
-                <div class="card-panel red lighten-4 red-text text-darken-4">
-                    <i class="material-icons left">error</i>
+                <div class="card-panel card-panel-error">
+                    <md-icon style="margin-right: 8px;">error</md-icon>
                     {{ session('error') }}
                 </div>
                 @endif
 
-                <form action="{{ route('admin.permissions.store') }}" method="POST">
+                <form action="{{ route('admin.permissions.store') }}" method="POST" id="create-permission-form">
                     @csrf
 
                     <div class="row">
-                        <div class="input-field col s12">
-                            <i class="material-icons prefix">label</i>
-                            <input id="name" name="name" type="text" class="validate @error('name') invalid @enderror"
-                                   value="{{ old('name') }}">
-                            <label for="name">Nombre del Permiso *</label>
-                            @error('name')
-                                <span class="helper-text red-text">{{ $message }}</span>
-                            @enderror
+                        <div class="col s12" style="margin-bottom: 16px;">
+                            <md-outlined-text-field
+                                id="name"
+                                name="name"
+                                type="text"
+                                label="Nombre del Permiso *"
+                                value="{{ old('name') }}"
+                                style="width: 100%;"
+                                @error('name') error error-text="{{ $message }}" @enderror
+                            >
+                                <md-icon slot="leading-icon">label</md-icon>
+                            </md-outlined-text-field>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="input-field col s12">
-                            <i class="material-icons prefix">code</i>
-                            <input id="slug" name="slug" type="text" class="validate @error('slug') invalid @enderror"
-                                   value="{{ old('slug') }}">
-                            <label for="slug">Identificador (slug) *</label>
-                            <span class="helper-text">Formato: contexto.accion (ej: user.view, holiday.approve)</span>
-                            @error('slug')
-                                <span class="helper-text red-text">{{ $message }}</span>
-                            @enderror
+                        <div class="col s12" style="margin-bottom: 16px;">
+                            <md-outlined-text-field
+                                id="slug"
+                                name="slug"
+                                type="text"
+                                label="Identificador (slug) *"
+                                value="{{ old('slug') }}"
+                                supporting-text="Formato: contexto.accion (ej: user.view, holiday.approve)"
+                                style="width: 100%;"
+                                @error('slug') error error-text="{{ $message }}" @enderror
+                            >
+                                <md-icon slot="leading-icon">code</md-icon>
+                            </md-outlined-text-field>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="input-field col s12">
-                            <i class="material-icons prefix">folder</i>
-                            <select id="bounded_context" name="bounded_context">
-                                <option value="" disabled selected>Selecciona un contexto</option>
+                        <div class="col s12" style="margin-bottom: 16px;">
+                            <md-outlined-select
+                                id="bounded_context"
+                                name="bounded_context"
+                                label="Contexto *"
+                                style="width: 100%;"
+                                @error('bounded_context') error @enderror
+                            >
                                 @foreach($contexts as $context)
-                                    <option value="{{ $context }}" {{ old('bounded_context') == $context ? 'selected' : '' }}>{{ $context }}</option>
+                                    <md-select-option value="{{ $context }}" {{ old('bounded_context') == $context ? 'selected' : '' }}>
+                                        <div slot="headline">{{ $context }}</div>
+                                    </md-select-option>
                                 @endforeach
-                            </select>
-                            <label for="bounded_context">Contexto *</label>
+                            </md-outlined-select>
                             @error('bounded_context')
-                                <span class="helper-text red-text">{{ $message }}</span>
+                                <p class="text-sm" style="color: var(--error); margin-top: 4px;">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="input-field col s12">
-                            <i class="material-icons prefix">description</i>
-                            <textarea id="description" name="description" class="materialize-textarea @error('description') invalid @enderror">{{ old('description') }}</textarea>
-                            <label for="description">Descripción</label>
-                            @error('description')
-                                <span class="helper-text red-text">{{ $message }}</span>
-                            @enderror
+                        <div class="col s12" style="margin-bottom: 16px;">
+                            <md-outlined-text-field
+                                id="description"
+                                name="description"
+                                type="textarea"
+                                label="Descripción"
+                                value="{{ old('description') }}"
+                                rows="3"
+                                style="width: 100%;"
+                                @error('description') error error-text="{{ $message }}" @enderror
+                            >
+                                <md-icon slot="leading-icon">description</md-icon>
+                            </md-outlined-text-field>
                         </div>
                     </div>
 
                     <div class="divider" style="margin: 20px 0;"></div>
 
                     <div class="row">
-                        <div class="col s12">
-                            <a href="{{ route('admin.permissions.index') }}" class="btn-flat waves-effect">
-                                <i class="material-icons left">cancel</i>Cancelar
-                            </a>
-                            <button type="submit" class="btn waves-effect waves-light light-green right">
-                                <i class="material-icons left">save</i>Crear Permiso
-                            </button>
+                        <div class="col s12 d-flex justify-between flex-wrap gap-2">
+                            <md-text-button href="{{ route('admin.permissions.index') }}">
+                                <md-icon slot="icon">cancel</md-icon>
+                                Cancelar
+                            </md-text-button>
+                            <md-filled-button type="submit" style="--md-filled-button-container-color: var(--success);">
+                                <md-icon slot="icon">save</md-icon>
+                                Crear Permiso
+                            </md-filled-button>
                         </div>
                     </div>
                 </form>
@@ -103,8 +124,24 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var selects = document.querySelectorAll('select');
-    M.FormSelect.init(selects);
+    const form = document.getElementById('create-permission-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            ['name', 'slug', 'bounded_context', 'description'].forEach(function(fieldName) {
+                const field = document.getElementById(fieldName);
+                if (field && field.value !== undefined) {
+                    let hiddenInput = form.querySelector('input[name="' + fieldName + '"][type="hidden"]');
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = fieldName;
+                        form.appendChild(hiddenInput);
+                    }
+                    hiddenInput.value = field.value;
+                }
+            });
+        });
+    }
 });
 </script>
 @endsection

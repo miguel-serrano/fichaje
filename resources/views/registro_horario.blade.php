@@ -8,19 +8,19 @@
         <div class="card">
             <div class="card-content">
                 <span class="card-title">Registro Horario</span>
-                <p class="grey-text">Ficha de entrada y salida.</p>
+                <p class="text-secondary">Ficha de entrada y salida.</p>
 
                 <div class="divider" style="margin: 30px 0;"></div>
 
                 <div class="row">
                     <div class="col s12 m6">
-                        <p><strong class="grey-text text-darken-1">Usuario:</strong></p>
+                        <p><strong class="text-secondary">Usuario:</strong></p>
                         <p>{{ Str::ucfirst($user->name()) }} ({{ $user->email()->value() }})</p>
                     </div>
                     <div class="col s12 m6">
-                        <p><strong class="grey-text">Tiempo acumulado hoy:</strong></p>
+                        <p><strong class="text-secondary">Tiempo acumulado hoy:</strong></p>
                         <p>
-                            <span class="chip chip-info">
+                            <span class="status-badge status-badge-info">
                                 @php
                                     $horas = floor($segundos / 3600);
                                     $minutos = floor(($segundos % 3600) / 60);
@@ -37,22 +37,22 @@
                         @if($canClockIn)
                             <form method="POST" action="{{ route('registro_horario.entrada') }}">
                                 @csrf
-                                <button
+                                <md-filled-button
                                     type="submit"
                                     @if($tieneRegistroAbierto) disabled @endif
-                                    class="btn waves-effect waves-light btn-claude {{ $tieneRegistroAbierto ? 'disabled' : '' }}"
                                 >
-                                    <i class="material-icons left">input</i>Fichar Entrada
-                                </button>
+                                    <md-icon slot="icon">input</md-icon>
+                                    Fichar Entrada
+                                </md-filled-button>
                             </form>
                             @if($tieneRegistroAbierto)
-                                <p style="margin-top: 15px;" class="grey-text">
+                                <p style="margin-top: 15px;" class="text-secondary">
                                     Tienes un fichaje abierto. Puedes cerrarlo desde <a href="{{ route('user.me') }}" class="text-claude">tu página de fichajes</a>.
                                 </p>
                             @endif
                         @else
                             <div class="card-panel card-panel-warning">
-                                <i class="material-icons left">warning</i>
+                                <md-icon style="margin-right: 8px;">warning</md-icon>
                                 <span>No tienes permisos para fichar. Contacta con tu administrador.</span>
                             </div>
                         @endif

@@ -13,7 +13,7 @@
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    <!-- Vite Assets (includes Materialize CSS) -->
+    <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Theme initialization (prevents flash) -->
@@ -27,267 +27,339 @@
 <body>
     <div class="navbar-fixed">
     <nav>
-        <div class="nav-wrapper" style="padding: 0 15px;">
-                <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="brand-logo" style="display: flex; align-items: center;">
-                    <i class="material-icons left">access_time</i>TimeTrack<sup style="font-size: 12px; margin-left: 4px; opacity: 0.8;">beta</sup>
-                </a>
-                @auth
-                <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-                <ul id="nav-mobile" class="right hide-on-med-and-down">
-                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-                        <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
-                            <a href="{{ route('users.index') }}">
-                                <i class="material-icons left">people</i>Usuarios
-                            </a>
-                        </li>
-                        <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.roles.index') }}">
-                                <i class="material-icons left">security</i>Roles
-                            </a>
-                        </li>
-                        <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.permissions.index') }}">
-                                <i class="material-icons left">vpn_key</i>Permisos
-                            </a>
-                        </li>
-                    @else
-                        <li class="{{ request()->routeIs('user.me') ? 'active' : '' }}">
-                            <a href="{{ route('user.me') }}">
-                                <i class="material-icons left">chrome_reader_mode</i>Seguimiento
-                            </a>
-                        </li>
-                    @endif
-                    <li class="{{ request()->routeIs('registro_horario.*') ? 'active' : '' }}">
-                        <a href="{{ route('registro_horario.index') }}">
-                            <i class="material-icons left">timer</i>Fichar
+        <div class="nav-wrapper">
+            <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="brand-logo">
+                <md-icon>access_time</md-icon>TimeTrack<sup style="font-size: 12px; margin-left: 4px; opacity: 0.8;">beta</sup>
+            </a>
+            @auth
+            <a href="#" class="sidenav-trigger" id="sidenav-trigger">
+                <md-icon>menu</md-icon>
+            </a>
+            <ul id="nav-mobile" class="hide-on-med-and-down">
+                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+                    <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
+                        <a href="{{ route('users.index') }}">
+                            <md-icon>people</md-icon>Usuarios
                         </a>
                     </li>
-                    <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-                        <a href="{{ route('holidays.index') }}">
-                            <i class="material-icons left">beach_access</i>Vacaciones
+                    <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.roles.index') }}">
+                            <md-icon>security</md-icon>Roles
                         </a>
                     </li>
-                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-                        <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.holidays.index') }}">
-                                <i class="material-icons left">event_available</i>Gestionar Vacaciones
-                            </a>
-                        </li>
-                    @endif
-                    @php
-                        $unreadNotifications = \App\Models\Notification::where('user_id', auth()->id())
-                            ->whereNull('read_at')
-                            ->orderBy('created_at', 'desc')
-                            ->take(5)
-                            ->get();
-                        $unreadCount = \App\Models\Notification::where('user_id', auth()->id())
-                            ->whereNull('read_at')
-                            ->count();
-                    @endphp
-                    <li>
-                        <a href="#" class="dropdown-trigger" data-target="notifications-dropdown" style="position: relative;">
-                            <i class="material-icons">notifications</i>
-                            @if($unreadCount > 0)
-                                <span class="new badge red" data-badge-caption="" style="position: absolute; top: 10px; right: 5px; min-width: 18px; height: 18px; line-height: 18px; font-size: 10px; font-weight: 500; border-radius: 50%;">{{ $unreadCount }}</span>
-                            @endif
+                    <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.permissions.index') }}">
+                            <md-icon>vpn_key</md-icon>Permisos
                         </a>
                     </li>
-                    <li>
-                        <a href="#" id="theme-toggle" style="display: flex; align-items: center;">
-                            <i class="material-icons" id="theme-icon">dark_mode</i>
+                @else
+                    <li class="{{ request()->routeIs('user.me') ? 'active' : '' }}">
+                        <a href="{{ route('user.me') }}">
+                            <md-icon>chrome_reader_mode</md-icon>Seguimiento
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="dropdown-trigger" data-target="user-dropdown">
-                            <i class="material-icons left">account_circle</i>{{ auth()->user()->name }}<i class="material-icons right">arrow_drop_down</i>
+                @endif
+                <li class="{{ request()->routeIs('registro_horario.*') ? 'active' : '' }}">
+                    <a href="{{ route('registro_horario.index') }}">
+                        <md-icon>timer</md-icon>Fichar
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                    <a href="{{ route('holidays.index') }}">
+                        <md-icon>beach_access</md-icon>Vacaciones
+                    </a>
+                </li>
+                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+                    <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.holidays.index') }}">
+                            <md-icon>event_available</md-icon>Gestionar Vacaciones
                         </a>
                     </li>
-                </ul>
-                <ul id="notifications-dropdown" class="dropdown-content" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
-                    @if($unreadNotifications->isEmpty())
-                        <li style="padding: 16px; text-align: center; color: #9e9e9e;">
-                            <i class="material-icons" style="font-size: 32px; display: block; margin-bottom: 8px;">notifications_none</i>
-                            No tienes notificaciones
-                        </li>
-                    @else
-                        @foreach($unreadNotifications as $notification)
-                            <li style="border-bottom: 1px solid #eee;">
-                                <a href="#" class="notification-item" data-id="{{ $notification->id }}" style="white-space: normal; line-height: 1.4; padding: 12px 16px;">
-                                    <strong style="display: block; font-size: 13px;">{{ $notification->title }}</strong>
-                                    <span style="font-size: 12px; color: #666;">{{ $notification->message }}</span>
-                                    <small style="display: block; color: #9e9e9e; margin-top: 4px;">{{ $notification->getCreatedAtCarbon()->diffForHumans() }}</small>
-                                </a>
-                            </li>
-                        @endforeach
-                        @if($unreadCount > 5)
-                            <li style="padding: 8px; text-align: center;">
-                                <span style="font-size: 12px; color: #666;">Y {{ $unreadCount - 5 }} más...</span>
-                            </li>
+                @endif
+                @php
+                    $unreadNotifications = \App\Models\Notification::where('user_id', auth()->id())
+                        ->whereNull('read_at')
+                        ->orderBy('created_at', 'desc')
+                        ->take(5)
+                        ->get();
+                    $unreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                        ->whereNull('read_at')
+                        ->count();
+                @endphp
+                <li class="menu-anchor">
+                    <a href="#" id="notifications-trigger" style="position: relative;">
+                        <md-icon>notifications</md-icon>
+                        @if($unreadCount > 0)
+                            <span class="badge red" style="position: absolute; top: 4px; right: 0; min-width: 18px; height: 18px; line-height: 18px; font-size: 10px; font-weight: 500; border-radius: 50%;">{{ $unreadCount }}</span>
                         @endif
-                    @endif
-                </ul>
-                <ul id="user-dropdown" class="dropdown-content">
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
-                            @csrf
-                            <button type="submit" class="waves-effect waves-light text-claude" style="background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                <i class="material-icons">exit_to_app</i>Cerrar Sesión
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-                @endauth
+                    </a>
+                    <md-menu id="notifications-menu" anchor="notifications-trigger" positioning="popover" style="min-width: 300px; max-height: 400px;">
+                        @if($unreadNotifications->isEmpty())
+                            <md-menu-item disabled>
+                                <div slot="headline" style="text-align: center; padding: 16px;">
+                                    <md-icon style="font-size: 32px; display: block; margin-bottom: 8px; opacity: 0.5;">notifications_none</md-icon>
+                                    No tienes notificaciones
+                                </div>
+                            </md-menu-item>
+                        @else
+                            @foreach($unreadNotifications as $notification)
+                                <md-menu-item class="notification-item" data-id="{{ $notification->id }}">
+                                    <div slot="headline" style="font-size: 13px; font-weight: 600;">{{ $notification->title }}</div>
+                                    <div slot="supporting-text">
+                                        <span style="font-size: 12px;">{{ $notification->message }}</span>
+                                        <small style="display: block; margin-top: 4px; opacity: 0.6;">{{ $notification->getCreatedAtCarbon()->diffForHumans() }}</small>
+                                    </div>
+                                </md-menu-item>
+                            @endforeach
+                            @if($unreadCount > 5)
+                                <md-menu-item disabled>
+                                    <div slot="headline" style="text-align: center; font-size: 12px; opacity: 0.6;">
+                                        Y {{ $unreadCount - 5 }} más...
+                                    </div>
+                                </md-menu-item>
+                            @endif
+                        @endif
+                    </md-menu>
+                </li>
+                <li>
+                    <a href="#" id="theme-toggle">
+                        <md-icon id="theme-icon">dark_mode</md-icon>
+                    </a>
+                </li>
+                <li class="menu-anchor">
+                    <a href="#" id="user-trigger">
+                        <md-icon>account_circle</md-icon>{{ auth()->user()->name }}<md-icon>arrow_drop_down</md-icon>
+                    </a>
+                    <md-menu id="user-menu" anchor="user-trigger" positioning="popover">
+                        <md-menu-item id="logout-menu-item">
+                            <md-icon slot="start">exit_to_app</md-icon>
+                            <div slot="headline">Cerrar Sesión</div>
+                        </md-menu-item>
+                    </md-menu>
+                    <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
+                        @csrf
+                    </form>
+                </li>
+            </ul>
+            @endauth
         </div>
     </nav>
     </div>
 
     @auth
-    <ul class="sidenav" id="mobile-nav">
-        <li>
-            <div class="user-view">
-                <div class="background"></div>
-                <span class="white-text name">{{ auth()->user()->name }}</span>
-                <span class="white-text email">{{ auth()->user()->email }}</span>
-            </div>
-        </li>
-        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-            <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
-                <a href="{{ route('users.index') }}">
-                    <i class="material-icons">people</i>Usuarios
+    <!-- Sidenav Overlay -->
+    <div class="sidenav-overlay" id="sidenav-overlay"></div>
+
+    <!-- Sidenav -->
+    <div class="sidenav" id="mobile-nav">
+        <div class="user-view">
+            <span class="name">{{ auth()->user()->name }}</span>
+            <span class="email">{{ auth()->user()->email }}</span>
+        </div>
+        <ul>
+            @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+                <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
+                    <a href="{{ route('users.index') }}">
+                        <md-icon>people</md-icon>Usuarios
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.roles.index') }}">
+                        <md-icon>security</md-icon>Roles
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.permissions.index') }}">
+                        <md-icon>vpn_key</md-icon>Permisos
+                    </a>
+                </li>
+            @else
+                <li class="{{ request()->routeIs('user.me') ? 'active' : '' }}">
+                    <a href="{{ route('user.me') }}">
+                        <md-icon>chrome_reader_mode</md-icon>Seguimiento
+                    </a>
+                </li>
+            @endif
+            <li class="{{ request()->routeIs('registro_horario.*') ? 'active' : '' }}">
+                <a href="{{ route('registro_horario.index') }}">
+                    <md-icon>timer</md-icon>Fichar
                 </a>
             </li>
-            <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.roles.index') }}">
-                    <i class="material-icons">security</i>Roles
+            <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                <a href="{{ route('holidays.index') }}">
+                    <md-icon>beach_access</md-icon>Vacaciones
                 </a>
             </li>
-            <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.permissions.index') }}">
-                    <i class="material-icons">vpn_key</i>Permisos
+            @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+                <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.holidays.index') }}">
+                        <md-icon>event_available</md-icon>Gestionar Vacaciones
+                    </a>
+                </li>
+            @endif
+        </ul>
+        <div class="divider"></div>
+        <ul>
+            <li>
+                <a href="#" id="theme-toggle-mobile">
+                    <md-icon id="theme-icon-mobile">dark_mode</md-icon>Cambiar tema
                 </a>
             </li>
-        @else
-            <li class="{{ request()->routeIs('user.me') ? 'active' : '' }}">
-                <a href="{{ route('user.me') }}">
-                    <i class="material-icons">chrome_reader_mode</i>Seguimiento
+            <li>
+                <a href="#" id="logout-mobile">
+                    <md-icon>exit_to_app</md-icon>Cerrar Sesión
                 </a>
             </li>
-        @endif
-        <li class="{{ request()->routeIs('registro_horario.*') ? 'active' : '' }}">
-            <a href="{{ route('registro_horario.index') }}">
-                <i class="material-icons">timer</i>Fichar
-            </a>
-        </li>
-        <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-            <a href="{{ route('holidays.index') }}">
-                <i class="material-icons">beach_access</i>Vacaciones
-            </a>
-        </li>
-        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-            <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.holidays.index') }}">
-                    <i class="material-icons">event_available</i>Gestionar Vacaciones
-                </a>
-            </li>
-        @endif
-        <li><div class="divider"></div></li>
-        <li>
-            <a href="#" id="theme-toggle-mobile">
-                <i class="material-icons" id="theme-icon-mobile">dark_mode</i>Cambiar tema
-            </a>
-        </li>
-        <li>
-            <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
-                @csrf
-                <button type="submit" class="waves-effect text-claude" style="background: none; border: none; width: 100%; text-align: left; padding: 0 32px; cursor: pointer; display: flex; align-items: center; gap: 32px; height: 48px; line-height: 48px;">
-                    <i class="material-icons">exit_to_app</i>Cerrar Sesión
-                </button>
-            </form>
-        </li>
-    </ul>
+        </ul>
+    </div>
     @endauth
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var dropdowns = document.querySelectorAll('.dropdown-trigger');
-            M.Dropdown.init(dropdowns, {
-                coverTrigger: false,
-                constrainWidth: false
-            });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sidenav functionality
+        const sidenavTrigger = document.getElementById('sidenav-trigger');
+        const sidenav = document.getElementById('mobile-nav');
+        const sidenavOverlay = document.getElementById('sidenav-overlay');
 
-            var sidenavs = document.querySelectorAll('.sidenav');
-            M.Sidenav.init(sidenavs);
+        function openSidenav() {
+            if (sidenav) sidenav.classList.add('open');
+            if (sidenavOverlay) sidenavOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
 
-            // Theme toggle functionality
-            var themeToggle = document.getElementById('theme-toggle');
-            var themeToggleMobile = document.getElementById('theme-toggle-mobile');
-            var themeIcon = document.getElementById('theme-icon');
-            var themeIconMobile = document.getElementById('theme-icon-mobile');
-            var savedTheme = localStorage.getItem('theme') || 'light';
+        function closeSidenav() {
+            if (sidenav) sidenav.classList.remove('open');
+            if (sidenavOverlay) sidenavOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
 
-            function updateIcons(theme) {
-                var icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
-                if (themeIcon) themeIcon.textContent = icon;
-                if (themeIconMobile) themeIconMobile.textContent = icon;
-            }
-
-            // Set initial icon state
-            updateIcons(savedTheme);
-
-            function setTheme(theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('theme', theme);
-                updateIcons(theme);
-            }
-
-            function toggleTheme(e) {
+        if (sidenavTrigger) {
+            sidenavTrigger.addEventListener('click', function(e) {
                 e.preventDefault();
-                var currentTheme = localStorage.getItem('theme') || 'light';
-                setTheme(currentTheme === 'dark' ? 'light' : 'dark');
-            }
+                openSidenav();
+            });
+        }
 
-            if (themeToggle) {
-                themeToggle.addEventListener('click', toggleTheme);
-            }
+        if (sidenavOverlay) {
+            sidenavOverlay.addEventListener('click', closeSidenav);
+        }
 
-            if (themeToggleMobile) {
-                themeToggleMobile.addEventListener('click', toggleTheme);
-            }
+        // Close sidenav when clicking a link
+        if (sidenav) {
+            sidenav.querySelectorAll('a[href]:not([href="#"])').forEach(function(link) {
+                link.addEventListener('click', closeSidenav);
+            });
+        }
 
-            // Handle notification clicks
-            document.querySelectorAll('.notification-item').forEach(function(item) {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var notificationId = this.dataset.id;
+        // md-menu initialization
+        const notificationsTrigger = document.getElementById('notifications-trigger');
+        const notificationsMenu = document.getElementById('notifications-menu');
+        const userTrigger = document.getElementById('user-trigger');
+        const userMenu = document.getElementById('user-menu');
 
-                    fetch('/notifications/' + notificationId + '/read', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+        if (notificationsTrigger && notificationsMenu) {
+            notificationsMenu.anchorElement = notificationsTrigger;
+            notificationsTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                notificationsMenu.open = !notificationsMenu.open;
+            });
+        }
+
+        if (userTrigger && userMenu) {
+            userMenu.anchorElement = userTrigger;
+            userTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                userMenu.open = !userMenu.open;
+            });
+        }
+
+        // Logout functionality
+        const logoutMenuItem = document.getElementById('logout-menu-item');
+        const logoutForm = document.getElementById('logout-form');
+        const logoutMobile = document.getElementById('logout-mobile');
+
+        if (logoutMenuItem && logoutForm) {
+            logoutMenuItem.addEventListener('click', function() {
+                logoutForm.submit();
+            });
+        }
+
+        if (logoutMobile && logoutForm) {
+            logoutMobile.addEventListener('click', function(e) {
+                e.preventDefault();
+                logoutForm.submit();
+            });
+        }
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeIconMobile = document.getElementById('theme-icon-mobile');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+
+        function updateIcons(theme) {
+            const icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
+            if (themeIcon) themeIcon.textContent = icon;
+            if (themeIconMobile) themeIconMobile.textContent = icon;
+        }
+
+        // Set initial icon state
+        updateIcons(savedTheme);
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateIcons(theme);
+        }
+
+        function toggleTheme(e) {
+            e.preventDefault();
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        }
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        if (themeToggleMobile) {
+            themeToggleMobile.addEventListener('click', toggleTheme);
+        }
+
+        // Handle notification clicks
+        document.querySelectorAll('.notification-item').forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                const notificationId = this.dataset.id;
+
+                fetch('/notifications/' + notificationId + '/read', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function(response) {
+                    if (!response.ok) {
+                        console.error('Error marcando notificación como leída:', response.status);
+                        return;
+                    }
+                    item.remove();
+                    const badge = document.querySelector('.badge.red');
+                    if (badge) {
+                        const count = parseInt(badge.textContent) - 1;
+                        if (count <= 0) {
+                            badge.remove();
+                        } else {
+                            badge.textContent = count;
                         }
-                    }).then(function(response) {
-                        if (!response.ok) {
-                            console.error('Error marcando notificación como leída:', response.status);
-                            return;
-                        }
-                        item.closest('li').remove();
-                        var badge = document.querySelector('.badge.red');
-                        if (badge) {
-                            var count = parseInt(badge.textContent) - 1;
-                            if (count <= 0) {
-                                badge.remove();
-                            } else {
-                                badge.textContent = count;
-                            }
-                        }
-                    }).catch(function(error) {
-                        console.error('Error de red:', error);
-                    });
+                    }
+                }).catch(function(error) {
+                    console.error('Error de red:', error);
                 });
             });
         });
+    });
     </script>
 
     <main>

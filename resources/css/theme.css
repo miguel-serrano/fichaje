@@ -1,0 +1,183 @@
+/* ===== MATERIAL DESIGN 2 THEME TOKENS ===== */
+/* Based on: https://m2.material.io/design/color/dark-theme.html */
+
+:root {
+    /* ===== LIGHT THEME (default) ===== */
+
+    /* Primary - Purple 500 */
+    --md-sys-color-primary: #6200EE;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #E8DEF8;
+    --md-sys-color-on-primary-container: #21005D;
+
+    /* Secondary - Teal 200 */
+    --md-sys-color-secondary: #03DAC6;
+    --md-sys-color-on-secondary: #000000;
+    --md-sys-color-secondary-container: #C8FFF4;
+    --md-sys-color-on-secondary-container: #002020;
+
+    /* Tertiary */
+    --md-sys-color-tertiary: #7C4DFF;
+    --md-sys-color-on-tertiary: #FFFFFF;
+    --md-sys-color-tertiary-container: #E8DEF8;
+    --md-sys-color-on-tertiary-container: #21005D;
+
+    /* Surface colors */
+    --md-sys-color-surface: #FFFFFF;
+    --md-sys-color-on-surface: rgba(0, 0, 0, 0.87);
+    --md-sys-color-surface-variant: #E7E0EC;
+    --md-sys-color-on-surface-variant: rgba(0, 0, 0, 0.60);
+    --md-sys-color-surface-container: #FFFFFF;
+    --md-sys-color-surface-container-low: #F7F2FA;
+    --md-sys-color-surface-container-high: #F5F5F5;
+    --md-sys-color-surface-container-highest: #EEEEEE;
+
+    /* Outline */
+    --md-sys-color-outline: rgba(0, 0, 0, 0.12);
+    --md-sys-color-outline-variant: rgba(0, 0, 0, 0.06);
+
+    /* Error - Material Design 2 */
+    --md-sys-color-error: #B00020;
+    --md-sys-color-on-error: #FFFFFF;
+    --md-sys-color-error-container: #FDECEA;
+    --md-sys-color-on-error-container: #B00020;
+
+    /* Background */
+    --md-sys-color-background: #FAFAFA;
+    --md-sys-color-on-background: rgba(0, 0, 0, 0.87);
+
+    /* Navbar - Primary Dark (700) */
+    --navbar-bg: #3700B3;
+
+    /* Primary shortcuts */
+    --md-primary: #6200EE;
+    --md-primary-variant: #3700B3;
+    --md-secondary: #03DAC6;
+    --md-secondary-variant: #018786;
+
+    /* Text colors - Material Design 2 */
+    --text-high-emphasis: rgba(0, 0, 0, 0.87);
+    --text-medium-emphasis: rgba(0, 0, 0, 0.60);
+    --text-disabled: rgba(0, 0, 0, 0.38);
+
+    /* Legacy compatibility */
+    --claude-primary: #6200EE;
+    --claude-primary-dark: #3700B3;
+    --claude-primary-light: #BB86FC;
+    --bg-body: #FAFAFA;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F5F5F5;
+    --text-primary: rgba(0, 0, 0, 0.87);
+    --text-secondary: rgba(0, 0, 0, 0.60);
+    --border-color: rgba(0, 0, 0, 0.12);
+
+    /* Semantic status colors - Material palette */
+    --success: #4CAF50;          /* Green 500 */
+    --success-light: #81C784;    /* Green 300 */
+    --success-bg: #E8F5E9;       /* Green 50 */
+    --error: #B00020;            /* MD2 Error */
+    --error-light: #CF6679;      /* MD2 Error Light */
+    --error-bg: #FDECEA;
+    --warning: #FB8C00;          /* Orange 600 */
+    --warning-light: #FFB74D;    /* Orange 300 */
+    --warning-bg: #FFF3E0;       /* Orange 50 */
+    --info: #1976D2;             /* Blue 700 */
+    --info-light: #64B5F6;       /* Blue 300 */
+    --info-bg: #E3F2FD;          /* Blue 50 */
+
+    /* Typography */
+    --md-sys-typescale-body-medium-font: 'Nunito', system-ui, sans-serif;
+    --md-sys-typescale-label-large-font: 'Nunito', system-ui, sans-serif;
+    --md-ref-typeface-brand: 'Nunito', system-ui, sans-serif;
+    --md-ref-typeface-plain: 'Nunito', system-ui, sans-serif;
+}
+
+/* ===== DARK THEME ===== */
+/* Based on: https://m2.material.io/design/color/dark-theme.html#usage */
+/* Surface elevation uses white overlay on #121212:
+   0dp: #121212 (0%), 1dp: #1E1E1E (5%), 2dp: #232323 (7%),
+   3dp: #252525 (8%), 4dp: #272727 (9%), 6dp: #2C2C2C (11%),
+   8dp: #2E2E2E (12%), 12dp: #333333 (14%), 16dp: #363636 (15%), 24dp: #383838 (16%) */
+
+[data-theme="dark"] {
+    /* Primary - Purple 200 (desaturated for dark theme) */
+    --md-sys-color-primary: #BB86FC;
+    --md-sys-color-on-primary: #000000;
+    --md-sys-color-primary-container: #4F378B;
+    --md-sys-color-on-primary-container: #EADDFF;
+
+    /* Secondary - Teal 200 */
+    --md-sys-color-secondary: #03DAC6;
+    --md-sys-color-on-secondary: #000000;
+    --md-sys-color-secondary-container: #004F46;
+    --md-sys-color-on-secondary-container: #70F7E9;
+
+    /* Tertiary */
+    --md-sys-color-tertiary: #B388FF;
+    --md-sys-color-on-tertiary: #000000;
+    --md-sys-color-tertiary-container: #4F378B;
+    --md-sys-color-on-tertiary-container: #EADDFF;
+
+    /* Surface colors - Elevation system */
+    --md-sys-color-surface: #121212;                     /* 0dp */
+    --md-sys-color-on-surface: rgba(255, 255, 255, 0.87);
+    --md-sys-color-surface-variant: #49454F;
+    --md-sys-color-on-surface-variant: rgba(255, 255, 255, 0.60);
+    --md-sys-color-surface-container: #1E1E1E;           /* 1dp - 5% overlay */
+    --md-sys-color-surface-container-low: #1A1A1A;
+    --md-sys-color-surface-container-high: #2C2C2C;      /* 6dp - 11% overlay */
+    --md-sys-color-surface-container-highest: #383838;   /* 24dp - 16% overlay */
+
+    /* Outline */
+    --md-sys-color-outline: rgba(255, 255, 255, 0.12);
+    --md-sys-color-outline-variant: rgba(255, 255, 255, 0.06);
+
+    /* Error - Material Design 2 Dark */
+    --md-sys-color-error: #CF6679;
+    --md-sys-color-on-error: #000000;
+    --md-sys-color-error-container: #8C1D18;
+    --md-sys-color-on-error-container: #F9DEDC;
+
+    /* Background - Same as surface 0dp */
+    --md-sys-color-background: #121212;
+    --md-sys-color-on-background: rgba(255, 255, 255, 0.87);
+
+    /* Navbar - Surface at 4dp (9% overlay) */
+    --navbar-bg: #272727;
+
+    /* Primary shortcuts */
+    --md-primary: #BB86FC;
+    --md-primary-variant: #3700B3;
+    --md-secondary: #03DAC6;
+    --md-secondary-variant: #03DAC6;
+
+    /* Text colors - Material Design 2 Dark */
+    --text-high-emphasis: rgba(255, 255, 255, 0.87);
+    --text-medium-emphasis: rgba(255, 255, 255, 0.60);
+    --text-disabled: rgba(255, 255, 255, 0.38);
+
+    /* Legacy compatibility */
+    --claude-primary: #BB86FC;
+    --claude-primary-dark: #6200EE;
+    --claude-primary-light: #E8DEF8;
+    --bg-body: #121212;
+    --bg-card: #1E1E1E;
+    --bg-secondary: #272727;
+    --text-primary: rgba(255, 255, 255, 0.87);
+    --text-secondary: rgba(255, 255, 255, 0.60);
+    --border-color: rgba(255, 255, 255, 0.12);
+
+    /* Semantic status colors - Desaturated for dark theme */
+    --success: #81C784;          /* Green 300 */
+    --success-light: #A5D6A7;    /* Green 200 */
+    --success-bg: rgba(129, 199, 132, 0.12);
+    --error: #CF6679;            /* MD2 Error Dark */
+    --error-light: #F2B8C0;
+    --error-bg: rgba(207, 102, 121, 0.12);
+    --warning: #FFB74D;          /* Orange 300 */
+    --warning-light: #FFCC80;    /* Orange 200 */
+    --warning-bg: rgba(255, 183, 77, 0.12);
+    --info: #64B5F6;             /* Blue 300 */
+    --info-light: #90CAF9;       /* Blue 200 */
+    --info-bg: rgba(100, 181, 246, 0.12);
+}

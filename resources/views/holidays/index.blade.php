@@ -9,33 +9,47 @@
         <div class="card">
             <div class="card-content">
                 <span class="card-title">
-                    <i class="material-icons left">beach_access</i>
+                    <md-icon style="margin-right: 8px;">beach_access</md-icon>
                     Solicitar Vacaciones
                 </span>
-                <form action="{{ route('holidays.store') }}" method="POST">
+                <form action="{{ route('holidays.store') }}" method="POST" id="holiday-form">
                     @csrf
                     <div class="row">
-                        <div class="input-field col s12 m6">
-                            <i class="material-icons prefix">today</i>
-                            <input type="text" id="start_date" name="start_date" class="datepicker"
-                                   value="{{ old('start_date') }}"
-                                   required>
-                            <label for="start_date">Fecha de inicio</label>
+                        <div class="col s12 m6" style="margin-bottom: 16px;">
+                            <md-outlined-text-field
+                                id="start_date"
+                                name="start_date"
+                                type="text"
+                                label="Fecha de inicio"
+                                value="{{ old('start_date') }}"
+                                required
+                                style="width: 100%;"
+                                data-flatpickr='{"minDate": "today"}'
+                            >
+                                <md-icon slot="leading-icon">today</md-icon>
+                            </md-outlined-text-field>
                         </div>
-                        <div class="input-field col s12 m6">
-                            <i class="material-icons prefix">event</i>
-                            <input type="text" id="end_date" name="end_date" class="datepicker"
-                                   value="{{ old('end_date') }}"
-                                   required>
-                            <label for="end_date">Fecha de fin</label>
+                        <div class="col s12 m6" style="margin-bottom: 16px;">
+                            <md-outlined-text-field
+                                id="end_date"
+                                name="end_date"
+                                type="text"
+                                label="Fecha de fin"
+                                value="{{ old('end_date') }}"
+                                required
+                                style="width: 100%;"
+                                data-flatpickr='{"minDate": "today"}'
+                            >
+                                <md-icon slot="leading-icon">event</md-icon>
+                            </md-outlined-text-field>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s12">
-                            <button type="submit" class="btn waves-effect waves-light btn-claude">
-                                <i class="material-icons left">send</i>
+                            <md-filled-button type="submit">
+                                <md-icon slot="icon">send</md-icon>
                                 Enviar Solicitud
-                            </button>
+                            </md-filled-button>
                         </div>
                     </div>
                 </form>
@@ -47,7 +61,7 @@
 <div class="row">
     <div class="col s12">
         <div class="card-panel card-panel-warning">
-            <i class="material-icons left">warning</i>
+            <md-icon style="margin-right: 8px;">warning</md-icon>
             <span>No tienes permisos para solicitar vacaciones. Contacta con tu administrador.</span>
         </div>
     </div>
@@ -59,98 +73,106 @@
         <div class="card">
             <div class="card-content">
                 <span class="card-title">
-                    <i class="material-icons left">history</i>
+                    <md-icon style="margin-right: 8px;">history</md-icon>
                     Mis Solicitudes
                 </span>
                 @if(empty($holidays))
-                    <p class="grey-text">No tienes solicitudes de vacaciones.</p>
+                    <p class="text-secondary">No tienes solicitudes de vacaciones.</p>
                 @else
-                    <table class="striped responsive-table">
-                        <thead>
-                            <tr>
-                                <th>Fecha Inicio</th>
-                                <th>Fecha Fin</th>
-                                <th>Dias</th>
-                                <th>Estado</th>
-                                <th>Solicitado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($holidays as $holiday)
+                    <div class="overflow-x-auto">
+                        <table class="striped">
+                            <thead>
                                 <tr>
-                                    <td>{{ $holiday->dateRange()->startDateFormatted('d/m/Y') }}</td>
-                                    <td>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</td>
-                                    <td>{{ $holiday->dateRange()->totalDays() }}</td>
-                                    <td>
-                                        @php
-                                            $statusChip = match($holiday->status()) {
-                                                'approved' => 'chip-success',
-                                                'rejected' => 'chip-error',
-                                                default => 'chip-warning',
-                                            };
-                                        @endphp
-                                        <span class="chip {{ $statusChip }}">
-                                            {{ $holiday->status()->label() }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $holiday->createdAtFormatted('d/m/Y H:i') }}</td>
+                                    <th>Fecha Inicio</th>
+                                    <th>Fecha Fin</th>
+                                    <th>Dias</th>
+                                    <th>Estado</th>
+                                    <th>Solicitado</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach($holidays as $holiday)
+                                    <tr>
+                                        <td>{{ $holiday->dateRange()->startDateFormatted('d/m/Y') }}</td>
+                                        <td>{{ $holiday->dateRange()->endDateFormatted('d/m/Y') }}</td>
+                                        <td>{{ $holiday->dateRange()->totalDays() }}</td>
+                                        <td>
+                                            @php
+                                                $statusClass = match($holiday->status()->value) {
+                                                    'approved' => 'status-badge-success',
+                                                    'rejected' => 'status-badge-error',
+                                                    default => 'status-badge-warning',
+                                                };
+                                            @endphp
+                                            <span class="status-badge {{ $statusClass }}">
+                                                {{ $holiday->status()->label() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $holiday->createdAtFormatted('d/m/Y H:i') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
         </div>
     </div>
 </div>
+@endsection
 
+@section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Initialize flatpickr with date linking
+    const startInput = document.getElementById('start_date');
+    const endInput = document.getElementById('end_date');
 
-    var i18n = {
-        cancel: 'Cancelar',
-        clear: 'Limpiar',
-        done: 'Aceptar',
-        months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-        monthsShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-        weekdays: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-        weekdaysShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
-        weekdaysAbbrev: ['D', 'L', 'M', 'X', 'J', 'V', 'S']
-    };
-
-    var startDateElem = document.getElementById('start_date');
-    var endDateElem = document.getElementById('end_date');
-    var endDateInstance;
-
-    var startDateInstance = M.Datepicker.init(startDateElem, {
-        format: 'yyyy-mm-dd',
-        minDate: today,
-        autoClose: true,
-        showClearBtn: true,
-        i18n: i18n,
-        firstDay: 1,
-        onSelect: function(date) {
-            if (endDateInstance) {
-                endDateInstance.options.minDate = date;
-                var endDate = endDateInstance.date;
-                if (endDate && endDate < date) {
-                    endDateInstance.setDate(date);
-                    endDateElem.value = startDateElem.value;
+    if (startInput && endInput) {
+        const startPicker = flatpickr(startInput, {
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            allowInput: true,
+            onChange: function(selectedDates) {
+                if (selectedDates[0]) {
+                    endPicker.set('minDate', selectedDates[0]);
+                    if (endPicker.selectedDates[0] && endPicker.selectedDates[0] < selectedDates[0]) {
+                        endPicker.setDate(selectedDates[0]);
+                    }
                 }
             }
-        }
-    });
+        });
 
-    endDateInstance = M.Datepicker.init(endDateElem, {
-        format: 'yyyy-mm-dd',
-        minDate: today,
-        autoClose: true,
-        showClearBtn: true,
-        i18n: i18n,
-        firstDay: 1
-    });
+        const endPicker = flatpickr(endInput, {
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            allowInput: true
+        });
+    }
+
+    // Handle form submission
+    const form = document.getElementById('holiday-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const startField = document.getElementById('start_date');
+            const endField = document.getElementById('end_date');
+
+            // Create hidden inputs with the values from md-outlined-text-field
+            ['start_date', 'end_date'].forEach(function(fieldName) {
+                const field = document.getElementById(fieldName);
+                if (field && field.value) {
+                    let hiddenInput = form.querySelector('input[name="' + fieldName + '"][type="hidden"]');
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = fieldName;
+                        form.appendChild(hiddenInput);
+                    }
+                    hiddenInput.value = field.value;
+                }
+            });
+        });
+    }
 });
 </script>
 @endsection

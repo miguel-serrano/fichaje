@@ -8,4 +8,10 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        target: 'esnext',
+    },
+    optimizeDeps: {
+        exclude: ['@material/web'],
+    },
 });

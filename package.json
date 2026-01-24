@@ -12,6 +12,7 @@
         "vite": "^4.0.0"
     },
     "dependencies": {
-        "materialize-css": "^1.0.0"
+        "@material/web": "^2.4.1",
+        "flatpickr": "^4.6.13"
     }
 }
