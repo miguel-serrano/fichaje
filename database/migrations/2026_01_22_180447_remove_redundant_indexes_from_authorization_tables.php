@@ -78,7 +78,7 @@ return new class extends Migration
      */
     private function indexExists(string $table, string $indexName): bool
     {
-        $indexes = DB::select('SHOW INDEXES FROM ' . $table . ' WHERE Key_name = ?', [$indexName]);
+        $indexes = DB::select('SHOW INDEXES FROM '.$table.' WHERE Key_name = ?', [$indexName]);
 
         return ! empty($indexes);
     }
