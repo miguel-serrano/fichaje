@@ -96,7 +96,7 @@
 
                     <div class="row">
                         <div class="col s12 d-flex justify-between flex-wrap gap-2">
-                            <md-text-button href="{{ route('admin.roles.show', $role['id']) }}">
+                            <md-text-button type="button" href="{{ route('admin.roles.show', $role['id']) }}">
                                 <md-icon slot="icon">cancel</md-icon>
                                 Cancelar
                             </md-text-button>

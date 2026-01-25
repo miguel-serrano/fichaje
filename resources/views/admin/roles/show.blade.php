@@ -77,8 +77,7 @@
                             <div class="col s12 m6 l4" style="margin-bottom: 12px;">
                                 <label class="d-flex align-center gap-2 cursor-pointer">
                                     <md-checkbox
-                                        name="permissions[]"
-                                        value="{{ $permission['id'] }}"
+                                        data-permission-id="{{ $permission['id'] }}"
                                         {{ in_array($permission['id'], $rolePermissionIds) ? 'checked' : '' }}
                                     ></md-checkbox>
                                     <span>
@@ -122,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const hiddenInput = document.createElement('input');
                     hiddenInput.type = 'hidden';
                     hiddenInput.name = 'permissions[]';
-                    hiddenInput.value = checkbox.value;
+                    hiddenInput.value = checkbox.dataset.permissionId;
                     form.appendChild(hiddenInput);
                 }
             });

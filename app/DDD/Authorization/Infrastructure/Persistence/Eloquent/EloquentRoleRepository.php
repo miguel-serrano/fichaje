@@ -143,16 +143,20 @@ class EloquentRoleRepository implements RoleRepositoryInterface
      */
     public function syncPermissions(RoleId $roleId, array $permissionIds): void
     {
-        $this->rolePermissionQuery()->where('role_id', $roleId->value())->delete();
+        $uniquePermissionIds = array_unique($permissionIds);
 
-        $inserts = array_map(fn (int $permissionId) => [
-            'role_id' => $roleId->value(),
-            'permission_id' => $permissionId,
-        ], $permissionIds);
+        $this->connection->transaction(function () use ($roleId, $uniquePermissionIds) {
+            $this->rolePermissionQuery()->where('role_id', $roleId->value())->delete();
 
-        if (!empty($inserts)) {
-            $this->rolePermissionQuery()->insert($inserts);
-        }
+            $inserts = array_map(fn (int $permissionId) => [
+                'role_id' => $roleId->value(),
+                'permission_id' => $permissionId,
+            ], $uniquePermissionIds);
+
+            if (!empty($inserts)) {
+                $this->rolePermissionQuery()->insert($inserts);
+            }
+        });
     }
 
     public function assignRoleToUserBySystem(UserId $userId, RoleSlug $slug): void
