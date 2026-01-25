@@ -142,6 +142,25 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
         ]);
     }
 
+    /**
+     * @param int $days 0 = all history
+     *
+     * @return \Illuminate\Support\Collection<int, \stdClass>
+     */
+    public function findByUserIdInDateRange(UserId $userId, int $days = 0): \Illuminate\Support\Collection
+    {
+        $query = $this->query()
+            ->where('user_id', $userId->value())
+            ->orderBy('entrada', 'asc');
+
+        if ($days > 0) {
+            $startDate = strtotime("-{$days} days", strtotime('today 00:00:00'));
+            $query->where('entrada', '>=', $startDate);
+        }
+
+        return $query->get();
+    }
+
     private function query(): Builder
     {
         return $this->connection->table($this->tableName);

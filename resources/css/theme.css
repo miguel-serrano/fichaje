@@ -1,36 +1,37 @@
 /* ===== MATERIAL DESIGN 2 THEME TOKENS ===== */
-/* Based on: https://m2.material.io/design/color/dark-theme.html */
+/* Based on: https://m2.material.io/design/material-studies/owl.html#color */
 
 :root {
-    /* ===== LIGHT THEME (default) ===== */
+    /* ===== LIGHT THEME (Owl Theme) ===== */
+    /* Owl uses: Yellow #FFDE03, Blue #0336FF, Pink #FF0266 */
 
-    /* Primary - Purple 500 */
-    --md-sys-color-primary: #6200EE;
+    /* Primary - Owl Blue */
+    --md-sys-color-primary: #0336FF;
     --md-sys-color-on-primary: #FFFFFF;
-    --md-sys-color-primary-container: #E8DEF8;
-    --md-sys-color-on-primary-container: #21005D;
+    --md-sys-color-primary-container: #DEE0FF;
+    --md-sys-color-on-primary-container: #00105C;
 
-    /* Secondary - Teal 200 */
-    --md-sys-color-secondary: #03DAC6;
+    /* Secondary - Owl Yellow */
+    --md-sys-color-secondary: #FFDE03;
     --md-sys-color-on-secondary: #000000;
-    --md-sys-color-secondary-container: #C8FFF4;
-    --md-sys-color-on-secondary-container: #002020;
+    --md-sys-color-secondary-container: #FFF8D6;
+    --md-sys-color-on-secondary-container: #221B00;
 
-    /* Tertiary */
-    --md-sys-color-tertiary: #7C4DFF;
+    /* Tertiary - Owl Pink */
+    --md-sys-color-tertiary: #FF0266;
     --md-sys-color-on-tertiary: #FFFFFF;
-    --md-sys-color-tertiary-container: #E8DEF8;
-    --md-sys-color-on-tertiary-container: #21005D;
+    --md-sys-color-tertiary-container: #FFD9E2;
+    --md-sys-color-on-tertiary-container: #3F001D;
 
     /* Surface colors */
-    --md-sys-color-surface: #FFFFFF;
+    --md-sys-color-surface: #FFFBFF;
     --md-sys-color-on-surface: rgba(0, 0, 0, 0.87);
-    --md-sys-color-surface-variant: #E7E0EC;
+    --md-sys-color-surface-variant: #E4E1EC;
     --md-sys-color-on-surface-variant: rgba(0, 0, 0, 0.60);
     --md-sys-color-surface-container: #FFFFFF;
-    --md-sys-color-surface-container-low: #F7F2FA;
-    --md-sys-color-surface-container-high: #F5F5F5;
-    --md-sys-color-surface-container-highest: #EEEEEE;
+    --md-sys-color-surface-container-low: #F8F5FF;
+    --md-sys-color-surface-container-high: #F3F0FA;
+    --md-sys-color-surface-container-highest: #EDEAF4;
 
     /* Outline */
     --md-sys-color-outline: rgba(0, 0, 0, 0.12);
@@ -43,17 +44,17 @@
     --md-sys-color-on-error-container: #B00020;
 
     /* Background */
-    --md-sys-color-background: #FAFAFA;
+    --md-sys-color-background: #FFFBFF;
     --md-sys-color-on-background: rgba(0, 0, 0, 0.87);
 
-    /* Navbar - Primary Dark (700) */
-    --navbar-bg: #3700B3;
+    /* Navbar - Owl Blue Dark */
+    --navbar-bg: #0026B3;
 
     /* Primary shortcuts */
-    --md-primary: #6200EE;
-    --md-primary-variant: #3700B3;
-    --md-secondary: #03DAC6;
-    --md-secondary-variant: #018786;
+    --md-primary: #0336FF;
+    --md-primary-variant: #0026B3;
+    --md-secondary: #FFDE03;
+    --md-secondary-variant: #C9AD00;
 
     /* Text colors - Material Design 2 */
     --text-high-emphasis: rgba(0, 0, 0, 0.87);
@@ -61,12 +62,12 @@
     --text-disabled: rgba(0, 0, 0, 0.38);
 
     /* Legacy compatibility */
-    --claude-primary: #6200EE;
-    --claude-primary-dark: #3700B3;
-    --claude-primary-light: #BB86FC;
-    --bg-body: #FAFAFA;
+    --claude-primary: #0336FF;
+    --claude-primary-dark: #0026B3;
+    --claude-primary-light: #6B7CFF;
+    --bg-body: #FFFBFF;
     --bg-card: #FFFFFF;
-    --bg-secondary: #F5F5F5;
+    --bg-secondary: #F3F0FA;
     --text-primary: rgba(0, 0, 0, 0.87);
     --text-secondary: rgba(0, 0, 0, 0.60);
     --border-color: rgba(0, 0, 0, 0.12);
@@ -81,9 +82,9 @@
     --warning: #FB8C00;          /* Orange 600 */
     --warning-light: #FFB74D;    /* Orange 300 */
     --warning-bg: #FFF3E0;       /* Orange 50 */
-    --info: #1976D2;             /* Blue 700 */
-    --info-light: #64B5F6;       /* Blue 300 */
-    --info-bg: #E3F2FD;          /* Blue 50 */
+    --info: #0336FF;             /* Owl Blue */
+    --info-light: #6B7CFF;       /* Owl Blue Light */
+    --info-bg: #DEE0FF;          /* Owl Blue Container */
 
     /* Typography */
     --md-sys-typescale-body-medium-font: 'Nunito', system-ui, sans-serif;

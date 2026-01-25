@@ -36,8 +36,13 @@ import { toast } from './toast.js';
 // Material Date Picker
 import { MaterialDatePicker, initDatePicker, formatDisplayDate } from './date-picker.js';
 
+// Chart.js for data visualization
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+
 // Make utilities globally available
 window.toast = toast;
+window.Chart = Chart;
 window.MaterialDatePicker = MaterialDatePicker;
 window.initDatePicker = initDatePicker;
 window.formatDisplayDate = formatDisplayDate;

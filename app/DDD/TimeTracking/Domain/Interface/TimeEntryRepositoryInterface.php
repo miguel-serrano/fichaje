@@ -39,4 +39,14 @@ interface TimeEntryRepositoryInterface
      * @param string      $reason   Razón del auto-cierre
      */
     public function closeWithAutoClosed(TimeEntryId $id, int $closedAt, string $reason): void;
+
+    /**
+     * Find time entries for a user within a date range.
+     *
+     * @param UserId $userId ID del usuario
+     * @param int    $days   Número de días hacia atrás desde hoy
+     *
+     * @return \Illuminate\Support\Collection<int, \stdClass>
+     */
+    public function findByUserIdInDateRange(UserId $userId, int $days = 30): \Illuminate\Support\Collection;
 }

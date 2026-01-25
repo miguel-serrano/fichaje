@@ -19,58 +19,96 @@
             font-size: 0.85rem;
         }
     }
+    /* Personal info collapsible */
+    .personal-info-details summary::-webkit-details-marker { display: none; }
+    .personal-info-details summary { list-style: none; }
+    .personal-info-details[open] .collapse-icon { transform: rotate(180deg); }
 </style>
+
+<!-- Información Personal (Collapsible) -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content" style="padding: 0;">
+                <details class="personal-info-details">
+                    <summary class="collapsible-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; cursor: pointer; list-style: none;">
+                        <span class="card-title" style="margin: 0; display: flex; align-items: center;">
+                            <md-icon style="margin-right: 8px;">person</md-icon>
+                            Información Personal
+                            <md-icon class="collapse-icon" style="margin-left: 8px; transition: transform 0.3s;">expand_more</md-icon>
+                        </span>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="event.stopPropagation();">
+                            <md-switch id="show-full-info"></md-switch>
+                            <md-icon id="visibility-icon" style="color: var(--text-secondary);">visibility_off</md-icon>
+                        </label>
+                    </summary>
+                    <div style="padding: 0 24px 20px;">
+                        <div class="divider" style="margin-bottom: 20px;"></div>
+                        <div class="row" style="margin-bottom: 0;">
+                            <div class="col s12 m6">
+                                <h6 class="text-secondary">Nombre</h6>
+                                <p>{{ Str::ucfirst($user->name()) }}</p>
+                            </div>
+                            <div class="col s12 m6">
+                                <h6 class="text-secondary">Email</h6>
+                                <p>
+                                    <span class="masked-info">{{ Str::mask($user->email()->value(), '*', 3, strpos($user->email()->value(), '@') - 3) }}</span>
+                                    <span class="full-info" style="display: none;">{{ $user->email()->value() }}</span>
+                                </p>
+                            </div>
+                            <div class="col s12 m6">
+                                <h6 class="text-secondary">UUID</h6>
+                                <p>
+                                    <code class="text-secondary masked-info">{{ Str::limit($user->uuid()->value(), 18) }}</code>
+                                    <code class="text-secondary full-info" style="display: none;">{{ $user->uuid()->value() }}</code>
+                                </p>
+                            </div>
+                            <div class="col s12 m6">
+                                <h6 class="text-secondary">Estado</h6>
+                                <p>
+                                    @if($user->isActive())
+                                        <span class="status-badge status-badge-success">
+                                            <md-icon style="font-size: 14px;">check_circle</md-icon> Activo
+                                        </span>
+                                    @else
+                                        <span class="status-badge status-badge-error">
+                                            <md-icon style="font-size: 14px;">cancel</md-icon> Inactivo
+                                        </span>
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Histórico de Fichajes - Gráfica -->
 <div class="row">
     <div class="col s12">
         <div class="card">
             <div class="card-content">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                    <span class="card-title" style="margin: 0;">
-                        <md-icon style="margin-right: 8px;">person</md-icon>
-                        Información Personal
-                    </span>
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                        <md-switch id="show-full-info"></md-switch>
-                        <md-icon id="visibility-icon" style="color: var(--text-secondary);">visibility_off</md-icon>
-                    </label>
-                </div>
+                <span class="card-title">
+                    <md-icon style="margin-right: 8px;">show_chart</md-icon>
+                    Histórico de Fichajes
+                </span>
 
-                <div class="divider" style="margin: 20px 0;"></div>
-
-                <div class="row">
-                    <div class="col s12 m6">
-                        <h6 class="text-secondary">Nombre</h6>
-                        <p>{{ Str::ucfirst($user->name()) }}</p>
+                @if(isset($chartData) && $chartData['hasData'])
+                    <div style="position: relative; height: 300px; margin-top: 20px;">
+                        <canvas id="dailyHoursChart"></canvas>
                     </div>
-                    <div class="col s12 m6">
-                        <h6 class="text-secondary">Email</h6>
-                        <p>
-                            <span class="masked-info">{{ Str::mask($user->email()->value(), '*', 3, strpos($user->email()->value(), '@') - 3) }}</span>
-                            <span class="full-info" style="display: none;">{{ $user->email()->value() }}</span>
-                        </p>
+                    <p class="text-secondary center-align" style="margin-top: 10px; font-size: 0.9rem;">
+                        Horas trabajadas por día (solo fichajes cerrados)
+                    </p>
+                @else
+                    <div class="center-align" style="padding: 60px 20px;">
+                        <md-icon class="text-secondary" style="font-size: 72px; width: 72px; height: 72px;">insert_chart_outlined</md-icon>
+                        <h5 class="text-secondary">Sin datos para mostrar</h5>
+                        <p class="text-secondary">No hay fichajes cerrados en los últimos 30 días.</p>
                     </div>
-                    <div class="col s12 m6">
-                        <h6 class="text-secondary">UUID</h6>
-                        <p>
-                            <code class="text-secondary masked-info">{{ Str::limit($user->uuid()->value(), 18) }}</code>
-                            <code class="text-secondary full-info" style="display: none;">{{ $user->uuid()->value() }}</code>
-                        </p>
-                    </div>
-                    <div class="col s12 m6">
-                        <h6 class="text-secondary">Estado</h6>
-                        <p>
-                            @if($user->isActive())
-                                <span class="status-badge status-badge-success">
-                                    <md-icon style="font-size: 14px;">check_circle</md-icon> Activo
-                                </span>
-                            @else
-                                <span class="status-badge status-badge-error">
-                                    <md-icon style="font-size: 14px;">cancel</md-icon> Inactivo
-                                </span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -690,4 +728,141 @@ if (document.querySelector('.live-timer') || document.querySelector('.live-timer
     updateLiveTimers();
 }
 </script>
+
+@if(isset($chartData) && $chartData['hasData'])
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('dailyHoursChart');
+    if (!ctx || typeof Chart === 'undefined') return;
+
+    const chartData = @json($chartData);
+
+    // Function to get current theme colors
+    function getThemeColors() {
+        const style = getComputedStyle(document.documentElement);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        return {
+            isDark,
+            textColor: style.getPropertyValue('--text-primary').trim() || (isDark ? 'rgba(255, 255, 255, 0.87)' : 'rgba(0, 0, 0, 0.87)'),
+            gridColor: style.getPropertyValue('--border-color').trim() || (isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)'),
+            primaryColor: style.getPropertyValue('--claude-primary').trim() || '#0336FF',
+            tooltipBg: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            tooltipText: isDark ? 'rgba(255, 255, 255, 0.87)' : 'rgba(0, 0, 0, 0.87)',
+            pointBorder: isDark ? '#1E1E1E' : '#FFFFFF'
+        };
+    }
+
+    let colors = getThemeColors();
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Horas trabajadas',
+                data: chartData.data,
+                borderColor: colors.primaryColor,
+                backgroundColor: colors.primaryColor + '20',
+                borderWidth: 2,
+                fill: true,
+                tension: 0,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: colors.primaryColor,
+                pointBorderColor: colors.pointBorder,
+                pointBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    backgroundColor: colors.tooltipBg,
+                    titleColor: colors.tooltipText,
+                    bodyColor: colors.tooltipText,
+                    borderColor: colors.gridColor,
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return tooltipItems[0].label;
+                        },
+                        label: function(context) {
+                            const hours = context.parsed.y;
+                            const h = Math.floor(hours);
+                            const m = Math.round((hours - h) * 60);
+                            return h + 'h ' + m + 'm';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: colors.gridColor,
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        color: colors.textColor,
+                        maxRotation: 45,
+                        minRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 15,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 10,
+                    grid: {
+                        color: colors.gridColor,
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        color: colors.textColor,
+                        callback: function(value) {
+                            return value + 'h';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Update chart colors when theme changes
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'data-theme') {
+                colors = getThemeColors();
+                // Update dataset colors
+                chart.data.datasets[0].borderColor = colors.primaryColor;
+                chart.data.datasets[0].backgroundColor = colors.primaryColor + '20';
+                chart.data.datasets[0].pointBackgroundColor = colors.primaryColor;
+                chart.data.datasets[0].pointBorderColor = colors.pointBorder;
+                // Update scales colors
+                chart.options.scales.x.grid.color = colors.gridColor;
+                chart.options.scales.x.ticks.color = colors.textColor;
+                chart.options.scales.y.grid.color = colors.gridColor;
+                chart.options.scales.y.ticks.color = colors.textColor;
+                // Update tooltip colors
+                chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
+                chart.options.plugins.tooltip.titleColor = colors.tooltipText;
+                chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+                chart.options.plugins.tooltip.borderColor = colors.gridColor;
+                chart.update();
+            }
+        });
+    });
+    observer.observe(document.documentElement, { attributes: true });
+});
+</script>
+@endif
 @endsection

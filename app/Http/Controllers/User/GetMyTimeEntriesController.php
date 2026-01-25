@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
+use App\DDD\TimeTracking\Application\Query\GetDailyHoursHistoryQuery;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
@@ -23,32 +24,15 @@ class GetMyTimeEntriesController extends Controller
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
             $userId = $authenticatedUser->id()->value();
-
-            $registrosData = $this->queryBus->dispatch(
-                GetUserDailyRegistrosQuery::create(
-                    authenticatedUserId: $userId,
-                    targetUserId: $userId,
-                )
-            )->response();
-
-            $todayRegistros = $this->queryBus->dispatch(
-                GetUserTodayRegistrosQuery::create(
-                    authenticatedUserId: $userId,
-                    targetUserId: $userId,
-                )
-            )->response();
-
-            $monthlyRegistros = array_filter(
-                $authenticatedUser->timeEntries(),
-                fn (TimeEntry $r) => date('Y-m', $r->startTime()) === date('Y-m')
-            );
+            $dailyRegistrosData = $this->getDailyRegistros($userId);
 
             return view('users.detail', [
                 'user' => $authenticatedUser,
-                'allRegistros' => $todayRegistros,
-                'monthlyRegistros' => $monthlyRegistros,
-                'dailyRegistros' => $registrosData['registros'],
-                'totalMes' => $registrosData['total_mes_actual'],
+                'allRegistros' => $this->getTodayRegistros($userId),
+                'monthlyRegistros' => $this->getMonthlyRegistros($authenticatedUser),
+                'dailyRegistros' => $dailyRegistrosData['registros'],
+                'totalMes' => $dailyRegistrosData['total_mes_actual'],
+                'chartData' => $this->getChartData($userId),
                 'isAdmin' => false,
             ]);
         } catch (\Exception $e) {
@@ -57,5 +41,58 @@ class GetMyTimeEntriesController extends Controller
             return redirect()->route('bienvenido')
                 ->with('error', 'Error al cargar tus registros de tiempo');
         }
+    }
+
+    /**
+     * @return array{registros: array<mixed>, total_mes_actual: float}
+     */
+    private function getDailyRegistros(string $userId): array
+    {
+        return $this->queryBus->dispatch(
+            GetUserDailyRegistrosQuery::create(
+                authenticatedUserId: $userId,
+                targetUserId: $userId,
+            )
+        )->response();
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private function getTodayRegistros(string $userId): array
+    {
+        return $this->queryBus->dispatch(
+            GetUserTodayRegistrosQuery::create(
+                authenticatedUserId: $userId,
+                targetUserId: $userId,
+            )
+        )->response();
+    }
+
+    /**
+     * @param \App\DDD\Authentication\Domain\Entity\AuthenticatedUser $user
+     *
+     * @return array<TimeEntry>
+     */
+    private function getMonthlyRegistros($user): array
+    {
+        return array_filter(
+            $user->timeEntries(),
+            fn (TimeEntry $r) => date('Y-m', $r->startTime()) === date('Y-m')
+        );
+    }
+
+    /**
+     * @return array{labels: array<string>, data: array<float>, hasData: bool}
+     */
+    private function getChartData(string $userId): array
+    {
+        return $this->queryBus->dispatch(
+            GetDailyHoursHistoryQuery::create(
+                authenticatedUserId: $userId,
+                targetUserId: $userId,
+                days: 0,
+            )
+        )->response();
     }
 }
