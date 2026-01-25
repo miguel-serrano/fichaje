@@ -147,7 +147,7 @@
                             <div class="admin-holiday-card-mobile">
                                 <div class="admin-holiday-card-header">
                                     <div class="admin-holiday-user">
-                                        <md-icon>person</md-icon>
+                                        <md-icon style="color: var(--success);">check_circle</md-icon>
                                         <div>
                                             <strong>{{ $user ? $user->name() : 'Usuario desconocido' }}</strong>
                                             @if($user)
@@ -155,7 +155,6 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <span class="status-badge status-badge-success">Aprobada</span>
                                 </div>
                                 <div class="holiday-card-dates">
                                     <div class="holiday-date-item">

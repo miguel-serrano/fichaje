@@ -215,6 +215,42 @@
 
 /* ===== MOBILE CARD LAYOUTS ===== */
 
+/* Maximize screen space on mobile */
+@media (max-width: 600px) {
+    /* Reduce container margins */
+    .container {
+        width: 100% !important;
+        padding: 0 8px;
+    }
+
+    /* Reduce row negative margin */
+    .row {
+        margin-left: -4px;
+        margin-right: -4px;
+    }
+
+    /* Reduce column padding */
+    .col {
+        padding: 0 4px;
+    }
+
+    /* Reduce card margins and border-radius */
+    .card {
+        margin: 8px 0;
+        border-radius: 8px;
+    }
+
+    /* Reduce card-content padding */
+    .card .card-content {
+        padding: 12px;
+    }
+
+    .card .card-content .card-title {
+        font-size: 1.125rem;
+        margin-bottom: 8px;
+    }
+}
+
 /* Holiday card for mobile view */
 .holiday-card-mobile {
     background: var(--md-sys-color-surface-container);
@@ -376,10 +412,13 @@
 
 .admin-holiday-card-header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
     margin-bottom: 16px;
     gap: 12px;
+}
+
+.admin-holiday-card-header > .status-badge {
+    align-self: flex-start;
 }
 
 .admin-holiday-user {
@@ -426,55 +465,54 @@
     margin-top: 16px;
 }
 
-/* Fichaje card for mobile view */
+/* Fichaje card for mobile view - Reply style (edge-to-edge) */
 .fichaje-card-mobile {
     background: var(--md-sys-color-surface-container);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
     padding: 16px;
-    margin-bottom: 12px;
 }
 
 .fichaje-card-mobile:last-child {
-    margin-bottom: 0;
+    border-bottom: none;
 }
 
 .fichaje-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .fichaje-card-date {
+    font-size: 1rem;
     font-weight: 600;
     color: var(--md-sys-color-on-surface);
 }
 
 .fichaje-card-times {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
-    padding: 12px 0;
-    border-top: 1px solid var(--md-sys-color-outline-variant);
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    gap: 16px;
 }
 
 .fichaje-time-item {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 4px;
 }
 
 .fichaje-time-item .label {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
     color: var(--md-sys-color-on-surface-variant);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .fichaje-time-item .value {
-    font-size: 1rem;
+    font-size: 1.125rem;
     font-weight: 500;
     color: var(--md-sys-color-on-surface);
 }
@@ -482,16 +520,15 @@
 .fichaje-card-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-top: 12px;
+    justify-content: flex-end;
+    margin-top: 16px;
 }
 
 /* Mini fichaje card for collapsible content */
 .fichaje-mini-card {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
+    flex-direction: column;
+    padding: 16px 12px;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     gap: 12px;
 }
@@ -503,8 +540,8 @@
 .fichaje-mini-times {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
-    flex: 1;
 }
 
 .fichaje-mini-time {
@@ -517,6 +554,7 @@
     font-size: 18px;
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
 }
 
 .fichaje-mini-time span {
@@ -529,10 +567,11 @@
     font-size: 14px !important;
     width: 14px !important;
     height: 14px !important;
+    flex-shrink: 0;
 }
 
 .fichaje-mini-duration {
-    flex-shrink: 0;
+    align-self: flex-end;
 }
 
 /* Permission card for mobile view */

@@ -163,7 +163,7 @@
         <div class="card">
             <div class="card-content">
                 <span class="card-title">
-                    <md-icon style="margin-right: 8px;">assignment</md-icon>
+                    <md-icon style="margin-right: 8px;">schedule</md-icon>
                     Todos los Fichajes
                 </span>
 
@@ -284,7 +284,7 @@
                     </div>
                 @else
                     <div class="center-align" style="padding: 60px 20px;">
-                        <md-icon class="text-secondary" style="font-size: 72px; width: 72px; height: 72px;">assignment_late</md-icon>
+                        <md-icon class="text-secondary" style="font-size: 72px; width: 72px; height: 72px;">schedule</md-icon>
                         <h5 class="text-secondary">Sin registros de fichaje</h5>
                         <p class="text-secondary">Este usuario aún no tiene ningún registro de fichaje.</p>
                     </div>

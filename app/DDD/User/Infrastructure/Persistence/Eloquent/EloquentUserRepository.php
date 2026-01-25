@@ -204,7 +204,6 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function findDailyTimeEntriesByUserId(UserId $id): array
     {
         $userId = $id->value();
-        $today = $this->todayBounds();
 
         return [
             'cerrados' => $this->timeEntryQuery()
@@ -212,11 +211,10 @@ class EloquentUserRepository implements UserRepositoryInterface
                 ->whereNotNull('salida')
                 ->orderBy('entrada', 'desc')
                 ->get(),
+            // Include ALL open entries, not just today's (user might have forgotten to close from previous days)
             'abiertos' => $this->timeEntryQuery()
                 ->where('user_id', $userId)
                 ->whereNull('salida')
-                ->where('entrada', '>=', $today['start'])
-                ->where('entrada', '<=', $today['end'])
                 ->orderBy('entrada', 'desc')
                 ->get(),
         ];

@@ -267,4 +267,111 @@ class RegistroHorarioTest extends TestCase
         $response->assertRedirect(route('user.me'));
         $response->assertSessionHas('success', 'Entrada registrada correctamente');
     }
+
+    // ===== Tests de UI - Validación de botones =====
+
+    public function test_registro_horario_shows_fichar_entrada_button(): void
+    {
+        $response = $this->get('/registro-horario');
+
+        $response->assertStatus(200);
+        $response->assertSee('Fichar Entrada');
+    }
+
+    public function test_registro_horario_shows_warning_message_when_registro_abierto(): void
+    {
+        $this->post('/registro-horario/entrada');
+
+        $response = $this->get('/registro-horario');
+
+        $response->assertStatus(200);
+        $response->assertSee('Tienes un fichaje abierto');
+        $response->assertSee('tu página de fichajes');
+    }
+
+    public function test_registro_horario_shows_error_for_user_without_timetracking_permission(): void
+    {
+        // Quitar todos los roles al usuario
+        $this->authenticatedUser->roles()->detach();
+
+        $response = $this->get('/registro-horario');
+
+        // Usuario sin permisos ve un mensaje de error
+        $response->assertSee('No tienes el permiso necesario');
+    }
+
+    public function test_user_me_shows_cerrar_button_when_registro_abierto(): void
+    {
+        $this->post('/registro-horario/entrada');
+
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Cerrar fichaje');
+    }
+
+    public function test_user_me_shows_informacion_personal_section(): void
+    {
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Información Personal');
+    }
+
+    public function test_user_me_shows_fichaje_de_hoy_section(): void
+    {
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Fichaje de hoy');
+    }
+
+    public function test_user_me_shows_todos_los_fichajes_section(): void
+    {
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Todos los Fichajes');
+    }
+
+    public function test_user_me_shows_resumen_diario_section(): void
+    {
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Resumen Diario');
+    }
+
+    public function test_user_me_shows_abierto_status_for_open_registro(): void
+    {
+        $this->post('/registro-horario/entrada');
+
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Abierto');
+    }
+
+    public function test_user_me_shows_cerrado_status_for_closed_registro(): void
+    {
+        $this->post('/registro-horario/entrada');
+        $this->post('/registro-horario/salida');
+
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Cerrado');
+    }
+
+    public function test_user_me_does_not_show_cerrar_button_when_no_open_registro(): void
+    {
+        // Crear un registro cerrado
+        $this->post('/registro-horario/entrada');
+        $this->post('/registro-horario/salida');
+
+        $response = $this->get(route('user.me'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Cerrar fichaje');
+    }
 }

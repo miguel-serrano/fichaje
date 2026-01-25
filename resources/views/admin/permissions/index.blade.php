@@ -33,7 +33,7 @@
                             <summary class="collapsible-header">
                                 <md-icon>folder</md-icon>
                                 <span style="flex: 1;">{{ $context }}</span>
-                                <span class="badge">{{ count($permissions) }} permisos</span>
+                                <span class="badge">{{ count($permissions) }}</span>
                                 <md-icon class="expand-icon">expand_more</md-icon>
                             </summary>
                             <div class="collapsible-content">

@@ -112,7 +112,7 @@
                 @endphp
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                     <span class="card-title" style="margin: 0;">
-                        <md-icon style="margin-right: 8px;">assignment</md-icon>
+                        <md-icon style="margin-right: 8px;">schedule</md-icon>
                         Fichaje de hoy
                     </span>
                     @if(isset($allRegistros) && count($allRegistros) > 0)
@@ -254,7 +254,7 @@
                     </div>
                 @else
                     <div class="center-align" style="padding: 60px 20px;">
-                        <md-icon class="text-secondary" style="font-size: 72px; width: 72px; height: 72px;">assignment_late</md-icon>
+                        <md-icon class="text-secondary" style="font-size: 72px; width: 72px; height: 72px;">schedule</md-icon>
                         <h5 class="text-secondary">Sin registros de fichaje</h5>
                         <p class="text-secondary">Aún no tienes ningún registro de fichaje.</p>
                     </div>
@@ -314,7 +314,7 @@
                                     {{-- Mobile view: List --}}
                                     <div class="hide-on-med-and-up">
                                         @foreach($dia['registros'] as $registro)
-                                        <div class="fichaje-mini-card">
+                                        <div class="fichaje-mini-card" style="{{ !empty($registro['abierto']) ? 'flex-wrap: wrap;' : '' }}">
                                             <div class="fichaje-mini-times">
                                                 <div class="fichaje-mini-time">
                                                     <md-icon class="text-claude">login</md-icon>
@@ -343,6 +343,17 @@
                                                     </span>
                                                 @endif
                                             </div>
+                                            @if(!empty($registro['abierto']))
+                                            <div style="width: 100%; margin-top: 12px;">
+                                                <form action="{{ route('registro_horario.salida') }}" method="POST">
+                                                    @csrf
+                                                    <md-filled-tonal-button type="submit" style="width: 100%;">
+                                                        <md-icon slot="icon">check</md-icon>
+                                                        Cerrar fichaje
+                                                    </md-filled-tonal-button>
+                                                </form>
+                                            </div>
+                                            @endif
                                         </div>
                                         @endforeach
                                     </div>
@@ -355,6 +366,7 @@
                                                     <th>Entrada</th>
                                                     <th>Salida</th>
                                                     <th>Duración</th>
+                                                    <th class="right-align">Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -386,6 +398,17 @@
                                                                 <md-icon style="font-size: 14px;">timer</md-icon>
                                                                 {{ $registro['duracion'] }}
                                                             </span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="right-align">
+                                                        @if(!empty($registro['abierto']))
+                                                            <form action="{{ route('registro_horario.salida') }}" method="POST" style="display: inline;">
+                                                                @csrf
+                                                                <md-filled-tonal-button type="submit">
+                                                                    <md-icon slot="icon">check</md-icon>
+                                                                    Cerrar
+                                                                </md-filled-tonal-button>
+                                                            </form>
                                                         @endif
                                                     </td>
                                                 </tr>
@@ -509,6 +532,7 @@
                                                     <th>Salida</th>
                                                     <th>Duración</th>
                                                     <th>Estado</th>
+                                                    <th class="right-align">Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -542,6 +566,17 @@
                                                             <span class="status-badge status-badge-warning">Abierto</span>
                                                         @else
                                                             <span class="status-badge status-badge-success">Cerrado</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="right-align">
+                                                        @if($registro->isOpen())
+                                                            <form action="{{ route('registro_horario.salida') }}" method="POST" style="display: inline;">
+                                                                @csrf
+                                                                <md-filled-tonal-button type="submit">
+                                                                    <md-icon slot="icon">check</md-icon>
+                                                                    Cerrar
+                                                                </md-filled-tonal-button>
+                                                            </form>
                                                         @endif
                                                     </td>
                                                 </tr>

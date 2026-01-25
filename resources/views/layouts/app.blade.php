@@ -29,7 +29,7 @@
     <nav>
         <div class="nav-wrapper">
             <a href="{{ auth()->check() ? route('registro_horario.index') : route('login') }}" class="brand-logo">
-                <md-icon>access_time</md-icon>TimeTrack<sup style="font-size: 12px; margin-left: 4px; opacity: 0.8;">beta</sup>
+                <md-icon>access_time</md-icon>TimeTrack
             </a>
             @auth
             <a href="#" class="sidenav-trigger" id="sidenav-trigger">
