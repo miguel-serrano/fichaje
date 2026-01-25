@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Application\Command;
 
+use App\DDD\User\Domain\ValueObjects\UserId;
+
 final class CloseOrphanTimeEntriesCommand
 {
-    private function __construct()
-    {
+    private function __construct(
+        public readonly UserId $authenticatedUserId,
+    ) {
     }
 
-    public static function create(): self
+    public static function create(int $authenticatedUserId): self
     {
-        return new self();
+        return new self(
+            authenticatedUserId: UserId::make($authenticatedUserId),
+        );
     }
 }

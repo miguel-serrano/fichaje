@@ -28,9 +28,13 @@ class ViewTimeTrackingController extends Controller
 
             $canClockIn = $this->permissionChecker->hasPermission($user, TimeTrackingPermission::ClockIn->value);
 
-            $secondsResponse = $this->queryBus->dispatch(GetAccumulatedSecondsQuery::create($userUuid));
+            $secondsResponse = $this->queryBus->dispatch(
+                GetAccumulatedSecondsQuery::create($userUuid)
+            );
 
-            $checkOpenRegistry = $this->queryBus->dispatch(HasOpenTimeEntryQuery::create($userUuid));
+            $checkOpenRegistry = $this->queryBus->dispatch(
+                HasOpenTimeEntryQuery::create($userUuid)
+            );
 
             return view('registro_horario', [
                 'user' => $user,

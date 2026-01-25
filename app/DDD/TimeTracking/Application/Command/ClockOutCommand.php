@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\TimeTracking\Application\Command;
 
 use App\DDD\User\Domain\ValueObjects\Uuid;

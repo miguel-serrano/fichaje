@@ -297,7 +297,7 @@ class RegistroHorarioTest extends TestCase
         $response = $this->get('/registro-horario');
 
         // Usuario sin permisos ve un mensaje de error
-        $response->assertSee('No tienes el permiso necesario');
+        $response->assertSee('No tienes permisos para ver los registros de este usuario');
     }
 
     public function test_user_me_shows_cerrar_button_when_registro_abierto(): void

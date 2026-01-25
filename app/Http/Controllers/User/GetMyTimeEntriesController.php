@@ -89,8 +89,7 @@ class GetMyTimeEntriesController extends Controller
     {
         return $this->queryBus->dispatch(
             GetDailyHoursHistoryQuery::create(
-                authenticatedUserId: $userId,
-                targetUserId: $userId,
+                userId: (int) $userId,
                 days: 0,
             )
         )->response();

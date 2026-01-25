@@ -12,6 +12,8 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
 {
     private User $user;
 
+    private User $adminUser;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,6 +28,17 @@ class CloseOrphanTimeEntriesCommandTest extends TestCase
             'created_at' => $now,
             'updated_at' => $now,
         ]);
+
+        $this->adminUser = User::create([
+            'uuid' => Str::orderedUuid(),
+            'name' => 'Admin User',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password123'),
+            'is_active' => true,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $this->adminUser->assignRole('super_admin');
     }
 
     public function test_command_closes_orphan_time_entries_from_previous_days(): void

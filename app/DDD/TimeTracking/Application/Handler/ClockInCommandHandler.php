@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\TimeTracking\Application\Handler;
 
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\TimeTracking\Application\Command\ClockInCommand;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
-use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
+use App\DDD\TimeTracking\Domain\Services\TimeTrackingAuthorizationServiceInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 class ClockInCommandHandler
@@ -15,7 +16,7 @@ class ClockInCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private TimeTrackingAuthorizationServiceInterface $authorizationService,
         private TimeTrackingService $service,
     ) {
     }
@@ -23,16 +24,15 @@ class ClockInCommandHandler
     public function handle(ClockInCommand $command): void
     {
         $user = $this->userRepository->findByUuidOrFail($command->userUuid);
+
         $user->ensureIsActive();
 
-        $this->permissionChecker->assertHasPermission(
-            $user,
-            TimeTrackingPermission::ClockIn->value
-        );
+        $this->authorizationService->assertCanClockIn($user);
 
         $this->service->ensureCanClockIn($user);
 
         $timeEntry = TimeEntry::create($user->id());
+
         $this->timeEntryRepository->save($timeEntry);
     }
 }
