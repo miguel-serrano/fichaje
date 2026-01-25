@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\Admin\Role;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Authorization\Application\Command\SyncPermissionsToRoleCommand;
 use App\DDD\Authorization\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SyncPermissionsRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class SyncPermissionsController extends Controller
 {
     public function __construct(
+        private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -21,10 +23,11 @@ class SyncPermissionsController extends Controller
     public function __invoke(SyncPermissionsRequest $request, string $id): RedirectResponse
     {
         try {
+            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
             $permissionIds = array_map('intval', $request->validated('permissions', []));
 
             $command = new SyncPermissionsToRoleCommand(
-                Auth::id(),
+                $authenticatedUser->id()->value(),
                 (int) $id,
                 $permissionIds
             );

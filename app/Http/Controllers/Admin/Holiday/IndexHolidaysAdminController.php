@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Holiday;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class IndexHolidaysAdminController extends Controller
@@ -17,16 +17,20 @@ class IndexHolidaysAdminController extends Controller
     public function __construct(
         private QueryBusInterface $queryBus,
         private UserRepositoryInterface $userRepository,
-    ) {}
+    ) {
+    }
 
     public function __invoke(): View
     {
+        $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+        $userId = $authenticatedUser->id()->value();
+
         $pendingResponse = $this->queryBus->dispatch(
-            GetPendingHolidaysQuery::create(Auth::id())
+            GetPendingHolidaysQuery::create($userId)
         );
 
         $approvedResponse = $this->queryBus->dispatch(
-            GetApprovedHolidaysQuery::create(Auth::id())
+            GetApprovedHolidaysQuery::create($userId)
         );
 
         $pendingWithUsers = [];

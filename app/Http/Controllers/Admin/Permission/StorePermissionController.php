@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\Admin\Permission;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Authorization\Application\Command\CreatePermissionCommand;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StorePermissionRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class StorePermissionController extends Controller
 {
     public function __construct(
+        private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -20,8 +22,10 @@ class StorePermissionController extends Controller
     public function __invoke(StorePermissionRequest $request): RedirectResponse
     {
         try {
+            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $command = new CreatePermissionCommand(
-                Auth::id(),
+                $authenticatedUser->id()->value(),
                 $request->validated('name'),
                 $request->validated('slug'),
                 $request->validated('bounded_context'),

@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\Admin\Role;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Authorization\Application\Command\DeleteRoleCommand;
 use App\DDD\Authorization\Domain\Exceptions\CannotDeleteSystemRoleException;
 use App\DDD\Authorization\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class DeleteRoleController extends Controller
 {
     public function __construct(
+        private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -21,8 +23,10 @@ class DeleteRoleController extends Controller
     public function __invoke(string $id): RedirectResponse
     {
         try {
+            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $command = new DeleteRoleCommand(
-                Auth::id(),
+                $authenticatedUser->id()->value(),
                 (int) $id
             );
 

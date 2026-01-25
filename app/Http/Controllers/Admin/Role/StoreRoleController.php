@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\Admin\Role;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Authorization\Application\Command\CreateRoleCommand;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRoleRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class StoreRoleController extends Controller
 {
     public function __construct(
+        private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -20,8 +22,10 @@ class StoreRoleController extends Controller
     public function __invoke(StoreRoleRequest $request): RedirectResponse
     {
         try {
+            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $command = new CreateRoleCommand(
-                Auth::id(),
+                $authenticatedUser->id()->value(),
                 $request->validated('name'),
                 $request->validated('slug'),
                 $request->validated('description'),
