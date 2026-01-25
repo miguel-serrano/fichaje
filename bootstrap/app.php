@@ -15,6 +15,11 @@ $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+// Set public path for production (public_html in shared hosting)
+if (is_dir(dirname(__DIR__, 2) . '/public_html')) {
+    $app->usePublicPath(dirname(__DIR__, 2) . '/public_html');
+}
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
