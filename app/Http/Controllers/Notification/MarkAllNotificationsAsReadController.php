@@ -2,21 +2,32 @@
 
 namespace App\Http\Controllers\Notification;
 
-use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
+use App\DDD\Notification\Application\Command\MarkAllNotificationsAsReadCommand;
+use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
-use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class MarkAllNotificationsAsReadController extends Controller
 {
-    public function __invoke(): JsonResponse|RedirectResponse
-    {
-        Notification::where('user_id', auth()->id())
-            ->whereNull('read_at')
-            ->update(['read_at' => UnixTimestamp::now()->value()]);
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private QueryBusInterface $queryBus,
+    ) {
+    }
 
-        if (request()->wantsJson()) {
+    public function __invoke(Request $request): JsonResponse|RedirectResponse
+    {
+        $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
+        $this->commandBus->dispatch(
+            MarkAllNotificationsAsReadCommand::create($user->id()->value())
+        );
+
+        if ($request->wantsJson()) {
             return response()->json(['success' => true]);
         }
 

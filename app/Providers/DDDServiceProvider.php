@@ -58,8 +58,14 @@ use App\DDD\Holiday\Application\Handler\RejectHolidayRequestCommandHandler;
 use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
+use App\DDD\Notification\Application\Command\MarkAllNotificationsAsReadCommand;
+use App\DDD\Notification\Application\Command\MarkNotificationAsReadCommand;
+use App\DDD\Notification\Application\Handler\MarkAllNotificationsAsReadCommandHandler;
+use App\DDD\Notification\Application\Handler\MarkNotificationAsReadCommandHandler;
 use App\DDD\Notification\Application\NotificationService;
+use App\DDD\Notification\Domain\Interface\NotificationRepositoryInterface;
 use App\DDD\Notification\Infrastructure\DatabaseNotifier;
+use App\DDD\Notification\Infrastructure\Persistence\Eloquent\EloquentNotificationRepository;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\Shared\Infrastructure\Bus\LaravelTacticianCommandBus;
@@ -110,6 +116,7 @@ class DDDServiceProvider extends ServiceProvider
         $this->app->bind(PasswordHashingService::class, LaravelPasswordHashingService::class);
 
         // Register Notification services
+        $this->app->bind(NotificationRepositoryInterface::class, EloquentNotificationRepository::class);
         $this->app->singleton(
             NotificationService::class,
             function ($app) {
@@ -158,6 +165,10 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(CreatePermissionCommand::class, CreatePermissionCommandHandler::class);
         $tacticianBus->addHandler(UpdatePermissionCommand::class, UpdatePermissionCommandHandler::class);
         $tacticianBus->addHandler(DeletePermissionCommand::class, DeletePermissionCommandHandler::class);
+
+        // Notification Commands
+        $tacticianBus->addHandler(MarkNotificationAsReadCommand::class, MarkNotificationAsReadCommandHandler::class);
+        $tacticianBus->addHandler(MarkAllNotificationsAsReadCommand::class, MarkAllNotificationsAsReadCommandHandler::class);
     }
 
     private function mapQueries(TacticianCommandBusInterface $tacticianBus): void

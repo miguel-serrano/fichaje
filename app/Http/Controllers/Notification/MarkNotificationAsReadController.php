@@ -2,24 +2,32 @@
 
 namespace App\Http\Controllers\Notification;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
+use App\DDD\Notification\Application\Command\MarkNotificationAsReadCommand;
+use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
-use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class MarkNotificationAsReadController extends Controller
 {
-    public function __invoke(int $id): JsonResponse|RedirectResponse
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private QueryBusInterface $queryBus,
+    ) {
+    }
+
+    public function __invoke(int $id, Request $request): JsonResponse|RedirectResponse
     {
-        $notification = Notification::where('id', $id)
-            ->where('user_id', auth()->id())
-            ->first();
+        $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-        if ($notification) {
-            $notification->markAsRead();
-        }
+        $this->commandBus->dispatch(
+            MarkNotificationAsReadCommand::create($id, $user->id()->value())
+        );
 
-        if (request()->wantsJson()) {
+        if ($request->wantsJson()) {
             return response()->json(['success' => true]);
         }
 
