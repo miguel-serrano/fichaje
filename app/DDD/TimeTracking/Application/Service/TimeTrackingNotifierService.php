@@ -60,10 +60,10 @@ final class TimeTrackingNotifierService
     {
         if (1 === count($entries)) {
             $entry = $entries[0];
-            $entrada = is_int($entry['entrada'])
+            $checkIn = is_int($entry['entrada'])
                 ? Carbon::createFromTimestamp($entry['entrada'])
                 : Carbon::parse($entry['entrada']);
-            $salida = is_int($entry['salida'])
+            $checkOut = is_int($entry['salida'])
                 ? Carbon::createFromTimestamp($entry['salida'])
                 : Carbon::parse($entry['salida']);
             $reason = 'max_hours_exceeded' === $entry['reason']
@@ -72,9 +72,9 @@ final class TimeTrackingNotifierService
 
             return sprintf(
                 'Entrada: %s a las %s. Cerrado automáticamente a las %s %s.',
-                $entrada->format('d/m/Y'),
-                $entrada->format('H:i'),
-                $salida->format('H:i'),
+                $checkIn->format('d/m/Y'),
+                $checkIn->format('H:i'),
+                $checkOut->format('H:i'),
                 $reason
             );
         }

@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Authorization\Application\Command\RemoveRoleFromUserCommand;
 use App\DDD\Authorization\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class RemoveRoleFromUserController extends Controller
 {
     public function __construct(
+        private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -21,8 +23,10 @@ class RemoveRoleFromUserController extends Controller
     public function __invoke(string $id, string $roleSlug): RedirectResponse
     {
         try {
+            $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $command = new RemoveRoleFromUserCommand(
-                Auth::id(),
+                $user->id()->value(),
                 (int) $id,
                 $roleSlug
             );

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Authorization\Application\Query\GetAllRolesQuery;
 use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
@@ -12,7 +13,6 @@ use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ShowUserController extends Controller
@@ -25,17 +25,19 @@ class ShowUserController extends Controller
     public function __invoke(string $id): View|RedirectResponse
     {
         try {
+            $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             /** @var User $user */
             $user = $this->queryBus->dispatch(
                 GetUserByIdQuery::create(
-                    authenticatedUserId: Auth::id(),
+                    authenticatedUserId: $authenticatedUser->id()->value(),
                     targetUserId: (int) $id,
                 )
             );
 
             $registrosData = $this->queryBus->dispatch(
                 GetUserDailyRegistrosQuery::create(
-                    authenticatedUserId: Auth::id(),
+                    authenticatedUserId: $authenticatedUser->id()->value(),
                     targetUserId: $user->id()->value(),
                 )
             )->response();

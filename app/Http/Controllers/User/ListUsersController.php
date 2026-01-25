@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Query\GetAllUsersQuery;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ListUsersController extends Controller
@@ -20,8 +20,10 @@ class ListUsersController extends Controller
     public function __invoke(): View|RedirectResponse
     {
         try {
+            $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $users = $this->queryBus->dispatch(
-                GetAllUsersQuery::create(authenticatedUserId: Auth::id())
+                GetAllUsersQuery::create(authenticatedUserId: $user->id()->value())
             )->response();
 
             return view('users.index', [

@@ -30,6 +30,7 @@ class IndexHolidaysController extends Controller
         );
 
         $user = $this->userRepository->findByIdOrFail(UserId::make(Auth::id()));
+
         $canRequestHoliday = $this->permissionChecker->hasPermission($user, HolidayPermission::Request->value);
 
         return view('holidays.index', [

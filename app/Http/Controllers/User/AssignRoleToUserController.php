@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Authorization\Application\Command\AssignRoleToUserCommand;
 use App\DDD\Authorization\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AssignRoleRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class AssignRoleToUserController extends Controller
 {
     public function __construct(
+        private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -22,8 +24,10 @@ class AssignRoleToUserController extends Controller
     public function __invoke(AssignRoleRequest $request, string $id): RedirectResponse
     {
         try {
+            $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $command = new AssignRoleToUserCommand(
-                Auth::id(),
+                $user->id()->value(),
                 (int) $id,
                 $request->validated('role_slug')
             );

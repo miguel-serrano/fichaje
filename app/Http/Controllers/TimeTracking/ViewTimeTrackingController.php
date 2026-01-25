@@ -23,17 +23,19 @@ class ViewTimeTrackingController extends Controller
     {
         try {
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $userUuid = $user->uuid()->value();
 
             $canClockIn = $this->permissionChecker->hasPermission($user, TimeTrackingPermission::ClockIn->value);
 
-            $segundosResponse = $this->queryBus->dispatch(GetAccumulatedSecondsQuery::create($userUuid));
-            $tieneRegistroAbiertoResponse = $this->queryBus->dispatch(HasOpenTimeEntryQuery::create($userUuid));
+            $secondsResponse = $this->queryBus->dispatch(GetAccumulatedSecondsQuery::create($userUuid));
+
+            $checkOpenRegistry = $this->queryBus->dispatch(HasOpenTimeEntryQuery::create($userUuid));
 
             return view('registro_horario', [
                 'user' => $user,
-                'segundos' => $segundosResponse->seconds(),
-                'tieneRegistroAbierto' => $tieneRegistroAbiertoResponse->hasOpenEntry(),
+                'segundos' => $secondsResponse->seconds(),
+                'tieneRegistroAbierto' => $checkOpenRegistry->hasOpenEntry(),
                 'canClockIn' => $canClockIn,
             ]);
         } catch (\Throwable $th) {

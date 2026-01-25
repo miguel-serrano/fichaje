@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
+use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Command\ToggleUserActiveCommand;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class ToggleUserActiveController extends Controller
 {
     public function __construct(
+        private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -20,9 +22,11 @@ class ToggleUserActiveController extends Controller
     public function __invoke(string $id): RedirectResponse
     {
         try {
+            $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
             $isActive = $this->commandBus->dispatch(
                 ToggleUserActiveCommand::create(
-                    authenticatedUserId: Auth::id(),
+                    authenticatedUserId: $user->id()->value(),
                     targetUserId: (int) $id,
                 )
             );

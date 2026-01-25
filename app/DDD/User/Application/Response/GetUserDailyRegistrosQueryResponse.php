@@ -8,15 +8,15 @@ use Illuminate\Support\Collection;
 class GetUserDailyRegistrosQueryResponse
 {
     /** @var array<string, array{fecha: string, fecha_formateada: string, registros: array<mixed>, total_segundos: int, total_formateado: string, tiene_abierto: bool}> */
-    private array $registrosPorDia = [];
+    private array $entriesByDay = [];
 
     /**
      * @param array{cerrados: Collection<int, \stdClass>, abiertos: Collection<int, \stdClass>} $entries
      */
     public function __construct(array $entries)
     {
-        $this->processRegistrosCerrados($entries['cerrados']);
-        $this->processRegistrosAbiertos($entries['abiertos']);
+        $this->processClosedEntries($entries['cerrados']);
+        $this->processOpenEntries($entries['abiertos']);
         $this->sortByDateDescending();
     }
 
@@ -26,69 +26,69 @@ class GetUserDailyRegistrosQueryResponse
     public function response(): array
     {
         return [
-            'registros' => array_values($this->registrosPorDia),
+            'registros' => array_values($this->entriesByDay),
             'total_mes_actual' => $this->calculateMonthlyTotal(),
         ];
     }
 
     /**
-     * @param Collection<int, \stdClass> $registrosCerrados
+     * @param Collection<int, \stdClass> $closedEntries
      */
-    private function processRegistrosCerrados(Collection $registrosCerrados): void
+    private function processClosedEntries(Collection $closedEntries): void
     {
-        foreach ($registrosCerrados as $registro) {
-            $fecha = date('Y-m-d', $registro->entrada);
-            $segundosTrabajados = $registro->salida - $registro->entrada;
+        foreach ($closedEntries as $entry) {
+            $date = date('Y-m-d', $entry->entrada);
+            $workedSeconds = $entry->salida - $entry->entrada;
 
-            $this->ensureDayExists($fecha);
+            $this->ensureDayExists($date);
 
-            $this->registrosPorDia[$fecha]['registros'][] = [
-                'entrada' => date('H:i:s', $registro->entrada),
-                'salida' => date('H:i:s', $registro->salida),
-                'duracion' => TimeFormatter::formatTime($segundosTrabajados),
+            $this->entriesByDay[$date]['registros'][] = [
+                'entrada' => date('H:i:s', $entry->entrada),
+                'salida' => date('H:i:s', $entry->salida),
+                'duracion' => TimeFormatter::formatTime($workedSeconds),
                 'abierto' => false,
             ];
 
-            $this->registrosPorDia[$fecha]['total_segundos'] += $segundosTrabajados;
-            $this->registrosPorDia[$fecha]['total_formateado'] = TimeFormatter::formatTime(
-                $this->registrosPorDia[$fecha]['total_segundos']
+            $this->entriesByDay[$date]['total_segundos'] += $workedSeconds;
+            $this->entriesByDay[$date]['total_formateado'] = TimeFormatter::formatTime(
+                $this->entriesByDay[$date]['total_segundos']
             );
         }
     }
 
     /**
-     * @param Collection<int, \stdClass> $registrosAbiertos
+     * @param Collection<int, \stdClass> $openEntries
      */
-    private function processRegistrosAbiertos(Collection $registrosAbiertos): void
+    private function processOpenEntries(Collection $openEntries): void
     {
-        foreach ($registrosAbiertos as $registro) {
-            $fecha = date('Y-m-d', $registro->entrada);
-            $segundosTrabajados = time() - $registro->entrada;
+        foreach ($openEntries as $entry) {
+            $date = date('Y-m-d', $entry->entrada);
+            $workedSeconds = time() - $entry->entrada;
 
-            $this->ensureDayExists($fecha);
+            $this->ensureDayExists($date);
 
-            $this->registrosPorDia[$fecha]['registros'][] = [
-                'entrada' => date('H:i:s', $registro->entrada),
+            $this->entriesByDay[$date]['registros'][] = [
+                'entrada' => date('H:i:s', $entry->entrada),
                 'salida' => null,
-                'duracion' => TimeFormatter::formatTime($segundosTrabajados),
+                'duracion' => TimeFormatter::formatTime($workedSeconds),
                 'abierto' => true,
-                'entrada_timestamp' => $registro->entrada,
+                'entrada_timestamp' => $entry->entrada,
             ];
 
-            $this->registrosPorDia[$fecha]['total_segundos'] += $segundosTrabajados;
-            $this->registrosPorDia[$fecha]['total_formateado'] = TimeFormatter::formatTime(
-                $this->registrosPorDia[$fecha]['total_segundos']
+            $this->entriesByDay[$date]['total_segundos'] += $workedSeconds;
+            $this->entriesByDay[$date]['total_formateado'] = TimeFormatter::formatTime(
+                $this->entriesByDay[$date]['total_segundos']
             );
-            $this->registrosPorDia[$fecha]['tiene_abierto'] = true;
+            $this->entriesByDay[$date]['tiene_abierto'] = true;
         }
     }
 
-    private function ensureDayExists(string $fecha): void
+    private function ensureDayExists(string $date): void
     {
-        if (!isset($this->registrosPorDia[$fecha])) {
-            $this->registrosPorDia[$fecha] = [
-                'fecha' => $fecha,
-                'fecha_formateada' => date('d/m/Y', strtotime($fecha)),
+        if (!isset($this->entriesByDay[$date])) {
+            $this->entriesByDay[$date] = [
+                'fecha' => $date,
+                'fecha_formateada' => date('d/m/Y', strtotime($date)),
                 'registros' => [],
                 'total_segundos' => 0,
                 'total_formateado' => '00:00:00',
@@ -99,7 +99,7 @@ class GetUserDailyRegistrosQueryResponse
 
     private function sortByDateDescending(): void
     {
-        krsort($this->registrosPorDia);
+        krsort($this->entriesByDay);
     }
 
     /**
@@ -107,19 +107,19 @@ class GetUserDailyRegistrosQueryResponse
      */
     private function calculateMonthlyTotal(): array
     {
-        $totalSegundosMes = 0;
-        $mesActual = date('Y-m');
+        $totalSecondsMonth = 0;
+        $currentMonth = date('Y-m');
 
-        foreach ($this->registrosPorDia as $dia) {
-            if (str_starts_with($dia['fecha'], $mesActual)) {
-                $totalSegundosMes += $dia['total_segundos'];
+        foreach ($this->entriesByDay as $day) {
+            if (str_starts_with($day['fecha'], $currentMonth)) {
+                $totalSecondsMonth += $day['total_segundos'];
             }
         }
 
         return [
-            'segundos' => $totalSegundosMes,
-            'formateado' => TimeFormatter::formatTime($totalSegundosMes),
-            'mes' => TimeFormatter::formatMonth($mesActual),
+            'segundos' => $totalSecondsMonth,
+            'formateado' => TimeFormatter::formatTime($totalSecondsMonth),
+            'mes' => TimeFormatter::formatMonth($currentMonth),
         ];
     }
 }
