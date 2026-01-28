@@ -85,8 +85,8 @@
     </div>
 </div>
 
-<!-- Histórico de Fichajes - Gráfica -->
-<div class="row">
+<!-- Histórico de Fichajes - Gráfica (oculto en móviles) -->
+<div class="row hide-on-small-only">
     <div class="col s12">
         <div class="card">
             <div class="card-content">
