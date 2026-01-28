@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Application\Handler;
 
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
 use App\DDD\Holiday\Application\Service\HolidayNotifierService;
 use App\DDD\Holiday\Application\Service\HolidayService;
-use App\DDD\Holiday\Domain\Permission\HolidayPermission;
+use App\DDD\Holiday\Domain\Services\HolidayAuthorizationServiceInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 final class RejectHolidayRequestCommandHandler
@@ -17,7 +16,7 @@ final class RejectHolidayRequestCommandHandler
         private HolidayService $holidayService,
         private HolidayNotifierService $notifierService,
         private UserRepositoryInterface $userRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private HolidayAuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -25,7 +24,7 @@ final class RejectHolidayRequestCommandHandler
     {
         $user = $this->userRepository->findByIdOrFail($command->authenticatedUserId);
 
-        $this->permissionChecker->assertHasPermission($user, HolidayPermission::Reject->value);
+        $this->authorizationService->assertCanRejectHoliday($user);
 
         $holidayRequest = $this->holidayService->reject($command->holidayRequestId);
 

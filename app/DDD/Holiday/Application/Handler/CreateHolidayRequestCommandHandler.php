@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Application\Handler;
 
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
 use App\DDD\Holiday\Application\Service\HolidayNotifierService;
 use App\DDD\Holiday\Application\Service\HolidayService;
-use App\DDD\Holiday\Domain\Permission\HolidayPermission;
+use App\DDD\Holiday\Domain\Services\HolidayAuthorizationServiceInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 final class CreateHolidayRequestCommandHandler
@@ -17,7 +16,7 @@ final class CreateHolidayRequestCommandHandler
         private HolidayService $holidayService,
         private HolidayNotifierService $notifierService,
         private UserRepositoryInterface $userRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private HolidayAuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -25,7 +24,7 @@ final class CreateHolidayRequestCommandHandler
     {
         $user = $this->userRepository->findByIdOrFail($command->userId);
 
-        $this->permissionChecker->assertHasPermission($user, HolidayPermission::Request->value);
+        $this->authorizationService->assertCanRequestHoliday($user);
 
         $dateRange = $this->holidayService->createRequest($user, $command->startDate, $command->endDate);
 

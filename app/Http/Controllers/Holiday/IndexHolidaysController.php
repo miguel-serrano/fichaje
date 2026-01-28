@@ -26,6 +26,7 @@ class IndexHolidaysController extends Controller
     public function __invoke(): View
     {
         $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
+
         $userId = $authenticatedUser->id()->value();
 
         $holidaysResponse = $this->queryBus->dispatch(

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Application\Handler;
 
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
 use App\DDD\Holiday\Application\Response\GetUserHolidaysQueryResponse;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
-use App\DDD\Holiday\Domain\Permission\HolidayPermission;
+use App\DDD\Holiday\Domain\Services\HolidayAuthorizationServiceInterface;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 class GetUserHolidaysQueryHandler
@@ -16,7 +15,7 @@ class GetUserHolidaysQueryHandler
     public function __construct(
         private HolidayRepositoryInterface $holidayRepository,
         private UserRepositoryInterface $userRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private HolidayAuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -24,7 +23,7 @@ class GetUserHolidaysQueryHandler
     {
         $user = $this->userRepository->findByIdOrFail($query->userId);
 
-        $this->permissionChecker->assertHasPermission($user, HolidayPermission::ViewOwn->value);
+        $this->authorizationService->assertCanViewOwnHolidays($user);
 
         $holidays = $this->holidayRepository->findByUserId($query->userId);
 
