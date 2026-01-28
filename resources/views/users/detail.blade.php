@@ -34,7 +34,7 @@
                     <summary class="collapsible-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; cursor: pointer; list-style: none;">
                         <span class="card-title" style="margin: 0; display: flex; align-items: center;">
                             <md-icon style="margin-right: 8px;">person</md-icon>
-                            Información Personal
+                            Ver información personal
                             <md-icon class="collapse-icon" style="margin-left: 8px; transition: transform 0.3s;">expand_more</md-icon>
                         </span>
                         <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="event.stopPropagation();">
