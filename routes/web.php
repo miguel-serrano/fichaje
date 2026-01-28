@@ -25,7 +25,6 @@ use App\Http\Controllers\Auth\ShowRegisterFormController;
 use App\Http\Controllers\Bienvenido\BienvenidoController;
 use App\Http\Controllers\Holiday\IndexHolidaysController;
 use App\Http\Controllers\Holiday\StoreHolidayController;
-use App\Http\Controllers\Notification\MarkAllNotificationsAsReadController;
 use App\Http\Controllers\Notification\MarkNotificationAsReadController;
 use App\Http\Controllers\TimeTracking\ClockInController;
 use App\Http\Controllers\TimeTracking\ClockOutController;
@@ -59,7 +58,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/user/me', GetMyTimeEntriesController::class)->name('user.me');
 
     Route::post('/notifications/{id}/read', MarkNotificationAsReadController::class)->name('notifications.read');
-    Route::post('/notifications/read-all', MarkAllNotificationsAsReadController::class)->name('notifications.read-all');
 
     Route::middleware('admin')->group(function () {
         Route::get('/users', ListUsersController::class)->name('users.index');
