@@ -24,6 +24,7 @@ class GetUserRolesQueryHandler
         $roleIds = $this->connection->table(UserRole::tableName())
             ->where('user_id', $query->userId)
             ->pluck('role_id')
+            ->map(fn ($id) => (int) $id)
             ->toArray();
 
         if (empty($roleIds)) {
