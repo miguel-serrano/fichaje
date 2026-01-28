@@ -25,7 +25,7 @@ class UpdatePermissionController extends Controller
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $command = new UpdatePermissionCommand(
+            $command = UpdatePermissionCommand::create(
                 $authenticatedUser->id()->value(),
                 (int) $id,
                 $request->validated('name'),

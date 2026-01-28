@@ -25,7 +25,7 @@ class DeletePermissionController extends Controller
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $command = new DeletePermissionCommand(
+            $command = DeletePermissionCommand::create(
                 $authenticatedUser->id()->value(),
                 (int) $id
             );

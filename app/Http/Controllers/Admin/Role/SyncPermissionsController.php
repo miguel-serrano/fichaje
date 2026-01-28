@@ -26,7 +26,7 @@ class SyncPermissionsController extends Controller
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
             $permissionIds = array_map('intval', $request->validated('permissions', []));
 
-            $command = new SyncPermissionsToRoleCommand(
+            $command = SyncPermissionsToRoleCommand::create(
                 $authenticatedUser->id()->value(),
                 (int) $id,
                 $permissionIds

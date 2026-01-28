@@ -25,7 +25,7 @@ class RemoveRoleFromUserController extends Controller
         try {
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $command = new RemoveRoleFromUserCommand(
+            $command = RemoveRoleFromUserCommand::create(
                 $user->id()->value(),
                 (int) $id,
                 $roleSlug

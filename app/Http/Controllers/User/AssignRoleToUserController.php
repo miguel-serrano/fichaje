@@ -26,7 +26,7 @@ class AssignRoleToUserController extends Controller
         try {
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $command = new AssignRoleToUserCommand(
+            $command = AssignRoleToUserCommand::create(
                 $user->id()->value(),
                 (int) $id,
                 $request->validated('role_slug')

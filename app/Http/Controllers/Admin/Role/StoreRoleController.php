@@ -24,7 +24,7 @@ class StoreRoleController extends Controller
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $command = new CreateRoleCommand(
+            $command = CreateRoleCommand::create(
                 $authenticatedUser->id()->value(),
                 $request->validated('name'),
                 $request->validated('slug'),

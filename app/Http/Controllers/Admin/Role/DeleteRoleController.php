@@ -25,7 +25,7 @@ class DeleteRoleController extends Controller
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $command = new DeleteRoleCommand(
+            $command = DeleteRoleCommand::create(
                 $authenticatedUser->id()->value(),
                 (int) $id
             );

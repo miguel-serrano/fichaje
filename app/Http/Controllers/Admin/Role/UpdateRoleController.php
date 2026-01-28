@@ -25,7 +25,7 @@ class UpdateRoleController extends Controller
         try {
             $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-            $command = new UpdateRoleCommand(
+            $command = UpdateRoleCommand::create(
                 $authenticatedUser->id()->value(),
                 (int) $id,
                 $request->validated('name'),
