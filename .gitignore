@@ -56,9 +56,10 @@ proyecto_produccion.zip
 backup.sql
 mysql-schema.sql
 
-# Deploy (se suben manualmente al servidor)
+# Deploy (se suben manualmente al servidor, contienen datos sensibles)
 deploy.sh
 deploy-remote.sh
+push-deploy.sh
 /instructions/DEPLOY-SERVER.md
 
 # Otros
