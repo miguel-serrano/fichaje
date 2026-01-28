@@ -5,8 +5,7 @@ namespace App\DDD\Authorization\Application\Handler;
 use App\DDD\Authorization\Application\Command\CreateRoleCommand;
 use App\DDD\Authorization\Domain\Entity\Role;
 use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
-use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Domain\Services\AuthorizationAuthorizationServiceInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleName;
 use App\DDD\Authorization\Domain\ValueObjects\RoleSlug;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
@@ -17,7 +16,7 @@ class CreateRoleCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private AuthorizationAuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -30,7 +29,7 @@ class CreateRoleCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
+        $this->authorizationService->assertCanManageRoles($authenticatedUser);
 
         $role = Role::create(
             new RoleName($command->name),

@@ -4,8 +4,7 @@ namespace App\DDD\Authorization\Application\Handler;
 
 use App\DDD\Authorization\Application\Command\UpdateRoleCommand;
 use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
-use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Domain\Services\AuthorizationAuthorizationServiceInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleId;
 use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
@@ -18,7 +17,7 @@ class UpdateRoleCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private AuthorizationAuthorizationServiceInterface $authorizationService,
         private ConnectionInterface $connection,
     ) {
     }
@@ -32,7 +31,7 @@ class UpdateRoleCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManageRoles->value);
+        $this->authorizationService->assertCanManageRoles($authenticatedUser);
 
         $role = $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
 

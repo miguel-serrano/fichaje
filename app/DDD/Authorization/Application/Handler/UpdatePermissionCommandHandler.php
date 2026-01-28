@@ -4,8 +4,7 @@ namespace App\DDD\Authorization\Application\Handler;
 
 use App\DDD\Authorization\Application\Command\UpdatePermissionCommand;
 use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
-use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Domain\Services\AuthorizationAuthorizationServiceInterface;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionId;
 use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
@@ -18,7 +17,7 @@ class UpdatePermissionCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PermissionRepositoryInterface $permissionRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private AuthorizationAuthorizationServiceInterface $authorizationService,
         private ConnectionInterface $connection,
     ) {
     }
@@ -32,7 +31,7 @@ class UpdatePermissionCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManagePermissions->value);
+        $this->authorizationService->assertCanManagePermissions($authenticatedUser);
 
         $this->permissionRepository->findByIdOrFail(new PermissionId($command->permissionId));
 

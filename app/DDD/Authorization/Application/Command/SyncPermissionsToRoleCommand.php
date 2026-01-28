@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\Authorization\Application\Command;
 
 final class SyncPermissionsToRoleCommand
@@ -7,10 +9,22 @@ final class SyncPermissionsToRoleCommand
     /**
      * @param int[] $permissionIds
      */
-    public function __construct(
-        public int $authenticatedUserId,
-        public int $roleId,
-        public array $permissionIds,
+    private function __construct(
+        public readonly int $authenticatedUserId,
+        public readonly int $roleId,
+        public readonly array $permissionIds,
     ) {
+    }
+
+    /**
+     * @param int[] $permissionIds
+     */
+    public static function create(int $authenticatedUserId, int $roleId, array $permissionIds): self
+    {
+        return new self(
+            authenticatedUserId: $authenticatedUserId,
+            roleId: $roleId,
+            permissionIds: $permissionIds,
+        );
     }
 }

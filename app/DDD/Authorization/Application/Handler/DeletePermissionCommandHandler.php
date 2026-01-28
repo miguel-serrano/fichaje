@@ -5,8 +5,7 @@ namespace App\DDD\Authorization\Application\Handler;
 use App\DDD\Authorization\Application\Command\DeletePermissionCommand;
 use App\DDD\Authorization\Domain\Exceptions\CannotDeleteSystemPermissionException;
 use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
-use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Domain\Services\AuthorizationAuthorizationServiceInterface;
 use App\DDD\Authorization\Domain\ValueObjects\PermissionId;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -16,7 +15,7 @@ class DeletePermissionCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PermissionRepositoryInterface $permissionRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private AuthorizationAuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -26,7 +25,7 @@ class DeletePermissionCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::ManagePermissions->value);
+        $this->authorizationService->assertCanManagePermissions($authenticatedUser);
 
         $permission = $this->permissionRepository->findByIdOrFail(new PermissionId($command->permissionId));
 

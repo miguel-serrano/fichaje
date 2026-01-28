@@ -4,8 +4,7 @@ namespace App\DDD\Authorization\Application\Handler;
 
 use App\DDD\Authorization\Application\Command\RemoveRoleFromUserCommand;
 use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
-use App\DDD\Authorization\Domain\Permission\AuthorizationPermission;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Domain\Services\AuthorizationAuthorizationServiceInterface;
 use App\DDD\Authorization\Domain\ValueObjects\RoleSlug;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -17,7 +16,7 @@ class RemoveRoleFromUserCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private AuthorizationAuthorizationServiceInterface $authorizationService,
         private ConnectionInterface $connection,
     ) {
     }
@@ -28,7 +27,7 @@ class RemoveRoleFromUserCommandHandler
             new UserId($command->authenticatedUserId)
         );
 
-        $this->permissionChecker->assertHasPermission($authenticatedUser, AuthorizationPermission::AssignRoles->value);
+        $this->authorizationService->assertCanAssignRoles($authenticatedUser);
 
         $role = $this->roleRepository->findBySlugOrFail(new RoleSlug($command->roleSlug));
 

@@ -1,14 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\Authorization\Application\Command;
 
 final class UpdatePermissionCommand
 {
-    public function __construct(
-        public int $authenticatedUserId,
-        public int $permissionId,
-        public string $name,
-        public ?string $description,
+    private function __construct(
+        public readonly int $authenticatedUserId,
+        public readonly int $permissionId,
+        public readonly string $name,
+        public readonly ?string $description,
     ) {
+    }
+
+    public static function create(
+        int $authenticatedUserId,
+        int $permissionId,
+        string $name,
+        ?string $description = null,
+    ): self {
+        return new self(
+            authenticatedUserId: $authenticatedUserId,
+            permissionId: $permissionId,
+            name: $name,
+            description: $description,
+        );
     }
 }

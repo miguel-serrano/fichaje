@@ -1,15 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\Authorization\Application\Command;
 
 final class CreatePermissionCommand
 {
-    public function __construct(
-        public int $authenticatedUserId,
-        public string $name,
-        public string $slug,
-        public string $boundedContext,
-        public ?string $description,
+    private function __construct(
+        public readonly int $authenticatedUserId,
+        public readonly string $name,
+        public readonly string $slug,
+        public readonly string $boundedContext,
+        public readonly ?string $description,
     ) {
+    }
+
+    public static function create(
+        int $authenticatedUserId,
+        string $name,
+        string $slug,
+        string $boundedContext,
+        ?string $description = null,
+    ): self {
+        return new self(
+            authenticatedUserId: $authenticatedUserId,
+            name: $name,
+            slug: $slug,
+            boundedContext: $boundedContext,
+            description: $description,
+        );
     }
 }

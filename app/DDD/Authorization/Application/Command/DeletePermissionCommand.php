@@ -1,12 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\Authorization\Application\Command;
 
 final class DeletePermissionCommand
 {
-    public function __construct(
-        public int $authenticatedUserId,
-        public int $permissionId,
+    private function __construct(
+        public readonly int $authenticatedUserId,
+        public readonly int $permissionId,
     ) {
+    }
+
+    public static function create(int $authenticatedUserId, int $permissionId): self
+    {
+        return new self(
+            authenticatedUserId: $authenticatedUserId,
+            permissionId: $permissionId,
+        );
     }
 }

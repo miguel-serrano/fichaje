@@ -4,9 +4,13 @@ namespace App\DDD\Authorization\Infrastructure;
 
 use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
 use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
+use App\DDD\Authorization\Domain\Policy\AuthorizationPolicy;
+use App\DDD\Authorization\Domain\Policy\AuthorizationPolicyInterface;
+use App\DDD\Authorization\Domain\Services\AuthorizationAuthorizationServiceInterface;
 use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
 use App\DDD\Authorization\Infrastructure\Persistence\Eloquent\EloquentPermissionRepository;
 use App\DDD\Authorization\Infrastructure\Persistence\Eloquent\EloquentRoleRepository;
+use App\DDD\Authorization\Infrastructure\Services\AuthorizationAuthorizationService;
 use App\DDD\Authorization\Infrastructure\Services\PermissionChecker;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,7 +32,19 @@ class LaravelServiceProvider extends ServiceProvider
             PermissionCheckerInterface::class,
             PermissionChecker::class
         );
+
+        $this->app->bind(
+            AuthorizationPolicyInterface::class,
+            AuthorizationPolicy::class
+        );
+
+        $this->app->bind(
+            AuthorizationAuthorizationServiceInterface::class,
+            AuthorizationAuthorizationService::class
+        );
     }
 
-    public function boot(): void {}
+    public function boot(): void
+    {
+    }
 }
