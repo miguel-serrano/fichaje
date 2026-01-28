@@ -1,27 +1,70 @@
+# Dependencias
 /node_modules
+/vendor
+
+# Build y assets generados (se compilan en producción con npm)
 /public/build
 /public/hot
 /public/storage
-/storage/*.key
-/vendor
+
+# Configuración local/sensible
 .env
 .env.backup
 .env.production
+.env.example
+/storage/*.key
+
+# Cache de Laravel (se regenera)
+/bootstrap/cache/services.php
+/bootstrap/cache/packages.php
+
+# Logs y datos temporales
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/data/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+
+# Testing
 .phpunit.result.cache
+phpunit.xml.bak
+
+# IDEs
+/.fleet
+/.idea
+/.vscode
+.editorconfig
+.cursorignore
+
+# Claude/AI
+CLAUDE.md
+/.claude
+
+# Laravel Boost (solo desarrollo)
+boost.json
+
+# Docker (solo desarrollo local)
+docker-compose.yml
+
+# Archivos de backup
+proyecto_app.zip
+proyecto_public.zip
+proyecto_produccion.zip
+backup.sql
+mysql-schema.sql
+
+# Deploy (se suben manualmente al servidor)
+deploy.sh
+deploy-remote.sh
+/instructions/DEPLOY-SERVER.md
+
+# Otros
 Homestead.json
 Homestead.yaml
 auth.json
 npm-debug.log
 yarn-error.log
-/.fleet
-/.idea
-/.vscode
-.cursorignore
-backup.sql
 custom.txt
-mysql-schema.sql
-*.md
-config/telescope.php
-CLAUDE.md
-proyecto_app.zip
-proyecto_public.zip
