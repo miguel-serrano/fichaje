@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\DDD\Authorization\Domain\ValueObjects\BoundedContext;
+use App\DDD\Administration\Domain\ValueObjects\BoundedContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

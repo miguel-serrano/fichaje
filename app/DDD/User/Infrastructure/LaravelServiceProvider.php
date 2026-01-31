@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\User\Infrastructure;
 
+use App\DDD\Authorization\Infrastructure\LaravelServiceProvider as AuthorizationServiceProvider;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserCreationPolicyService;
+use App\DDD\User\Domain\Voter\UserVoter;
 use App\DDD\User\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +24,9 @@ class LaravelServiceProvider extends ServiceProvider
                 config('users.limits.daylimit')
             );
         });
+
+        $this->app->bind(UserVoter::class);
+        AuthorizationServiceProvider::tagVoter($this, UserVoter::class);
     }
 
     public function boot(): void

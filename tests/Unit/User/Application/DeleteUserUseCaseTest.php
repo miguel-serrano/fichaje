@@ -2,19 +2,19 @@
 
 namespace Tests\Unit\User\Application;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
+use App\DDD\Authorization\Domain\Exception\AccessDeniedException;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
-use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use Tests\TestCase;
 
 class DeleteUserUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
 
-    private UserAuthorizationServiceInterface $authorizationService;
+    private AuthorizationServiceInterface $authorizationService;
 
     private DeleteUserCommandHandler $handler;
 
@@ -22,7 +22,7 @@ class DeleteUserUseCaseTest extends TestCase
     {
         parent::setUp();
         $this->userRepository = app(UserRepositoryInterface::class);
-        $this->authorizationService = app(UserAuthorizationServiceInterface::class);
+        $this->authorizationService = app(AuthorizationServiceInterface::class);
         $this->handler = new DeleteUserCommandHandler(
             $this->userRepository,
             $this->authorizationService
@@ -114,7 +114,7 @@ class DeleteUserUseCaseTest extends TestCase
         ]);
         $targetAdminUser->assignRole('super_admin');
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(AccessDeniedException::class);
 
         $command = DeleteUserCommand::create($adminUser->id, $targetAdminUser->id);
         $this->handler->handle($command);

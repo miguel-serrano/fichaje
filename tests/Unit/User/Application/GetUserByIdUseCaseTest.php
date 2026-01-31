@@ -2,19 +2,19 @@
 
 namespace Tests\Unit\User\Application;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
+use App\DDD\Authorization\Domain\Exception\AccessDeniedException;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
-use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
 use Tests\TestCase;
 
 class GetUserByIdUseCaseTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
 
-    private UserAuthorizationServiceInterface $authorizationService;
+    private AuthorizationServiceInterface $authorizationService;
 
     private GetUserByIdQueryHandler $handler;
 
@@ -22,7 +22,7 @@ class GetUserByIdUseCaseTest extends TestCase
     {
         parent::setUp();
         $this->userRepository = app(UserRepositoryInterface::class);
-        $this->authorizationService = app(UserAuthorizationServiceInterface::class);
+        $this->authorizationService = app(AuthorizationServiceInterface::class);
         $this->handler = new GetUserByIdQueryHandler(
             $this->userRepository,
             $this->authorizationService
@@ -130,6 +130,11 @@ class GetUserByIdUseCaseTest extends TestCase
 
     public function test_non_admin_can_view_themselves(): void
     {
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $regularUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Regular User',
@@ -147,6 +152,11 @@ class GetUserByIdUseCaseTest extends TestCase
 
     public function test_non_admin_cannot_view_other_users(): void
     {
+        // Seed roles if not present
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $regularUser = \App\Models\User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Regular User',
@@ -163,7 +173,7 @@ class GetUserByIdUseCaseTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(AccessDeniedException::class);
 
         $query = GetUserByIdQuery::create($regularUser->id, $otherUser->id);
         $this->handler->handle($query);

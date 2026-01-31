@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin\Permission;
 
+use App\DDD\Administration\Application\Command\DeletePermissionCommand;
+use App\DDD\Administration\Domain\Exceptions\CannotDeleteSystemPermissionException;
+use App\DDD\Administration\Domain\Exceptions\PermissionNotFoundException;
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Application\Command\DeletePermissionCommand;
-use App\DDD\Authorization\Domain\Exceptions\CannotDeleteSystemPermissionException;
-use App\DDD\Authorization\Domain\Exceptions\PermissionNotFoundException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;

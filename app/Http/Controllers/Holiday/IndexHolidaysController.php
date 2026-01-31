@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Holiday;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
 use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
@@ -18,8 +16,7 @@ class IndexHolidaysController extends Controller
 {
     public function __construct(
         private QueryBusInterface $queryBus,
-        private PermissionCheckerInterface $permissionChecker,
-        private UserRepositoryInterface $userRepository,
+        private AuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -33,9 +30,7 @@ class IndexHolidaysController extends Controller
             GetUserHolidaysQuery::create($userId)
         );
 
-        $user = $this->userRepository->findByIdOrFail(UserId::make($userId));
-
-        $canRequestHoliday = $this->permissionChecker->hasPermission($user, HolidayPermission::Request->value);
+        $canRequestHoliday = $this->authorizationService->isGranted(HolidayPermission::Request->value, $userId);
 
         return view('holidays.index', [
             'holidays' => $holidaysResponse->holidays(),

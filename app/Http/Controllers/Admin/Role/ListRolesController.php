@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Role;
 
-use App\DDD\Authorization\Application\Query\GetAllRolesQuery;
+use App\DDD\Administration\Application\Query\GetAllRolesQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;

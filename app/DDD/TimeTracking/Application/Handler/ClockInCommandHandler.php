@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Application\Handler;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\TimeTracking\Application\Command\ClockInCommand;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
-use App\DDD\TimeTracking\Domain\Services\TimeTrackingAuthorizationServiceInterface;
+use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 class ClockInCommandHandler
@@ -16,7 +17,7 @@ class ClockInCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
-        private TimeTrackingAuthorizationServiceInterface $authorizationService,
+        private AuthorizationServiceInterface $authorizationService,
         private TimeTrackingService $service,
     ) {
     }
@@ -27,7 +28,7 @@ class ClockInCommandHandler
 
         $user->ensureIsActive();
 
-        $this->authorizationService->assertCanClockIn($user);
+        $this->authorizationService->denyAccessUnlessGranted(TimeTrackingPermission::ClockIn->value, $user->id()->value());
 
         $this->service->ensureCanClockIn($user);
 

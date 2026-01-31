@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Application\Service;
 
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
@@ -22,7 +22,7 @@ final class TimeTrackingService
     private function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
-        private PermissionCheckerInterface $permissionChecker,
+        private UserPermissionsCheckerInterface $permissionsChecker,
         private TimeEntryCalculationService $calculationService,
         private DailyLimitValidatorService $dailyLimitValidator,
         private OrphanTimeEntryCloserService $orphanCloser,
@@ -33,7 +33,7 @@ final class TimeTrackingService
     public static function create(
         UserRepositoryInterface $userRepository,
         TimeEntryRepositoryInterface $timeEntryRepository,
-        PermissionCheckerInterface $permissionChecker,
+        UserPermissionsCheckerInterface $permissionsChecker,
         LoggerInterface $logger,
     ): self {
         $calculationService = TimeEntryCalculationService::create();
@@ -43,7 +43,7 @@ final class TimeTrackingService
         return new self(
             $userRepository,
             $timeEntryRepository,
-            $permissionChecker,
+            $permissionsChecker,
             $calculationService,
             $dailyLimitValidator,
             $orphanCloser,
@@ -63,7 +63,7 @@ final class TimeTrackingService
             throw new OpenTimeEntryAlreadyExistsException();
         }
 
-        if (!$this->permissionChecker->isSuperAdmin($user)) {
+        if (!$this->permissionsChecker->isSuperAdmin($user->id()->value())) {
             $this->dailyLimitValidator->ensureDailyLimitNotExceeded($user->timeEntries());
         }
     }
@@ -108,7 +108,7 @@ final class TimeTrackingService
             throw new OpenTimeEntryAlreadyExistsException();
         }
 
-        if (!$this->permissionChecker->isSuperAdmin($user)) {
+        if (!$this->permissionsChecker->isSuperAdmin($user->id()->value())) {
             $this->dailyLimitValidator->ensureDailyLimitNotExceeded($user->timeEntries());
         }
 

@@ -2,25 +2,24 @@
 
 namespace App\DDD\User\Application\Handler;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
+use App\DDD\User\Domain\Permission\UserPermission;
 
 class DeleteUserCommandHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserAuthorizationServiceInterface $authorizationService,
+        private AuthorizationServiceInterface $authorizationService,
     ) {
     }
 
     public function handle(DeleteUserCommand $command): void
     {
-        $targetUser = $this->userRepository->findByIdOrFail($command->targetUserId);
+        $this->userRepository->findByIdOrFail($command->targetUserId);
 
-        $authenticatedUser = $this->userRepository->findByIdOrFail($command->authenticatedUserId);
-
-        $this->authorizationService->assertCanDelete($authenticatedUser, $targetUser);
+        $this->authorizationService->denyAccessUnlessGranted(UserPermission::Delete->value, $command->authenticatedUserId->value(), $command->targetUserId->value());
 
         $this->userRepository->delete($command->targetUserId);
     }

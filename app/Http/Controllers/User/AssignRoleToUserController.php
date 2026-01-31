@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Administration\Application\Command\AssignRoleToUserCommand;
+use App\DDD\Administration\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Application\Command\AssignRoleToUserCommand;
-use App\DDD\Authorization\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;

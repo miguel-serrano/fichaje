@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin\Permission;
 
+use App\DDD\Administration\Application\Command\CreatePermissionCommand;
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Application\Command\CreatePermissionCommand;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;

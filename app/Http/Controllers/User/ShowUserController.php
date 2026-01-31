@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\User;
 
+use App\DDD\Administration\Application\Query\GetAllRolesQuery;
+use App\DDD\Administration\Application\Query\GetUserRolesQuery;
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Application\Query\GetAllRolesQuery;
-use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;

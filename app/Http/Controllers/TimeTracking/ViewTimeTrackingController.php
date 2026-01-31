@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\TimeTracking;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\TimeTracking\Application\Query\GetAccumulatedSecondsQuery;
 use App\DDD\TimeTracking\Application\Query\HasOpenTimeEntryQuery;
@@ -15,7 +17,7 @@ class ViewTimeTrackingController extends Controller
 {
     public function __construct(
         private QueryBusInterface $queryBus,
-        private PermissionCheckerInterface $permissionChecker,
+        private AuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -25,8 +27,9 @@ class ViewTimeTrackingController extends Controller
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
             $userUuid = $user->uuid()->value();
+            $userId = $user->id()->value();
 
-            $canClockIn = $this->permissionChecker->hasPermission($user, TimeTrackingPermission::ClockIn->value);
+            $canClockIn = $this->authorizationService->isGranted(TimeTrackingPermission::ClockIn->value, $userId);
 
             $secondsResponse = $this->queryBus->dispatch(
                 GetAccumulatedSecondsQuery::create($userUuid)

@@ -2,16 +2,17 @@
 
 namespace App\DDD\User\Application\Handler;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
+use App\DDD\User\Domain\Permission\UserPermission;
 
 class GetUserByIdQueryHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserAuthorizationServiceInterface $authorizationService,
+        private AuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -19,9 +20,7 @@ class GetUserByIdQueryHandler
     {
         $targetUser = $this->userRepository->findByIdOrFail($query->targetUserId);
 
-        $authenticatedUser = $this->userRepository->findByIdOrFail($query->authenticatedUserId);
-
-        $this->authorizationService->assertCanView($authenticatedUser, $targetUser);
+        $this->authorizationService->denyAccessUnlessGranted(UserPermission::View->value, $query->authenticatedUserId->value(), $query->targetUserId->value());
 
         return $targetUser;
     }

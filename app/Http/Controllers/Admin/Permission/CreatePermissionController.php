@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Permission;
 
-use App\DDD\Authorization\Domain\ValueObjects\BoundedContext;
+use App\DDD\Administration\Domain\ValueObjects\BoundedContext;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 

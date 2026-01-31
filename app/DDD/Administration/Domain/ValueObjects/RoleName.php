@@ -1,0 +1,19 @@
+<?php
+
+namespace App\DDD\Administration\Domain\ValueObjects;
+
+use App\DDD\Shared\Domain\ValueObject\StringValueObject;
+
+final class RoleName extends StringValueObject
+{
+    protected function validate(): void
+    {
+        if (empty(trim($this->value))) {
+            throw new \InvalidArgumentException('El nombre del rol no puede estar vacío');
+        }
+
+        if (strlen($this->value) > 100) {
+            throw new \InvalidArgumentException('El nombre del rol no puede exceder 100 caracteres');
+        }
+    }
+}

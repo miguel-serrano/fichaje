@@ -2,23 +2,22 @@
 
 namespace App\DDD\User\Application\Handler;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\User\Application\Command\ToggleUserActiveCommand;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
+use App\DDD\User\Domain\Permission\UserPermission;
 
 class ToggleUserActiveCommandHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserAuthorizationServiceInterface $authorizationService,
+        private AuthorizationServiceInterface $authorizationService,
     ) {
     }
 
     public function handle(ToggleUserActiveCommand $command): bool
     {
-        $authenticatedUser = $this->userRepository->findByIdOrFail($command->authenticatedUserId);
-
-        $this->authorizationService->assertCanToggleActive($authenticatedUser);
+        $this->authorizationService->denyAccessUnlessGranted(UserPermission::ToggleActive->value, $command->authenticatedUserId->value());
 
         $targetUser = $this->userRepository->findByIdOrFail($command->targetUserId);
 

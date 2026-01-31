@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Role;
 
-use App\DDD\Authorization\Application\Query\GetAllPermissionsQuery;
-use App\DDD\Authorization\Application\Query\GetRoleByIdQuery;
-use App\DDD\Authorization\Domain\Exceptions\RoleNotFoundException;
+use App\DDD\Administration\Application\Query\GetAllPermissionsQuery;
+use App\DDD\Administration\Application\Query\GetRoleByIdQuery;
+use App\DDD\Administration\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;

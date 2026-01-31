@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Permission;
 
-use App\DDD\Authorization\Application\Query\GetPermissionByIdQuery;
-use App\DDD\Authorization\Domain\Exceptions\PermissionNotFoundException;
-use App\DDD\Authorization\Domain\ValueObjects\BoundedContext;
+use App\DDD\Administration\Application\Query\GetPermissionByIdQuery;
+use App\DDD\Administration\Domain\Exceptions\PermissionNotFoundException;
+use App\DDD\Administration\Domain\ValueObjects\BoundedContext;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;

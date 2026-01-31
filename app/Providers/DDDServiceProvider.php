@@ -2,6 +2,36 @@
 
 namespace App\Providers;
 
+use App\DDD\Administration\Application\Command\AssignRoleToUserCommand;
+use App\DDD\Administration\Application\Command\CreatePermissionCommand;
+use App\DDD\Administration\Application\Command\CreateRoleCommand;
+use App\DDD\Administration\Application\Command\DeletePermissionCommand;
+use App\DDD\Administration\Application\Command\DeleteRoleCommand;
+use App\DDD\Administration\Application\Command\RemoveRoleFromUserCommand;
+use App\DDD\Administration\Application\Command\SyncPermissionsToRoleCommand;
+use App\DDD\Administration\Application\Command\UpdatePermissionCommand;
+use App\DDD\Administration\Application\Command\UpdateRoleCommand;
+use App\DDD\Administration\Application\Handler\AssignRoleToUserCommandHandler;
+use App\DDD\Administration\Application\Handler\CreatePermissionCommandHandler;
+use App\DDD\Administration\Application\Handler\CreateRoleCommandHandler;
+use App\DDD\Administration\Application\Handler\DeletePermissionCommandHandler;
+use App\DDD\Administration\Application\Handler\DeleteRoleCommandHandler;
+use App\DDD\Administration\Application\Handler\GetAllPermissionsQueryHandler;
+use App\DDD\Administration\Application\Handler\GetAllRolesQueryHandler;
+use App\DDD\Administration\Application\Handler\GetPermissionByIdQueryHandler;
+use App\DDD\Administration\Application\Handler\GetRoleByIdQueryHandler;
+use App\DDD\Administration\Application\Handler\GetUserPermissionsQueryHandler;
+use App\DDD\Administration\Application\Handler\GetUserRolesQueryHandler;
+use App\DDD\Administration\Application\Handler\RemoveRoleFromUserCommandHandler;
+use App\DDD\Administration\Application\Handler\SyncPermissionsToRoleCommandHandler;
+use App\DDD\Administration\Application\Handler\UpdatePermissionCommandHandler;
+use App\DDD\Administration\Application\Handler\UpdateRoleCommandHandler;
+use App\DDD\Administration\Application\Query\GetAllPermissionsQuery;
+use App\DDD\Administration\Application\Query\GetAllRolesQuery;
+use App\DDD\Administration\Application\Query\GetPermissionByIdQuery;
+use App\DDD\Administration\Application\Query\GetRoleByIdQuery;
+use App\DDD\Administration\Application\Query\GetUserPermissionsQuery;
+use App\DDD\Administration\Application\Query\GetUserRolesQuery;
 use App\DDD\Authentication\Application\Command\LoginCommand;
 use App\DDD\Authentication\Application\Command\LogoutCommand;
 use App\DDD\Authentication\Application\Command\RegisterCommand;
@@ -14,38 +44,7 @@ use App\DDD\Authentication\Domain\Services\AuthenticationService;
 use App\DDD\Authentication\Domain\Services\PasswordHashingService;
 use App\DDD\Authentication\Infrastructure\LaravelAuthenticationService;
 use App\DDD\Authentication\Infrastructure\LaravelPasswordHashingService;
-use App\DDD\Authorization\Application\Command\AssignRoleToUserCommand;
-use App\DDD\Authorization\Application\Command\CreatePermissionCommand;
-use App\DDD\Authorization\Application\Command\CreateRoleCommand;
-use App\DDD\Authorization\Application\Command\DeletePermissionCommand;
-use App\DDD\Authorization\Application\Command\DeleteRoleCommand;
-use App\DDD\Authorization\Application\Command\RemoveRoleFromUserCommand;
-use App\DDD\Authorization\Application\Command\SyncPermissionsToRoleCommand;
-use App\DDD\Authorization\Application\Command\UpdatePermissionCommand;
-use App\DDD\Authorization\Application\Command\UpdateRoleCommand;
-use App\DDD\Authorization\Application\Handler\AssignRoleToUserCommandHandler;
-use App\DDD\Authorization\Application\Handler\CreatePermissionCommandHandler;
-use App\DDD\Authorization\Application\Handler\CreateRoleCommandHandler;
-use App\DDD\Authorization\Application\Handler\DeletePermissionCommandHandler;
-use App\DDD\Authorization\Application\Handler\DeleteRoleCommandHandler;
-use App\DDD\Authorization\Application\Handler\GetAllPermissionsQueryHandler;
-use App\DDD\Authorization\Application\Handler\GetAllRolesQueryHandler;
-use App\DDD\Authorization\Application\Handler\GetPermissionByIdQueryHandler;
-use App\DDD\Authorization\Application\Handler\GetRoleByIdQueryHandler;
-use App\DDD\Authorization\Application\Handler\GetUserPermissionsQueryHandler;
-use App\DDD\Authorization\Application\Handler\GetUserRolesQueryHandler;
-use App\DDD\Authorization\Application\Handler\RemoveRoleFromUserCommandHandler;
-use App\DDD\Authorization\Application\Handler\SyncPermissionsToRoleCommandHandler;
-use App\DDD\Authorization\Application\Handler\UpdatePermissionCommandHandler;
-use App\DDD\Authorization\Application\Handler\UpdateRoleCommandHandler;
-use App\DDD\Authorization\Application\Query\GetAllPermissionsQuery;
-use App\DDD\Authorization\Application\Query\GetAllRolesQuery;
-use App\DDD\Authorization\Application\Query\GetPermissionByIdQuery;
-use App\DDD\Authorization\Application\Query\GetRoleByIdQuery;
-use App\DDD\Authorization\Application\Query\GetUserPermissionsQuery;
-use App\DDD\Authorization\Application\Query\GetUserRolesQuery;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
-use App\DDD\Authorization\Infrastructure\Services\PermissionChecker;
+use App\DDD\Authorization\Infrastructure\LaravelServiceProvider as AuthorizationServiceProvider;
 use App\DDD\Holiday\Application\Command\ApproveHolidayRequestCommand;
 use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
 use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
@@ -62,12 +61,9 @@ use App\DDD\Notification\Application\Command\MarkNotificationAsReadCommand;
 use App\DDD\Notification\Application\Handler\MarkNotificationAsReadCommandHandler;
 use App\DDD\Notification\Application\NotificationService;
 use App\DDD\Notification\Domain\Interface\NotificationRepositoryInterface;
-use App\DDD\Notification\Domain\Policy\NotificationPolicy;
-use App\DDD\Notification\Domain\Policy\NotificationPolicyInterface;
-use App\DDD\Notification\Domain\Services\NotificationAuthorizationServiceInterface;
+use App\DDD\Notification\Domain\Voter\NotificationVoter;
 use App\DDD\Notification\Infrastructure\DatabaseNotifier;
 use App\DDD\Notification\Infrastructure\Persistence\Eloquent\EloquentNotificationRepository;
-use App\DDD\Notification\Infrastructure\Services\NotificationAuthorizationService;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\Shared\Infrastructure\Bus\LaravelTacticianCommandBus;
@@ -94,8 +90,6 @@ use App\DDD\User\Application\Query\GetAllUsersQuery;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
-use App\DDD\User\Domain\Services\UserAuthorizationServiceInterface;
-use App\DDD\User\Infrastructure\Services\UserAuthorizationService;
 use Illuminate\Support\ServiceProvider;
 use Joselfonseca\LaravelTactician\CommandBusInterface as TacticianCommandBusInterface;
 
@@ -107,20 +101,12 @@ class DDDServiceProvider extends ServiceProvider
         $this->app->bind(CommandBusInterface::class, LaravelTacticianCommandBus::class);
         $this->app->bind(QueryBusInterface::class, LaravelTacticianQueryBus::class);
 
-        // Register User services
-        $this->app->bind(UserAuthorizationServiceInterface::class, UserAuthorizationService::class);
-
-        // Register Authorization services
-        $this->app->singleton(PermissionCheckerInterface::class, PermissionChecker::class);
-
         // Register Authentication services
         $this->app->bind(AuthenticationService::class, LaravelAuthenticationService::class);
         $this->app->bind(PasswordHashingService::class, LaravelPasswordHashingService::class);
 
         // Register Notification services
         $this->app->bind(NotificationRepositoryInterface::class, EloquentNotificationRepository::class);
-        $this->app->bind(NotificationPolicyInterface::class, NotificationPolicy::class);
-        $this->app->bind(NotificationAuthorizationServiceInterface::class, NotificationAuthorizationService::class);
         $this->app->singleton(
             NotificationService::class,
             function ($app) {
@@ -129,6 +115,10 @@ class DDDServiceProvider extends ServiceProvider
                 ]);
             }
         );
+
+        // Register Notification voter
+        $this->app->bind(NotificationVoter::class);
+        AuthorizationServiceProvider::tagVoter($this, NotificationVoter::class);
     }
 
     public function boot(): void
@@ -159,7 +149,8 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(CreateHolidayRequestCommand::class, CreateHolidayRequestCommandHandler::class);
         $tacticianBus->addHandler(ApproveHolidayRequestCommand::class, ApproveHolidayRequestCommandHandler::class);
         $tacticianBus->addHandler(RejectHolidayRequestCommand::class, RejectHolidayRequestCommandHandler::class);
-        // Authorization Commands
+
+        // Administration Commands
         $tacticianBus->addHandler(AssignRoleToUserCommand::class, AssignRoleToUserCommandHandler::class);
         $tacticianBus->addHandler(RemoveRoleFromUserCommand::class, RemoveRoleFromUserCommandHandler::class);
         $tacticianBus->addHandler(CreateRoleCommand::class, CreateRoleCommandHandler::class);
@@ -193,7 +184,8 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(GetUserHolidaysQuery::class, GetUserHolidaysQueryHandler::class);
         $tacticianBus->addHandler(GetPendingHolidaysQuery::class, GetPendingHolidaysQueryHandler::class);
         $tacticianBus->addHandler(GetApprovedHolidaysQuery::class, GetApprovedHolidaysQueryHandler::class);
-        // Authorization Queries
+
+        // Administration Queries
         $tacticianBus->addHandler(GetUserRolesQuery::class, GetUserRolesQueryHandler::class);
         $tacticianBus->addHandler(GetUserPermissionsQuery::class, GetUserPermissionsQueryHandler::class);
         $tacticianBus->addHandler(GetAllRolesQuery::class, GetAllRolesQueryHandler::class);

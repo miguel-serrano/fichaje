@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Infrastructure;
 
+use App\DDD\Authorization\Infrastructure\LaravelServiceProvider as AuthorizationServiceProvider;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
-use App\DDD\Holiday\Domain\Policy\HolidayPolicy;
-use App\DDD\Holiday\Domain\Policy\HolidayPolicyInterface;
-use App\DDD\Holiday\Domain\Services\HolidayAuthorizationServiceInterface;
+use App\DDD\Holiday\Domain\Voter\HolidayVoter;
 use App\DDD\Holiday\Infrastructure\Persistence\Eloquent\EloquentHolidayRepository;
-use App\DDD\Holiday\Infrastructure\Services\HolidayAuthorizationService;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelServiceProvider extends ServiceProvider
@@ -21,15 +19,8 @@ class LaravelServiceProvider extends ServiceProvider
             EloquentHolidayRepository::class
         );
 
-        $this->app->bind(
-            HolidayPolicyInterface::class,
-            HolidayPolicy::class
-        );
-
-        $this->app->bind(
-            HolidayAuthorizationServiceInterface::class,
-            HolidayAuthorizationService::class
-        );
+        $this->app->bind(HolidayVoter::class);
+        AuthorizationServiceProvider::tagVoter($this, HolidayVoter::class);
     }
 
     public function boot(): void

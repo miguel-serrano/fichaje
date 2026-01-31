@@ -2,11 +2,11 @@
 
 namespace App\DDD\Authentication\Application\Handler;
 
+use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
+use App\DDD\Administration\Domain\ValueObjects\RoleSlug;
 use App\DDD\Authentication\Application\Command\RegisterCommand;
 use App\DDD\Authentication\Domain\Services\AuthenticationService;
 use App\DDD\Authentication\Domain\Services\PasswordHashingService;
-use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
-use App\DDD\Authorization\Domain\ValueObjects\RoleSlug;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserCreationPolicyService;

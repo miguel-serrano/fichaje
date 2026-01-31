@@ -1,17 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DDD\Authorization\Infrastructure;
 
-use App\DDD\Authorization\Domain\Interface\PermissionRepositoryInterface;
-use App\DDD\Authorization\Domain\Interface\RoleRepositoryInterface;
-use App\DDD\Authorization\Domain\Policy\AuthorizationPolicy;
-use App\DDD\Authorization\Domain\Policy\AuthorizationPolicyInterface;
-use App\DDD\Authorization\Domain\Services\AuthorizationAuthorizationServiceInterface;
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
-use App\DDD\Authorization\Infrastructure\Persistence\Eloquent\EloquentPermissionRepository;
-use App\DDD\Authorization\Infrastructure\Persistence\Eloquent\EloquentRoleRepository;
-use App\DDD\Authorization\Infrastructure\Services\AuthorizationAuthorizationService;
-use App\DDD\Authorization\Infrastructure\Services\PermissionChecker;
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
+use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
+use App\DDD\Authorization\Infrastructure\Service\AuthorizationService;
+use App\DDD\Authorization\Infrastructure\Service\UserPermissionsChecker;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelServiceProvider extends ServiceProvider
@@ -19,29 +15,27 @@ class LaravelServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            RoleRepositoryInterface::class,
-            EloquentRoleRepository::class
+            UserPermissionsCheckerInterface::class,
+            UserPermissionsChecker::class,
         );
 
-        $this->app->bind(
-            PermissionRepositoryInterface::class,
-            EloquentPermissionRepository::class
-        );
+        $this->app->singleton(AuthorizationServiceInterface::class, function ($app) {
+            $service = new AuthorizationService();
 
-        $this->app->bind(
-            PermissionCheckerInterface::class,
-            PermissionChecker::class
-        );
+            foreach ($app->tagged('voters') as $voter) {
+                $service->registerVoter($voter);
+            }
 
-        $this->app->bind(
-            AuthorizationPolicyInterface::class,
-            AuthorizationPolicy::class
-        );
+            return $service;
+        });
+    }
 
-        $this->app->bind(
-            AuthorizationAuthorizationServiceInterface::class,
-            AuthorizationAuthorizationService::class
-        );
+    /**
+     * Helper para que otros ServiceProviders registren sus voters.
+     */
+    public static function tagVoter(ServiceProvider $provider, string $voterClass): void
+    {
+        $provider->app->tag([$voterClass], 'voters');
     }
 
     public function boot(): void

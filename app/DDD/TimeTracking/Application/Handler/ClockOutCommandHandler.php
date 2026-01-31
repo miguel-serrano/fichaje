@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Application\Handler;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\TimeTracking\Application\Command\ClockOutCommand;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
-use App\DDD\TimeTracking\Domain\Services\TimeTrackingAuthorizationServiceInterface;
+use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 class ClockOutCommandHandler
@@ -15,7 +16,7 @@ class ClockOutCommandHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
-        private TimeTrackingAuthorizationServiceInterface $authorizationService,
+        private AuthorizationServiceInterface $authorizationService,
         private TimeTrackingService $service,
     ) {
     }
@@ -26,7 +27,7 @@ class ClockOutCommandHandler
 
         $user->ensureIsActive();
 
-        $this->authorizationService->assertCanClockOut($user);
+        $this->authorizationService->denyAccessUnlessGranted(TimeTrackingPermission::ClockOut->value, $user->id()->value());
 
         $this->service->ensureCanClockOut($user);
 

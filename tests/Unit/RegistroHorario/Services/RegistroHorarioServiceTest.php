@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\RegistroHorario\Services;
 
-use App\DDD\Authorization\Domain\Services\PermissionCheckerInterface;
+use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
@@ -21,7 +21,7 @@ class RegistroHorarioServiceTest extends TestCase
 
     private TimeEntryRepositoryInterface $timeEntryRepository;
 
-    private PermissionCheckerInterface $permissionChecker;
+    private UserPermissionsCheckerInterface $permissionsChecker;
 
     private LoggerInterface $logger;
 
@@ -32,11 +32,11 @@ class RegistroHorarioServiceTest extends TestCase
         parent::setUp();
         $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
         $this->timeEntryRepository = Mockery::mock(TimeEntryRepositoryInterface::class);
-        $this->permissionChecker = Mockery::mock(PermissionCheckerInterface::class);
+        $this->permissionsChecker = Mockery::mock(UserPermissionsCheckerInterface::class);
         $this->logger = Mockery::mock(LoggerInterface::class);
 
         // Por defecto, los usuarios no son super_admin
-        $this->permissionChecker->shouldReceive('isSuperAdmin')->andReturn(false)->byDefault();
+        $this->permissionsChecker->shouldReceive('isSuperAdmin')->andReturn(false)->byDefault();
 
         // Permitir cualquier llamada a logger
         $this->logger->shouldReceive('info')->byDefault();
@@ -44,7 +44,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->service = TimeTrackingService::create(
             $this->userRepository,
             $this->timeEntryRepository,
-            $this->permissionChecker,
+            $this->permissionsChecker,
             $this->logger
         );
     }

@@ -201,7 +201,9 @@ return [
         App\DDD\TimeTracking\Infrastructure\LaravelServiceProvider::class,
         // ddd_holiday
         App\DDD\Holiday\Infrastructure\LaravelServiceProvider::class,
-        // ddd_roles
+        // ddd_administration (roles & permissions CRUD)
+        App\DDD\Administration\Infrastructure\LaravelServiceProvider::class,
+        // ddd_authorization (voter system - must be last to collect all tagged voters)
         App\DDD\Authorization\Infrastructure\LaravelServiceProvider::class,
     ],
 

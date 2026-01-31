@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Application\Handler;
 
+use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\TimeTracking\Application\Command\CloseOrphanTimeEntriesCommand;
 use App\DDD\TimeTracking\Application\Response\CloseOrphanTimeEntriesCommandResponse;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingNotifierService;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
-use App\DDD\TimeTracking\Domain\Services\TimeTrackingAuthorizationServiceInterface;
+use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 
 final class CloseOrphanTimeEntriesCommandHandler
@@ -17,7 +18,7 @@ final class CloseOrphanTimeEntriesCommandHandler
         private TimeTrackingService $service,
         private TimeTrackingNotifierService $notifierService,
         private UserRepositoryInterface $userRepository,
-        private TimeTrackingAuthorizationServiceInterface $authorizationService,
+        private AuthorizationServiceInterface $authorizationService,
     ) {
     }
 
@@ -25,7 +26,7 @@ final class CloseOrphanTimeEntriesCommandHandler
     {
         $authenticatedUser = $this->userRepository->findByIdOrFail($command->authenticatedUserId);
 
-        $this->authorizationService->assertCanCloseOrphanEntries($authenticatedUser);
+        $this->authorizationService->denyAccessUnlessGranted(TimeTrackingPermission::Reports->value, $command->authenticatedUserId->value());
 
         $closedByUser = $this->service->closeOrphanTimeEntries();
 

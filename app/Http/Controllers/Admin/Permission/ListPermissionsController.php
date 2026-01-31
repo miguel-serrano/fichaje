@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin\Permission;
 
-use App\DDD\Authorization\Application\Query\GetAllPermissionsQuery;
-use App\DDD\Authorization\Domain\ValueObjects\BoundedContext;
+use App\DDD\Administration\Application\Query\GetAllPermissionsQuery;
+use App\DDD\Administration\Domain\ValueObjects\BoundedContext;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
