@@ -20,7 +20,7 @@ class EditPermissionController extends Controller
     public function __invoke(string $id): View|RedirectResponse
     {
         try {
-            $permission = $this->queryBus->dispatch(new GetPermissionByIdQuery((int) $id));
+            $permission = $this->queryBus->dispatch(GetPermissionByIdQuery::create((int) $id));
 
             if ($permission['is_system']) {
                 return redirect()->route('admin.permissions.index')

@@ -16,7 +16,7 @@ class ListRolesController extends Controller
 
     public function __invoke(): View
     {
-        $roles = $this->queryBus->dispatch(new GetAllRolesQuery());
+        $roles = $this->queryBus->dispatch(GetAllRolesQuery::create());
 
         return view('admin.roles.index', [
             'roles' => $roles,

@@ -27,7 +27,7 @@ final class CreateHolidayRequestCommandHandler
 
         $this->authorizationService->denyAccessUnlessGranted(HolidayPermission::Request->value, $command->userId->value());
 
-        $dateRange = $this->holidayService->createRequest($user, $command->startDate, $command->endDate);
+        $dateRange = $this->holidayService->createRequest($user, $command->dateRange);
 
         $this->notifierService->notifyHolidayRequested($user, $dateRange);
     }

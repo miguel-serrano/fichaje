@@ -42,10 +42,10 @@ class ShowUserController extends Controller
                 )
             )->response();
 
-            $allRolesQuery = new GetAllRolesQuery();
+            $allRolesQuery = GetAllRolesQuery::create();
             $allRoles = $this->queryBus->dispatch($allRolesQuery);
 
-            $userRolesQuery = new GetUserRolesQuery($user->id()->value());
+            $userRolesQuery = GetUserRolesQuery::create($user->id()->value());
             $userRoles = $this->queryBus->dispatch($userRolesQuery);
 
             return view('users.show', [

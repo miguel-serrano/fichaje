@@ -17,7 +17,7 @@ class ListPermissionsController extends Controller
 
     public function __invoke(): View
     {
-        $permissions = $this->queryBus->dispatch(new GetAllPermissionsQuery());
+        $permissions = $this->queryBus->dispatch(GetAllPermissionsQuery::create());
 
         $permissionsByContext = collect($permissions)->groupBy('bounded_context')->toArray();
 

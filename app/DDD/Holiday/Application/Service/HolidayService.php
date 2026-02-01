@@ -18,10 +18,8 @@ final class HolidayService
     ) {
     }
 
-    public function createRequest(User $user, string $startDate, string $endDate): DateRange
+    public function createRequest(User $user, DateRange $dateRange): DateRange
     {
-        $dateRange = DateRange::fromStrings($startDate, $endDate);
-
         if ($this->holidayRepository->hasOverlapping($user->id(), $dateRange)) {
             throw OverlappingHolidayException::forDateRange($dateRange);
         }

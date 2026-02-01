@@ -20,8 +20,8 @@ class ShowRoleController extends Controller
     public function __invoke(string $id): View|RedirectResponse
     {
         try {
-            $role = $this->queryBus->dispatch(new GetRoleByIdQuery((int) $id));
-            $allPermissions = $this->queryBus->dispatch(new GetAllPermissionsQuery());
+            $role = $this->queryBus->dispatch(GetRoleByIdQuery::create((int) $id));
+            $allPermissions = $this->queryBus->dispatch(GetAllPermissionsQuery::create());
 
             $permissionsByContext = collect($allPermissions)->groupBy('bounded_context')->toArray();
 

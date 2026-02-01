@@ -5,7 +5,6 @@ namespace App\DDD\Administration\Application\Handler;
 use App\DDD\Administration\Application\Command\SyncPermissionsToRoleCommand;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
-use App\DDD\Administration\Domain\ValueObjects\RoleId;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 
 class SyncPermissionsToRoleCommandHandler
@@ -18,13 +17,13 @@ class SyncPermissionsToRoleCommandHandler
 
     public function handle(SyncPermissionsToRoleCommand $command): void
     {
-        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::ManageRoles->value, $command->authenticatedUserId);
+        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::ManageRoles->value, $command->authenticatedUserId->value());
 
-        $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
+        $this->roleRepository->findByIdOrFail($command->roleId);
 
         $this->roleRepository->syncPermissions(
-            new RoleId($command->roleId),
-            $command->permissionIds
+            $command->roleId,
+            $command->permissionIds->toPrimitives()
         );
     }
 }

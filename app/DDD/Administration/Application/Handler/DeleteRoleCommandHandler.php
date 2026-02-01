@@ -6,7 +6,6 @@ use App\DDD\Administration\Application\Command\DeleteRoleCommand;
 use App\DDD\Administration\Domain\Exceptions\CannotDeleteSystemRoleException;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
-use App\DDD\Administration\Domain\ValueObjects\RoleId;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 
 class DeleteRoleCommandHandler
@@ -19,14 +18,14 @@ class DeleteRoleCommandHandler
 
     public function handle(DeleteRoleCommand $command): void
     {
-        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::ManageRoles->value, $command->authenticatedUserId);
+        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::ManageRoles->value, $command->authenticatedUserId->value());
 
-        $role = $this->roleRepository->findByIdOrFail(new RoleId($command->roleId));
+        $role = $this->roleRepository->findByIdOrFail($command->roleId);
 
         if ($role->isSystem()) {
             throw CannotDeleteSystemRoleException::forRole($role->slug()->value());
         }
 
-        $this->roleRepository->delete(new RoleId($command->roleId));
+        $this->roleRepository->delete($command->roleId);
     }
 }

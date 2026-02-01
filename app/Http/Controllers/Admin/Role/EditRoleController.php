@@ -19,7 +19,7 @@ class EditRoleController extends Controller
     public function __invoke(string $id): View|RedirectResponse
     {
         try {
-            $role = $this->queryBus->dispatch(new GetRoleByIdQuery((int) $id));
+            $role = $this->queryBus->dispatch(GetRoleByIdQuery::create((int) $id));
 
             return view('admin.roles.edit', [
                 'role' => $role,

@@ -5,7 +5,6 @@ namespace App\DDD\Administration\Application\Handler;
 use App\DDD\Administration\Application\Command\AssignRoleToUserCommand;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
-use App\DDD\Administration\Domain\ValueObjects\RoleSlug;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\Models\UserRole;
@@ -22,12 +21,12 @@ class AssignRoleToUserCommandHandler
 
     public function handle(AssignRoleToUserCommand $command): void
     {
-        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::AssignRoles->value, $command->authenticatedUserId);
+        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::AssignRoles->value, $command->authenticatedUserId->value());
 
-        $role = $this->roleRepository->findBySlugOrFail(new RoleSlug($command->roleSlug));
+        $role = $this->roleRepository->findBySlugOrFail($command->roleSlug);
 
         $this->connection->table(UserRole::tableName())->updateOrInsert(
-            ['user_id' => $command->targetUserId, 'role_id' => $role->id()->value()],
+            ['user_id' => $command->targetUserId->value(), 'role_id' => $role->id()->value()],
             ['created_at' => UnixTimestamp::now()->value(), 'updated_at' => UnixTimestamp::now()->value()]
         );
     }

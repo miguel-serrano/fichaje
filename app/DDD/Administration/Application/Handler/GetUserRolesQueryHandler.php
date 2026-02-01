@@ -13,7 +13,8 @@ class GetUserRolesQueryHandler
     public function __construct(
         private RoleRepositoryInterface $roleRepository,
         private ConnectionInterface $connection,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<array{id: int|null, name: string, slug: string, description: string|null, is_system: bool, hierarchy: int}>
@@ -21,7 +22,7 @@ class GetUserRolesQueryHandler
     public function handle(GetUserRolesQuery $query): array
     {
         $roleIds = $this->connection->table(UserRole::tableName())
-            ->where('user_id', $query->userId)
+            ->where('user_id', $query->userId->value())
             ->pluck('role_id')
             ->map(fn ($id) => (int) $id)
             ->toArray();

@@ -13,7 +13,8 @@ class GetUserPermissionsQueryHandler
 {
     public function __construct(
         private ConnectionInterface $connection,
-    ) {}
+    ) {
+    }
 
     /**
      * @return string[]
@@ -27,7 +28,7 @@ class GetUserPermissionsQueryHandler
 
         $hasSuperAdmin = $this->connection->table($userRoleTable)
             ->join($rolesTable, "{$userRoleTable}.role_id", '=', "{$rolesTable}.id")
-            ->where("{$userRoleTable}.user_id", $query->userId)
+            ->where("{$userRoleTable}.user_id", $query->userId->value())
             ->where("{$rolesTable}.slug", 'super_admin')
             ->exists();
 
@@ -40,7 +41,7 @@ class GetUserPermissionsQueryHandler
         return $this->connection->table($userRoleTable)
             ->join($rolePermissionTable, "{$userRoleTable}.role_id", '=', "{$rolePermissionTable}.role_id")
             ->join($permissionsTable, "{$rolePermissionTable}.permission_id", '=', "{$permissionsTable}.id")
-            ->where("{$userRoleTable}.user_id", $query->userId)
+            ->where("{$userRoleTable}.user_id", $query->userId->value())
             ->distinct()
             ->pluck("{$permissionsTable}.slug")
             ->toArray();

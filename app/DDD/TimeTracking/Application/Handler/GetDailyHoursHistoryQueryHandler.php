@@ -28,9 +28,9 @@ class GetDailyHoursHistoryQueryHandler
 
         $entries = $this->timeEntryRepository->findByUserIdInDateRange(
             $query->userId,
-            $query->days
+            $query->days->value()
         );
 
-        return new GetDailyHoursHistoryQueryResponse($entries, $query->days);
+        return new GetDailyHoursHistoryQueryResponse($entries, $query->days->value());
     }
 }

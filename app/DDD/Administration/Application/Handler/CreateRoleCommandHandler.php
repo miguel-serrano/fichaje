@@ -6,8 +6,6 @@ use App\DDD\Administration\Application\Command\CreateRoleCommand;
 use App\DDD\Administration\Domain\Entity\Role;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
-use App\DDD\Administration\Domain\ValueObjects\RoleName;
-use App\DDD\Administration\Domain\ValueObjects\RoleSlug;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 
 class CreateRoleCommandHandler
@@ -23,14 +21,14 @@ class CreateRoleCommandHandler
      */
     public function handle(CreateRoleCommand $command): array
     {
-        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::ManageRoles->value, $command->authenticatedUserId);
+        $this->authorizationService->denyAccessUnlessGranted(AdministrationPermission::ManageRoles->value, $command->authenticatedUserId->value());
 
         $role = Role::create(
-            new RoleName($command->name),
-            new RoleSlug($command->slug),
-            $command->description,
+            $command->name,
+            $command->slug,
+            $command->description?->value(),
             false,
-            $command->hierarchy
+            $command->hierarchy->value()
         );
 
         $savedRole = $this->roleRepository->save($role);
