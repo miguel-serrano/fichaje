@@ -8,8 +8,6 @@ use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
-use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
-use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\Services\DailyLimitValidatorService;
 use App\DDD\TimeTracking\Domain\Services\OrphanTimeEntryCloserService;
@@ -19,7 +17,7 @@ use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Psr\Log\LoggerInterface;
 
-final class TimeTrackingService implements ClockInValidatorInterface, ClockOutValidatorInterface
+final class TimeTrackingService
 {
     private function __construct(
         private UserRepositoryInterface $userRepository,
@@ -51,35 +49,6 @@ final class TimeTrackingService implements ClockInValidatorInterface, ClockOutVa
             $orphanCloser,
             $logger
         );
-    }
-
-    /**
-     * Valida que el usuario puede fichar entrada.
-     *
-     * @throws OpenTimeEntryAlreadyExistsException                                 si ya tiene una entrada abierta
-     * @throws \App\DDD\TimeTracking\Domain\Exceptions\DailyLimitExceededException si excede el límite diario
-     */
-    public function ensureCanClockIn(User $user): void
-    {
-        if ($this->calculationService->hasOpenEntry($user->timeEntries())) {
-            throw new OpenTimeEntryAlreadyExistsException();
-        }
-
-        if (!$this->permissionsChecker->isSuperAdmin($user->id()->value())) {
-            $this->dailyLimitValidator->ensureDailyLimitNotExceeded($user->timeEntries());
-        }
-    }
-
-    /**
-     * Valida que el usuario puede fichar salida.
-     *
-     * @throws NoOpenTimeEntryException si no tiene una entrada abierta
-     */
-    public function ensureCanClockOut(User $user): void
-    {
-        if (!$this->calculationService->hasOpenEntry($user->timeEntries())) {
-            throw new NoOpenTimeEntryException();
-        }
     }
 
     /**

@@ -26,6 +26,8 @@ final class User
         private ?HashedPassword $password = null,
         /** @var TimeEntry[] */
         private array $timeEntries = [],
+        /** @var string[] */
+        private array $roleSlugs = [],
     ) {
     }
 
@@ -39,6 +41,10 @@ final class User
         return $this->password;
     }
 
+    /**
+     * @param array<array-key, mixed> $timeEntries
+     * @param string[]                $roleSlugs
+     */
     public static function fromPrimitives(
         ?int $id,
         string $uuid,
@@ -46,13 +52,17 @@ final class User
         string $name,
         bool $isActive,
         array $timeEntries = [],
+        array $roleSlugs = [],
     ): self {
         $user = new self(
             null !== $id ? new UserId($id) : null,
             new Uuid($uuid),
             new Email($email),
             Name::make($name),
-            $isActive
+            $isActive,
+            null,
+            [],
+            $roleSlugs
         );
 
         foreach ($timeEntries as $entry) {
@@ -121,6 +131,22 @@ final class User
         if (!$this->isActive) {
             throw UserNotActiveException::forUuid($this->uuid);
         }
+    }
+
+    public function hasRole(string $roleSlug): bool
+    {
+        return in_array($roleSlug, $this->roleSlugs, true);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
+    /** @return string[] */
+    public function roleSlugs(): array
+    {
+        return $this->roleSlugs;
     }
 
     public function ensureCanClockIn(ClockInValidatorInterface $validator): void

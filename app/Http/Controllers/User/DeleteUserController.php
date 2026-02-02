@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
+use App\DDD\Authorization\Domain\Exception\AccessDeniedException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Command\DeleteUserCommand;
@@ -32,11 +33,8 @@ class DeleteUserController extends Controller
             );
 
             return redirect()->route('users.index')
-                ->with('success', 'Usuario eliminado correctamente');
-        } catch (UserNotFoundException $e) {
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
-        } catch (UnauthorizedException $e) {
+                ->with('success', "Usuario $id eliminado correctamente");
+        } catch (UserNotFoundException|UnauthorizedException|AccessDeniedException $e) {
             return redirect()->route('users.index')
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {

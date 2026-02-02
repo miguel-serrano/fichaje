@@ -6,8 +6,8 @@ namespace App\DDD\TimeTracking\Application\Handler;
 
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
 use App\DDD\TimeTracking\Application\Command\ClockInCommand;
-use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
+use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
 use App\DDD\User\Domain\Interface\ActiveUserRepositoryInterface;
@@ -18,7 +18,7 @@ class ClockInCommandHandler
         private ActiveUserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
         private AuthorizationServiceInterface $authorizationService,
-        private TimeTrackingService $service,
+        private ClockInValidatorInterface $clockInValidator,
     ) {
     }
 
@@ -28,7 +28,7 @@ class ClockInCommandHandler
 
         $this->authorizationService->denyAccessUnlessGranted(TimeTrackingPermission::ClockIn->value, $user->id()->value());
 
-        $user->ensureCanClockIn($this->service);
+        $user->ensureCanClockIn($this->clockInValidator);
 
         $timeEntry = TimeEntry::create($user->id());
 

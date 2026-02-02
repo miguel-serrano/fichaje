@@ -10,8 +10,10 @@ use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
+use App\Models\Role as RoleModel;
 use App\Models\TimeEntry as TimeEntryModel;
 use App\Models\User as UserModel;
+use App\Models\UserRole;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
 
@@ -21,10 +23,16 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     private string $timeEntryTable;
 
+    private string $userRoleTable;
+
+    private string $roleTable;
+
     public function __construct(private ConnectionInterface $connection)
     {
         $this->userTable = UserModel::tableName();
         $this->timeEntryTable = TimeEntryModel::tableName();
+        $this->userRoleTable = UserRole::tableName();
+        $this->roleTable = RoleModel::tableName();
     }
 
     public function save(User $user): User
@@ -69,8 +77,9 @@ class EloquentUserRepository implements UserRepositoryInterface
         }
 
         $timeEntries = $this->getTimeEntriesForUser($id->value());
+        $roleSlugs = $this->getRoleSlugsForUser($id->value());
 
-        return $this->toDomainEntity($row, $timeEntries);
+        return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
     }
 
     public function findByIdOrFail(UserId $id): User
@@ -93,8 +102,9 @@ class EloquentUserRepository implements UserRepositoryInterface
         }
 
         $timeEntries = $this->getTimeEntriesForUser($row->id);
+        $roleSlugs = $this->getRoleSlugsForUser($row->id);
 
-        return $this->toDomainEntity($row, $timeEntries);
+        return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
     }
 
     public function findByUuidOrFail(Uuid $uuid): User
@@ -124,11 +134,13 @@ class EloquentUserRepository implements UserRepositoryInterface
 
         $userIds = $rows->pluck('id')->toArray();
         $allTimeEntries = $this->getTimeEntriesForUsers($userIds);
+        $allRoleSlugs = $this->getRoleSlugsForUsers($userIds);
 
-        return $rows->map(function (\stdClass $row) use ($allTimeEntries) {
+        return $rows->map(function (\stdClass $row) use ($allTimeEntries, $allRoleSlugs) {
             $timeEntries = $allTimeEntries[$row->id] ?? [];
+            $roleSlugs = $allRoleSlugs[$row->id] ?? [];
 
-            return $this->toDomainEntity($row, $timeEntries);
+            return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
         })->toArray();
     }
 
@@ -190,11 +202,13 @@ class EloquentUserRepository implements UserRepositoryInterface
 
         $rows = $this->query()->whereIn('id', $adminUserIds)->get();
         $allTimeEntries = $this->getTimeEntriesForUsers($adminUserIds);
+        $allRoleSlugs = $this->getRoleSlugsForUsers($adminUserIds);
 
-        return $rows->map(function (\stdClass $row) use ($allTimeEntries) {
+        return $rows->map(function (\stdClass $row) use ($allTimeEntries, $allRoleSlugs) {
             $timeEntries = $allTimeEntries[$row->id] ?? [];
+            $roleSlugs = $allRoleSlugs[$row->id] ?? [];
 
-            return $this->toDomainEntity($row, $timeEntries);
+            return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
         })->toArray();
     }
 
@@ -284,9 +298,43 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * @param array<array-key, mixed> $timeEntries
+     * @return string[]
      */
-    private function toDomainEntity(\stdClass $row, array $timeEntries): User
+    private function getRoleSlugsForUser(int $userId): array
+    {
+        return $this->connection->table($this->userRoleTable)
+            ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
+            ->where("{$this->userRoleTable}.user_id", $userId)
+            ->pluck("{$this->roleTable}.slug")
+            ->toArray();
+    }
+
+    /**
+     * @param int[] $userIds
+     *
+     * @return array<int, string[]>
+     */
+    private function getRoleSlugsForUsers(array $userIds): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+
+        return $this->connection->table($this->userRoleTable)
+            ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
+            ->whereIn("{$this->userRoleTable}.user_id", $userIds)
+            ->select("{$this->userRoleTable}.user_id", "{$this->roleTable}.slug")
+            ->get()
+            ->groupBy('user_id')
+            ->map(fn ($roles) => $roles->pluck('slug')->toArray())
+            ->toArray();
+    }
+
+    /**
+     * @param array<array-key, mixed> $timeEntries
+     * @param string[]                $roleSlugs
+     */
+    private function toDomainEntity(\stdClass $row, array $timeEntries, array $roleSlugs = []): User
     {
         return User::fromPrimitives(
             $row->id,
@@ -294,7 +342,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             $row->email,
             $row->name,
             $row->is_active ?? true,
-            $timeEntries
+            $timeEntries,
+            $roleSlugs
         );
     }
 }

@@ -9,8 +9,10 @@ use App\DDD\User\Domain\Exceptions\UserNotActiveException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\ActiveUserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
+use App\Models\Role as RoleModel;
 use App\Models\TimeEntry as TimeEntryModel;
 use App\Models\User as UserModel;
+use App\Models\UserRole;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
 
@@ -20,10 +22,16 @@ class EloquentActiveUserRepository implements ActiveUserRepositoryInterface
 
     private string $timeEntryTable;
 
+    private string $userRoleTable;
+
+    private string $roleTable;
+
     public function __construct(private ConnectionInterface $connection)
     {
         $this->userTable = UserModel::tableName();
         $this->timeEntryTable = TimeEntryModel::tableName();
+        $this->userRoleTable = UserRole::tableName();
+        $this->roleTable = RoleModel::tableName();
     }
 
     public function findActiveByUuidOrFail(Uuid $uuid): User
@@ -40,7 +48,9 @@ class EloquentActiveUserRepository implements ActiveUserRepositoryInterface
 
         $timeEntries = $this->getTimeEntriesForUser($row->id);
 
-        return $this->toDomainEntity($row, $timeEntries);
+        $roleSlugs = $this->getRoleSlugsForUser($row->id);
+
+        return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
     }
 
     private function query(): Builder
@@ -72,9 +82,22 @@ class EloquentActiveUserRepository implements ActiveUserRepositoryInterface
     }
 
     /**
-     * @param array<array-key, mixed> $timeEntries
+     * @return string[]
      */
-    private function toDomainEntity(\stdClass $row, array $timeEntries): User
+    private function getRoleSlugsForUser(int $userId): array
+    {
+        return $this->connection->table($this->userRoleTable)
+            ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
+            ->where("{$this->userRoleTable}.user_id", $userId)
+            ->pluck("{$this->roleTable}.slug")
+            ->toArray();
+    }
+
+    /**
+     * @param array<array-key, mixed> $timeEntries
+     * @param string[]                $roleSlugs
+     */
+    private function toDomainEntity(\stdClass $row, array $timeEntries, array $roleSlugs = []): User
     {
         return User::fromPrimitives(
             $row->id,
@@ -82,7 +105,8 @@ class EloquentActiveUserRepository implements ActiveUserRepositoryInterface
             $row->email,
             $row->name,
             (bool) ($row->is_active ?? true),
-            $timeEntries
+            $timeEntries,
+            $roleSlugs
         );
     }
 }

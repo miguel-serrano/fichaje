@@ -9,7 +9,7 @@ final class AccessDeniedException extends \RuntimeException
     public static function forAttribute(string $attribute, int $userId): self
     {
         return new self(
-            sprintf('Access denied for user <%d> on attribute <%s>', $userId, $attribute)
+            sprintf('Permisos insuficientes para ejecutar el atributo %s al usuario.', $attribute)
         );
     }
 
