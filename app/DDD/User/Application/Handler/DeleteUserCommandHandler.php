@@ -21,8 +21,6 @@ class DeleteUserCommandHandler
 
         $this->authorizationService->denyAccessUnlessGranted(UserPermission::Delete->value, $command->authenticatedUserId->value());
 
-        $user->ensureCanBeDeleted();
-
-        $this->userRepository->delete($command->targetUserId);
+        $user->delete($this->userRepository);
     }
 }

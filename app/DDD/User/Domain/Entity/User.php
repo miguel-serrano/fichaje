@@ -10,6 +10,7 @@ use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
 use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
+use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\Name;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -134,11 +135,13 @@ final class User
     /**
      * @throws UnauthorizedException
      */
-    public function ensureCanBeDeleted(): void
+    public function delete(UserRepositoryInterface $repository): void
     {
         if ($this->isSuperAdmin()) {
             throw UnauthorizedException::forDelete();
         }
+
+        $repository->delete($this->id);
     }
 
     /** @return string[] */
