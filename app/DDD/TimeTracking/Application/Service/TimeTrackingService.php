@@ -8,6 +8,8 @@ use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
+use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
+use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\Services\DailyLimitValidatorService;
 use App\DDD\TimeTracking\Domain\Services\OrphanTimeEntryCloserService;
@@ -17,7 +19,7 @@ use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 use Psr\Log\LoggerInterface;
 
-final class TimeTrackingService
+final class TimeTrackingService implements ClockInValidatorInterface, ClockOutValidatorInterface
 {
     private function __construct(
         private UserRepositoryInterface $userRepository,

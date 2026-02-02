@@ -7,6 +7,8 @@ use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
+use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
+use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
 use App\DDD\User\Domain\Exceptions\UserNotActiveException;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\Name;
@@ -119,6 +121,16 @@ final class User
         if (!$this->isActive) {
             throw UserNotActiveException::forUuid($this->uuid);
         }
+    }
+
+    public function ensureCanClockIn(ClockInValidatorInterface $validator): void
+    {
+        $validator->ensureCanClockIn($this);
+    }
+
+    public function ensureCanClockOut(ClockOutValidatorInterface $validator): void
+    {
+        $validator->ensureCanClockOut($this);
     }
 
     /** @return TimeEntry[] */

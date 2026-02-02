@@ -10,12 +10,12 @@ use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\Interface\ActiveUserRepositoryInterface;
 
 class ClockInCommandHandler
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
+        private ActiveUserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
         private AuthorizationServiceInterface $authorizationService,
         private TimeTrackingService $service,
@@ -24,13 +24,11 @@ class ClockInCommandHandler
 
     public function handle(ClockInCommand $command): void
     {
-        $user = $this->userRepository->findByUuidOrFail($command->userUuid);
-
-        $user->ensureIsActive();
+        $user = $this->userRepository->findActiveByUuidOrFail($command->userUuid);
 
         $this->authorizationService->denyAccessUnlessGranted(TimeTrackingPermission::ClockIn->value, $user->id()->value());
 
-        $this->service->ensureCanClockIn($user);
+        $user->ensureCanClockIn($this->service);
 
         $timeEntry = TimeEntry::create($user->id());
 

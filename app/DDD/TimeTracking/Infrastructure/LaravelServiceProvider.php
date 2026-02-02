@@ -7,6 +7,8 @@ namespace App\DDD\TimeTracking\Infrastructure;
 use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\Authorization\Infrastructure\LaravelServiceProvider as AuthorizationServiceProvider;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
+use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
+use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\Voter\TimeTrackingVoter;
 use App\DDD\TimeTracking\Infrastructure\Persistence\Eloquent\EloquentTimeEntryRepository;
@@ -30,6 +32,14 @@ class LaravelServiceProvider extends ServiceProvider
                 $app->make(UserPermissionsCheckerInterface::class),
                 $app->make(LoggerInterface::class)
             );
+        });
+
+        $this->app->bind(ClockInValidatorInterface::class, function ($app) {
+            return $app->make(TimeTrackingService::class);
+        });
+
+        $this->app->bind(ClockOutValidatorInterface::class, function ($app) {
+            return $app->make(TimeTrackingService::class);
         });
 
         $this->app->bind(TimeTrackingVoter::class);

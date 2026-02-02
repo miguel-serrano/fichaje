@@ -9,12 +9,12 @@ use App\DDD\TimeTracking\Application\Command\ClockOutCommand;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\Interface\ActiveUserRepositoryInterface;
 
 class ClockOutCommandHandler
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
+        private ActiveUserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
         private AuthorizationServiceInterface $authorizationService,
         private TimeTrackingService $service,
@@ -23,13 +23,11 @@ class ClockOutCommandHandler
 
     public function handle(ClockOutCommand $command): void
     {
-        $user = $this->userRepository->findByUuidOrFail($command->userUuid);
-
-        $user->ensureIsActive();
+        $user = $this->userRepository->findActiveByUuidOrFail($command->userUuid);
 
         $this->authorizationService->denyAccessUnlessGranted(TimeTrackingPermission::ClockOut->value, $user->id()->value());
 
-        $this->service->ensureCanClockOut($user);
+        $user->ensureCanClockOut($this->service);
 
         $openEntry = $this->service->getOpenEntry($user);
 
