@@ -53,7 +53,7 @@
                         @else
                             <div class="card-panel card-panel-warning">
                                 <md-icon style="margin-right: 8px;">warning</md-icon>
-                                <span>No tienes permisos para fichar. Contacta con tu administrador.</span>
+                                <span>No tienes permisos para fichar.</span>
                             </div>
                         @endif
                     </div>

@@ -27,23 +27,16 @@ class ViewTimeTrackingController extends Controller
             $user = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
             $userUuid = $user->uuid()->value();
-            $userId = $user->id()->value();
 
-            $canClockIn = $this->authorizationService->isGranted(TimeTrackingPermission::ClockIn->value, $userId);
+            $secondsResponse = $this->queryBus->dispatch(GetAccumulatedSecondsQuery::create($userUuid));
 
-            $secondsResponse = $this->queryBus->dispatch(
-                GetAccumulatedSecondsQuery::create($userUuid)
-            );
-
-            $checkOpenRegistry = $this->queryBus->dispatch(
-                HasOpenTimeEntryQuery::create($userUuid)
-            );
+            $checkOpenRegistry = $this->queryBus->dispatch(HasOpenTimeEntryQuery::create($userUuid));
 
             return view('registro_horario', [
                 'user' => $user,
                 'segundos' => $secondsResponse->seconds(),
                 'tieneRegistroAbierto' => $checkOpenRegistry->hasOpenEntry(),
-                'canClockIn' => $canClockIn,
+                'canClockIn' => $$this->authorizationService->isGranted(TimeTrackingPermission::ClockIn->value, $user->id()->value()),
             ]);
         } catch (\Throwable $th) {
             return 'Error al cargar la página de registro horario: '.$th->getMessage();

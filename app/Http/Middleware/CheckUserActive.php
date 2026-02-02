@@ -15,8 +15,7 @@ class CheckUserActive
     public function handle(Request $request, \Closure $next): Response
     {
         if (!auth()->user()->is_active) {
-            return redirect()->route('bienvenido')
-                ->with('error', 'Tu cuenta está pendiente de activación, en breve se activará.');
+            return redirect()->route('bienvenido');
         }
 
         return $next($request);

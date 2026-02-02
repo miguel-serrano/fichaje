@@ -19,7 +19,7 @@ class DeleteUserCommandHandler
     {
         $this->userRepository->findByIdOrFail($command->targetUserId);
 
-        $this->authorizationService->denyAccessUnlessGranted(UserPermission::Delete->value, $command->authenticatedUserId->value(), $command->targetUserId->value());
+        $this->authorizationService->denyAccessUnlessGranted(UserPermission::Delete->value, $command->authenticatedUserId->value());
 
         $this->userRepository->delete($command->targetUserId);
     }
