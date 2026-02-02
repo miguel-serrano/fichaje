@@ -33,7 +33,7 @@ class DeleteUserController extends Controller
             );
 
             return redirect()->route('users.index')
-                ->with('success', "Usuario $id eliminado correctamente");
+                ->with('success', 'Usuario eliminado correctamente');
         } catch (UserNotFoundException|UnauthorizedException|AccessDeniedException $e) {
             return redirect()->route('users.index')
                 ->with('error', $e->getMessage());

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Registrarse')
+@section('page-id', 'auth.register')
 
 @section('content')
 <div class="row">
@@ -98,34 +99,3 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const fields = ['name', 'email', 'password', 'password_confirmation'];
-
-    // Sync Material Web text fields with hidden inputs in real-time
-    fields.forEach(function(fieldName) {
-        const field = document.getElementById(fieldName);
-        const hidden = document.getElementById(fieldName + '-hidden');
-
-        if (field && hidden) {
-            field.addEventListener('input', () => hidden.value = field.value);
-            // Initial sync
-            hidden.value = field.value;
-        }
-    });
-
-    // Also sync on form submit as backup
-    const form = document.getElementById('register-form');
-    if (form) {
-        form.addEventListener('submit', function() {
-            fields.forEach(function(fieldName) {
-                const field = document.getElementById(fieldName);
-                const hidden = document.getElementById(fieldName + '-hidden');
-                if (field && hidden) hidden.value = field.value;
-            });
-        });
-    }
-});
-</script>
-@endsection

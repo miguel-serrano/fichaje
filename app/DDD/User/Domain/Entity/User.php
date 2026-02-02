@@ -9,6 +9,7 @@ use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
 use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
+use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\Name;
 use App\DDD\User\Domain\ValueObjects\UserId;
@@ -128,6 +129,16 @@ final class User
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('super_admin');
+    }
+
+    /**
+     * @throws UnauthorizedException
+     */
+    public function ensureCanBeDeleted(): void
+    {
+        if ($this->isSuperAdmin()) {
+            throw UnauthorizedException::forDelete();
+        }
     }
 
     /** @return string[] */

@@ -17,9 +17,11 @@ class DeleteUserCommandHandler
 
     public function handle(DeleteUserCommand $command): void
     {
-        $this->userRepository->findByIdOrFail($command->targetUserId);
+        $user = $this->userRepository->findByIdOrFail($command->targetUserId);
 
         $this->authorizationService->denyAccessUnlessGranted(UserPermission::Delete->value, $command->authenticatedUserId->value());
+
+        $user->ensureCanBeDeleted();
 
         $this->userRepository->delete($command->targetUserId);
     }

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Usuarios')
+@section('page-id', 'user.index')
 
 @section('content')
 <div class="row">
@@ -178,37 +179,6 @@
 </md-dialog>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dialog = document.getElementById('delete-user-dialog');
-    const deleteButtons = document.querySelectorAll('.btn-delete-user');
-    const deleteForm = document.getElementById('delete-user-form');
-    const deleteUserName = document.getElementById('delete-user-name');
-    const cancelBtn = document.getElementById('cancel-delete-btn');
-
-    deleteButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            const userId = this.dataset.userId;
-            const userName = this.dataset.userName;
-
-            deleteForm.action = '{{ url("user") }}/' + userId;
-            deleteUserName.textContent = userName;
-
-            dialog.open = true;
-        });
-    });
-
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', function() {
-            dialog.open = false;
-        });
-    }
-
-    // Close dialog when clicking outside
-    dialog.addEventListener('close', function() {
-        dialog.open = false;
-    });
-});
-</script>
-@endsection
+@push('page-data')
+<script>window.__pageData = { deleteBaseUrl: '{{ url("user") }}' };</script>
+@endpush

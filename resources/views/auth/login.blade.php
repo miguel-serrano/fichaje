@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Iniciar Sesión')
+@section('page-id', 'auth.login')
 
 @section('content')
 <style>
@@ -325,77 +326,3 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const splashScreen = document.getElementById('splash-screen');
-    const loginContainer = document.getElementById('login-container');
-
-    // Hide splash and show login after animation
-    setTimeout(function() {
-        splashScreen.classList.add('fade-out');
-        loginContainer.classList.add('visible');
-
-        // Remove splash from DOM after fade
-        setTimeout(function() {
-            splashScreen.style.display = 'none';
-        }, 500);
-    }, 2200); // Splash duration
-
-    // Sync Material Web text fields with hidden inputs in real-time
-    const emailField = document.getElementById('email');
-    const passwordField = document.getElementById('password');
-    const emailHidden = document.getElementById('email-hidden');
-    const passwordHidden = document.getElementById('password-hidden');
-    const hourHand = document.getElementById('hour-hand');
-    const minuteHand = document.getElementById('minute-hand');
-
-    // Clock hand positions (degrees)
-    let hourAngle = 60;  // Final position after animation
-    let minuteAngle = 180;  // Final position after animation
-
-    // Enable interactive mode after splash ends
-    setTimeout(function() {
-        if (hourHand) {
-            hourHand.classList.add('interactive');
-        }
-        if (minuteHand) {
-            minuteHand.classList.add('interactive');
-        }
-    }, 2700); // Splash (2.2s) + small buffer
-
-    if (emailField && emailHidden) {
-        emailField.addEventListener('input', function() {
-            emailHidden.value = emailField.value;
-            // Move hour hand (small) on email input
-            if (hourHand && hourHand.classList.contains('interactive')) {
-                hourAngle += 15;
-                hourHand.style.transform = 'rotate(' + hourAngle + 'deg)';
-            }
-        });
-        // Initial sync in case of autofill
-        emailHidden.value = emailField.value;
-    }
-
-    if (passwordField && passwordHidden) {
-        passwordField.addEventListener('input', function() {
-            passwordHidden.value = passwordField.value;
-            // Move minute hand (long) on password input
-            if (minuteHand && minuteHand.classList.contains('interactive')) {
-                minuteAngle += 30;
-                minuteHand.style.transform = 'rotate(' + minuteAngle + 'deg)';
-            }
-        });
-    }
-
-    // Also sync on form submit as backup
-    const form = document.getElementById('login-form');
-    if (form) {
-        form.addEventListener('submit', function() {
-            if (emailField && emailHidden) emailHidden.value = emailField.value;
-            if (passwordField && passwordHidden) passwordHidden.value = passwordField.value;
-        });
-    }
-});
-</script>
-@endsection

@@ -1,4 +1,4 @@
-.PHONY: up down stop test test-filter build npm-dev npm-build migrate fresh pint shell deploy
+.PHONY: up down stop test test-filter build npm-dev npm-build migrate fresh pint shell deploy cache-clear
 
 up:
 	vendor/bin/sail up -d
@@ -35,6 +35,9 @@ pint:
 
 shell:
 	vendor/bin/sail shell
+
+cache-clear:
+	vendor/bin/sail artisan cache:clear
 
 deploy:
 	./deploy-remote.sh

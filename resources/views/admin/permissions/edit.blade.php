@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Editar Permiso: ' . $permission['name'])
+@section('page-id', 'admin.form')
 
 @section('content')
 <div class="row">
@@ -110,27 +111,6 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('edit-permission-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            ['name', 'description'].forEach(function(fieldName) {
-                const field = document.getElementById(fieldName);
-                if (field && field.value !== undefined) {
-                    let hiddenInput = form.querySelector('input[name="' + fieldName + '"][type="hidden"]');
-                    if (!hiddenInput) {
-                        hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = fieldName;
-                        form.appendChild(hiddenInput);
-                    }
-                    hiddenInput.value = field.value;
-                }
-            });
-        });
-    }
-});
-</script>
-@endsection
+@push('page-data')
+<script>window.__pageData = { formId: 'edit-permission-form', fieldNames: ['name', 'description'] };</script>
+@endpush

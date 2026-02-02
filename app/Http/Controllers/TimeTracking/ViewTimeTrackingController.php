@@ -36,7 +36,7 @@ class ViewTimeTrackingController extends Controller
                 'user' => $user,
                 'segundos' => $secondsResponse->seconds(),
                 'tieneRegistroAbierto' => $checkOpenRegistry->hasOpenEntry(),
-                'canClockIn' => $$this->authorizationService->isGranted(TimeTrackingPermission::ClockIn->value, $user->id()->value()),
+                'canClockIn' => $this->authorizationService->isGranted(TimeTrackingPermission::ClockIn->value, $user->id()->value()),
             ]);
         } catch (\Throwable $th) {
             return 'Error al cargar la página de registro horario: '.$th->getMessage();

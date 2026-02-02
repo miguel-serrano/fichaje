@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Detalles de Usuario')
+@section('page-id', 'user.show')
 
 @section('content')
 <div class="row">
@@ -411,38 +412,3 @@
 
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle form submission with md-outlined-select
-    const assignForm = document.getElementById('assign-role-form');
-    if (assignForm) {
-        assignForm.addEventListener('submit', function(e) {
-            const selectEl = document.getElementById('role_slug');
-            if (selectEl && selectEl.value) {
-                let hiddenInput = assignForm.querySelector('input[name="role_slug"][type="hidden"]');
-                if (!hiddenInput) {
-                    hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'role_slug';
-                    assignForm.appendChild(hiddenInput);
-                }
-                hiddenInput.value = selectEl.value;
-            }
-        });
-    }
-});
-
-function expandAll() {
-    document.querySelectorAll('#daily-collapsible details').forEach(function(details) {
-        details.open = true;
-    });
-}
-
-function collapseAll() {
-    document.querySelectorAll('#daily-collapsible details').forEach(function(details) {
-        details.open = false;
-    });
-}
-</script>
-@endsection

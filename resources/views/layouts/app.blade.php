@@ -24,7 +24,7 @@
     })();
     </script>
 </head>
-<body>
+<body data-page="@yield('page-id')">
     <div class="navbar-fixed">
     <nav>
         <div class="nav-wrapper">
@@ -37,44 +37,51 @@
             </a>
             <ul id="nav-mobile" class="hide-on-med-and-down">
                 @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-                    <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
-                        <a href="{{ route('users.index') }}">
-                            <md-icon>people</md-icon>Usuarios
-                        </a>
-                    </li>
-                    <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                        <a href="{{ route('admin.roles.index') }}">
-                            <md-icon>security</md-icon>Roles
-                        </a>
-                    </li>
-                    <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
-                        <a href="{{ route('admin.permissions.index') }}">
-                            <md-icon>vpn_key</md-icon>Permisos
-                        </a>
-                    </li>
+                    <x-nav-item
+                        :route="route('users.index')"
+                        icon="people"
+                        label="Usuarios"
+                        :active="request()->routeIs('users.*') || request()->routeIs('user.*')"
+                    />
+                    <x-nav-item
+                        :route="route('admin.roles.index')"
+                        icon="security"
+                        label="Roles"
+                        :active="request()->routeIs('admin.roles.*')"
+                    />
+                    <x-nav-item
+                        :route="route('admin.permissions.index')"
+                        icon="vpn_key"
+                        label="Permisos"
+                        :active="request()->routeIs('admin.permissions.*')"
+                    />
                 @else
-                    <li class="{{ request()->routeIs('user.me') ? 'active' : '' }}">
-                        <a href="{{ route('user.me') }}">
-                            <md-icon>chrome_reader_mode</md-icon>Seguimiento
-                        </a>
-                    </li>
+                    <x-nav-item
+                        :route="route('user.me')"
+                        icon="chrome_reader_mode"
+                        label="Seguimiento"
+                        :active="request()->routeIs('user.me')"
+                    />
                 @endif
-                <li class="{{ request()->routeIs('registro_horario.*') ? 'active' : '' }}">
-                    <a href="{{ route('registro_horario.index') }}">
-                        <md-icon>timer</md-icon>Fichar
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-                    <a href="{{ route('holidays.index') }}">
-                        <md-icon>beach_access</md-icon>Vacaciones
-                    </a>
-                </li>
+                <x-nav-item
+                    :route="route('registro_horario.index')"
+                    icon="timer"
+                    label="Fichar"
+                    :active="request()->routeIs('registro_horario.*')"
+                />
+                <x-nav-item
+                    :route="route('holidays.index')"
+                    icon="beach_access"
+                    label="Vacaciones"
+                    :active="request()->routeIs('holidays.*')"
+                />
                 @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-                    <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
-                        <a href="{{ route('admin.holidays.index') }}">
-                            <md-icon>event_available</md-icon>Gestionar Vacaciones
-                        </a>
-                    </li>
+                    <x-nav-item
+                        :route="route('admin.holidays.index')"
+                        icon="event_available"
+                        label="Gestionar Vacaciones"
+                        :active="request()->routeIs('admin.holidays.*')"
+                    />
                 @endif
                 @php
                     $unreadNotifications = \App\Models\Notification::where('user_id', auth()->id())
@@ -158,44 +165,51 @@
         </div>
         <ul>
             @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-                <li class="{{ request()->routeIs('users.*') || request()->routeIs('user.*') ? 'active' : '' }}">
-                    <a href="{{ route('users.index') }}">
-                        <md-icon>people</md-icon>Usuarios
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.roles.index') }}">
-                        <md-icon>security</md-icon>Roles
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.permissions.index') }}">
-                        <md-icon>vpn_key</md-icon>Permisos
-                    </a>
-                </li>
+                <x-nav-item
+                    :route="route('users.index')"
+                    icon="people"
+                    label="Usuarios"
+                    :active="request()->routeIs('users.*') || request()->routeIs('user.*')"
+                />
+                <x-nav-item
+                    :route="route('admin.roles.index')"
+                    icon="security"
+                    label="Roles"
+                    :active="request()->routeIs('admin.roles.*')"
+                />
+                <x-nav-item
+                    :route="route('admin.permissions.index')"
+                    icon="vpn_key"
+                    label="Permisos"
+                    :active="request()->routeIs('admin.permissions.*')"
+                />
             @else
-                <li class="{{ request()->routeIs('user.me') ? 'active' : '' }}">
-                    <a href="{{ route('user.me') }}">
-                        <md-icon>chrome_reader_mode</md-icon>Seguimiento
-                    </a>
-                </li>
+                <x-nav-item
+                    :route="route('user.me')"
+                    icon="chrome_reader_mode"
+                    label="Seguimiento"
+                    :active="request()->routeIs('user.me')"
+                />
             @endif
-            <li class="{{ request()->routeIs('registro_horario.*') ? 'active' : '' }}">
-                <a href="{{ route('registro_horario.index') }}">
-                    <md-icon>timer</md-icon>Fichar
-                </a>
-            </li>
-            <li class="{{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-                <a href="{{ route('holidays.index') }}">
-                    <md-icon>beach_access</md-icon>Vacaciones
-                </a>
-            </li>
+            <x-nav-item
+                :route="route('registro_horario.index')"
+                icon="timer"
+                label="Fichar"
+                :active="request()->routeIs('registro_horario.*')"
+            />
+            <x-nav-item
+                :route="route('holidays.index')"
+                icon="beach_access"
+                label="Vacaciones"
+                :active="request()->routeIs('holidays.*')"
+            />
             @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-                <li class="{{ request()->routeIs('admin.holidays.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.holidays.index') }}">
-                        <md-icon>event_available</md-icon>Gestionar Vacaciones
-                    </a>
-                </li>
+                <x-nav-item
+                    :route="route('admin.holidays.index')"
+                    icon="event_available"
+                    label="Gestionar Vacaciones"
+                    :active="request()->routeIs('admin.holidays.*')"
+                />
             @endif
         </ul>
         <div class="divider"></div>
@@ -214,194 +228,14 @@
     </div>
     @endauth
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Sidenav functionality
-        const sidenavTrigger = document.getElementById('sidenav-trigger');
-        const sidenav = document.getElementById('mobile-nav');
-        const sidenavOverlay = document.getElementById('sidenav-overlay');
-
-        function openSidenav() {
-            if (sidenav) sidenav.classList.add('open');
-            if (sidenavOverlay) sidenavOverlay.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSidenav() {
-            if (sidenav) sidenav.classList.remove('open');
-            if (sidenavOverlay) sidenavOverlay.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        if (sidenavTrigger) {
-            sidenavTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                openSidenav();
-            });
-        }
-
-        if (sidenavOverlay) {
-            sidenavOverlay.addEventListener('click', closeSidenav);
-        }
-
-        // Close sidenav when clicking a link
-        if (sidenav) {
-            sidenav.querySelectorAll('a[href]:not([href="#"])').forEach(function(link) {
-                link.addEventListener('click', closeSidenav);
-            });
-        }
-
-        // md-menu initialization
-        const notificationsTrigger = document.getElementById('notifications-trigger');
-        const notificationsMenu = document.getElementById('notifications-menu');
-        const userTrigger = document.getElementById('user-trigger');
-        const userMenu = document.getElementById('user-menu');
-
-        if (notificationsTrigger && notificationsMenu) {
-            notificationsMenu.anchorElement = notificationsTrigger;
-            notificationsTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                notificationsMenu.open = !notificationsMenu.open;
-            });
-        }
-
-        if (userTrigger && userMenu) {
-            userMenu.anchorElement = userTrigger;
-            userTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                userMenu.open = !userMenu.open;
-            });
-        }
-
-        // Logout functionality
-        const logoutMenuItem = document.getElementById('logout-menu-item');
-        const logoutForm = document.getElementById('logout-form');
-        const logoutMobile = document.getElementById('logout-mobile');
-
-        if (logoutMenuItem && logoutForm) {
-            logoutMenuItem.addEventListener('click', function() {
-                logoutForm.submit();
-            });
-        }
-
-        if (logoutMobile && logoutForm) {
-            logoutMobile.addEventListener('click', function(e) {
-                e.preventDefault();
-                logoutForm.submit();
-            });
-        }
-
-        // Theme toggle functionality
-        const themeToggle = document.getElementById('theme-toggle');
-        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
-        const themeIcon = document.getElementById('theme-icon');
-        const themeIconMobile = document.getElementById('theme-icon-mobile');
-        const savedTheme = localStorage.getItem('theme') || 'light';
-
-        function updateIcons(theme) {
-            const icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
-            if (themeIcon) themeIcon.textContent = icon;
-            if (themeIconMobile) themeIconMobile.textContent = icon;
-        }
-
-        // Set initial icon state
-        updateIcons(savedTheme);
-
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            updateIcons(theme);
-        }
-
-        function toggleTheme(e) {
-            e.preventDefault();
-            const currentTheme = localStorage.getItem('theme') || 'light';
-            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
-        }
-
-        if (themeToggle) {
-            themeToggle.addEventListener('click', toggleTheme);
-        }
-
-        if (themeToggleMobile) {
-            themeToggleMobile.addEventListener('click', toggleTheme);
-        }
-
-        // Handle notification clicks
-        document.querySelectorAll('.notification-item').forEach(function(item) {
-            item.addEventListener('click', function(e) {
-                const notificationId = this.dataset.id;
-
-                fetch('/notifications/' + notificationId + '/read', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                }).then(function(response) {
-                    if (!response.ok) {
-                        console.error('Error marcando notificación como leída:', response.status);
-                        return;
-                    }
-                    item.remove();
-                    const badge = document.querySelector('.badge.red');
-                    if (badge) {
-                        const count = parseInt(badge.textContent) - 1;
-                        if (count <= 0) {
-                            badge.remove();
-                        } else {
-                            badge.textContent = count;
-                        }
-                    }
-                }).catch(function(error) {
-                    console.error('Error de red:', error);
-                });
-            });
-        });
-    });
-    </script>
-
     <main>
         <div class="container" style="padding-top: 20px;">
-            @if(session('success'))
-                <div class="row">
-                    <div class="col s12">
-                        <div class="card-panel card-panel-success">
-                            {{ session('success') }}
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="row">
-                    <div class="col s12">
-                        <div class="card-panel card-panel-error">
-                            {{ session('error') }}
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="row">
-                    <div class="col s12">
-                        <div class="card-panel card-panel-error">
-                            <ul style="margin: 0;">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
+            <x-flash-messages />
             @yield('content')
         </div>
     </main>
 
+    @stack('page-data')
     @yield('scripts')
 </body>
 </html>

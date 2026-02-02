@@ -57,3 +57,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Layout module (sidenav, theme, logout, notifications)
+import('./modules/layout.js').then(m => m.init());
+
+// Page-specific module loading via data-page attribute on <body>
+document.addEventListener('DOMContentLoaded', () => {
+    const page = document.body.dataset.page;
+    if (!page) {
+        return;
+    }
+
+    const pageModules = {
+        'auth.login': () => import('./modules/auth/login.js'),
+        'auth.register': () => import('./modules/auth/register.js'),
+        'user.index': () => import('./modules/user/index.js'),
+        'user.show': () => import('./modules/user/show.js'),
+        'user.detail': () => import('./modules/time-tracking/detail.js'),
+        'holiday.index': () => import('./modules/holiday/index.js'),
+        'admin.form': () => import('./modules/admin/form-sync.js'),
+    };
+
+    const loader = pageModules[page];
+    if (loader) {
+        loader().then(m => m.init && m.init());
+    }
+});

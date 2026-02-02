@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Rol: ' . $role['name'])
+@section('page-id', 'admin.form')
 
 @section('content')
 <div class="row">
@@ -105,28 +106,6 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('permissions-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // Get all checked md-checkbox elements and create hidden inputs
-            const checkboxes = form.querySelectorAll('md-checkbox');
-            const existingHidden = form.querySelectorAll('input[name="permissions[]"][type="hidden"]');
-            existingHidden.forEach(el => el.remove());
-
-            checkboxes.forEach(function(checkbox) {
-                if (checkbox.checked) {
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'permissions[]';
-                    hiddenInput.value = checkbox.dataset.permissionId;
-                    form.appendChild(hiddenInput);
-                }
-            });
-        });
-    }
-});
-</script>
-@endsection
+@push('page-data')
+<script>window.__pageData = { checkboxFormId: 'permissions-form' };</script>
+@endpush

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Editar Rol: ' . $role['name'])
+@section('page-id', 'admin.form')
 
 @section('content')
 <div class="row">
@@ -113,27 +114,6 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('edit-role-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            ['name', 'description', 'hierarchy'].forEach(function(fieldName) {
-                const field = document.getElementById(fieldName);
-                if (field && field.value !== undefined) {
-                    let hiddenInput = form.querySelector('input[name="' + fieldName + '"][type="hidden"]');
-                    if (!hiddenInput) {
-                        hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = fieldName;
-                        form.appendChild(hiddenInput);
-                    }
-                    hiddenInput.value = field.value;
-                }
-            });
-        });
-    }
-});
-</script>
-@endsection
+@push('page-data')
+<script>window.__pageData = { formId: 'edit-role-form', fieldNames: ['name', 'description', 'hierarchy'] };</script>
+@endpush

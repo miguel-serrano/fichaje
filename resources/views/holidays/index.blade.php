@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Mis Vacaciones')
+@section('page-id', 'holiday.index')
 
 @section('content')
 @if($canRequestHoliday)
@@ -151,70 +152,9 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const startInput = document.getElementById('start_date_input');
-    const endInput = document.getElementById('end_date_input');
-    const startDisplay = document.getElementById('start_date_display');
-    const endDisplay = document.getElementById('end_date_display');
-    const startTrigger = document.getElementById('start_date_trigger');
-    const endTrigger = document.getElementById('end_date_trigger');
-
-    if (!startTrigger || !endTrigger) return;
-
-    let endPicker = null;
-
-    // Start date picker
-    const startPicker = window.initDatePicker(startInput, {
-        trigger: startTrigger,
-        displayElement: startDisplay,
-        minDate: new Date(),
-        onSelect: function(date) {
-            startDisplay.innerHTML = window.formatDisplayDate(date);
-            // Update end date min to be >= start date
-            if (endPicker) {
-                endPicker.setMinDate(date);
-            }
-        }
-    });
-
-    // End date picker
-    endPicker = window.initDatePicker(endInput, {
-        trigger: endTrigger,
-        displayElement: endDisplay,
-        minDate: new Date(),
-        getMinDate: function() {
-            // Dynamically get min date from start date
-            if (startInput.value) {
-                return new Date(startInput.value);
-            }
-            return new Date();
-        }
-    });
-
-    // Set initial values if present
-    @if(old('start_date'))
-    const oldStartDate = new Date('{{ old('start_date') }}');
-    startDisplay.innerHTML = window.formatDisplayDate(oldStartDate);
-    @endif
-
-    @if(old('end_date'))
-    const oldEndDate = new Date('{{ old('end_date') }}');
-    endDisplay.innerHTML = window.formatDisplayDate(oldEndDate);
-    @endif
-
-    // Form validation
-    const form = document.getElementById('holiday-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            if (!startInput.value || !endInput.value) {
-                e.preventDefault();
-                window.toast.error('Por favor selecciona ambas fechas');
-                return false;
-            }
-        });
-    }
-});
-</script>
-@endsection
+@push('page-data')
+<script>window.__pageData = {
+    oldStartDate: @json(old('start_date')),
+    oldEndDate: @json(old('end_date'))
+};</script>
+@endpush
