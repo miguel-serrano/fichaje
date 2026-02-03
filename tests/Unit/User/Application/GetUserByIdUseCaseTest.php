@@ -3,7 +3,7 @@
 namespace Tests\Unit\User\Application;
 
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
-use App\DDD\Authorization\Domain\Exception\AccessDeniedException;
+use App\DDD\Authorization\Domain\Exceptions\AccessDeniedException;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;

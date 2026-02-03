@@ -189,7 +189,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     /** @return User[] */
     public function findAdmins(): array
     {
-        $adminUserIds = $this->connection->table('user_role')
+        $adminUserIds = $this->connection->table($this->userRoleTable)
             ->join('roles', 'user_role.role_id', '=', 'roles.id')
             ->whereIn('roles.slug', ['super_admin', 'admin'])
             ->pluck('user_role.user_id')

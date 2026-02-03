@@ -6,7 +6,7 @@ namespace App\DDD\Holiday\Application\Service;
 
 use App\DDD\Holiday\Domain\Entity\HolidayRequest;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
-use App\DDD\Notification\Application\NotificationService;
+use App\DDD\Notification\Application\Service\NotificationService;
 use App\DDD\Notification\Domain\Entity\Notification;
 use App\DDD\Notification\Domain\ValueObjects\NotificationType;
 use App\DDD\User\Domain\Entity\User;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DDD\Notification\Application;
+namespace App\DDD\Notification\Application\Service;
 
 use App\DDD\Notification\Domain\Entity\Notification;
 use App\DDD\Notification\Domain\Interface\NotifierInterface;
@@ -11,11 +11,9 @@ use App\DDD\User\Domain\Entity\User;
 final class NotificationService
 {
     /**
-     * @param NotifierInterface[] $notifiers
+     * @param  NotifierInterface[]  $notifiers
      */
-    public function __construct(private array $notifiers)
-    {
-    }
+    public function __construct(private array $notifiers) {}
 
     public function notify(User $user, Notification $notification): void
     {

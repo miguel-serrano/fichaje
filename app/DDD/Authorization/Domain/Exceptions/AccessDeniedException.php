@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DDD\Authorization\Domain\Exception;
+namespace App\DDD\Authorization\Domain\Exceptions;
 
 final class AccessDeniedException extends \RuntimeException
 {

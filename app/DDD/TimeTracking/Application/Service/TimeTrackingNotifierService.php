@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Application\Service;
 
-use App\DDD\Notification\Application\NotificationService;
+use App\DDD\Notification\Application\Service\NotificationService;
 use App\DDD\Notification\Domain\Entity\Notification;
 use App\DDD\Notification\Domain\ValueObjects\Channel;
 use App\DDD\Notification\Domain\ValueObjects\NotificationType;

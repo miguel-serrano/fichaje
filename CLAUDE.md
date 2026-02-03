@@ -272,7 +272,6 @@ protected function isAccessible(User $user, ?string $path = null): bool
   - `App\DDD\User\Domain\Permission\UserPermission`
   - `App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission`
   - `App\DDD\Holiday\Domain\Permission\HolidayPermission`
-  - `App\DDD\Authorization\Domain\Permission\AuthorizationPermission`
   - `App\DDD\Authentication\Domain\Permission\AuthenticationPermission`
   - `App\DDD\Notification\Domain\Permission\NotificationPermission`
 
@@ -352,3 +351,12 @@ app/DDD/
 - **Debugging**: `/telescope`
 - **Pre-commit hook**: php-cs-fixer con reglas `@Symfony`
 - **Skill disponible**: `/php-fixer-symfony`
+
+
+
+
+
+
+
+
+

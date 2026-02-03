@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DDD\Notification\Infrastructure;
+namespace App\DDD\Notification\Infrastructure\Service;
 
 use App\DDD\Notification\Domain\Entity\Notification;
 use App\DDD\Notification\Domain\Interface\NotifierInterface;
@@ -16,8 +16,7 @@ final class DatabaseNotifier implements NotifierInterface
 {
     public function __construct(
         private ConnectionInterface $connection,
-    ) {
-    }
+    ) {}
 
     public function send(User $user, Notification $notification): void
     {
@@ -36,6 +35,6 @@ final class DatabaseNotifier implements NotifierInterface
 
     public function supports(Channel $channel): bool
     {
-        return Channel::Database === $channel;
+        return $channel === Channel::Database;
     }
 }

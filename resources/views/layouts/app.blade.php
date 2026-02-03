@@ -10,7 +10,8 @@
     <!-- Fonts -->
     <link href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Material Icons -->
+    <!-- Material Icons (preload to prevent layout shift) -->
+    <link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!-- Vite Assets -->
@@ -74,6 +75,12 @@
                     icon="beach_access"
                     label="Vacaciones"
                     :active="request()->routeIs('holidays.*')"
+                />
+                <x-nav-item
+                    :route="route('report.me')"
+                    icon="assessment"
+                    label="Informe"
+                    :active="request()->routeIs('report.*')"
                 />
                 @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
                     <x-nav-item
@@ -202,6 +209,12 @@
                 icon="beach_access"
                 label="Vacaciones"
                 :active="request()->routeIs('holidays.*')"
+            />
+            <x-nav-item
+                :route="route('report.me')"
+                icon="assessment"
+                label="Informe"
+                :active="request()->routeIs('report.*')"
             />
             @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
                 <x-nav-item

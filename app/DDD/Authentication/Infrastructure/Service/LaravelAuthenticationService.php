@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\Authentication\Infrastructure;
+namespace App\DDD\Authentication\Infrastructure\Service;
 
 use App\DDD\Authentication\Domain\Services\AuthenticationService;
 use App\DDD\User\Domain\Entity\User;
@@ -13,8 +13,7 @@ final class LaravelAuthenticationService implements AuthenticationService
 {
     public function __construct(
         private EloquentUserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     public function attempt(Email $email, string $password): bool
     {
@@ -39,7 +38,7 @@ final class LaravelAuthenticationService implements AuthenticationService
     {
         $eloquentUser = Auth::user();
 
-        if (!$eloquentUser) {
+        if (! $eloquentUser) {
             return null;
         }
 

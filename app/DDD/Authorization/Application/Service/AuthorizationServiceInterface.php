@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DDD\Authorization\Application\Service;
 
-use App\DDD\Authorization\Domain\Exception\AccessDeniedException;
+use App\DDD\Authorization\Domain\Exceptions\AccessDeniedException;
 
 interface AuthorizationServiceInterface
 {

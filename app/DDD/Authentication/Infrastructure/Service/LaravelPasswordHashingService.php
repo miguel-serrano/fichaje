@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DDD\Authentication\Infrastructure;
+namespace App\DDD\Authentication\Infrastructure\Service;
 
 use App\DDD\Authentication\Domain\Services\PasswordHashingService;
 use App\DDD\Authentication\Domain\ValueObjects\HashedPassword;

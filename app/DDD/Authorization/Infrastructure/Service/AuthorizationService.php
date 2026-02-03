@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DDD\Authorization\Infrastructure\Service;
 
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
-use App\DDD\Authorization\Domain\Exception\AccessDeniedException;
+use App\DDD\Authorization\Domain\Exceptions\AccessDeniedException;
 use App\DDD\Authorization\Domain\Interface\VoterInterface;
 
 final class AuthorizationService implements AuthorizationServiceInterface

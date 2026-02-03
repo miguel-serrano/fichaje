@@ -26,6 +26,7 @@ use App\Http\Controllers\Bienvenido\BienvenidoController;
 use App\Http\Controllers\Holiday\IndexHolidaysController;
 use App\Http\Controllers\Holiday\StoreHolidayController;
 use App\Http\Controllers\Notification\MarkNotificationAsReadController;
+use App\Http\Controllers\Report\MyReportController;
 use App\Http\Controllers\TimeTracking\ClockInController;
 use App\Http\Controllers\TimeTracking\ClockOutController;
 use App\Http\Controllers\TimeTracking\ViewTimeTrackingController;
@@ -56,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/bienvenida/accept-terms', [BienvenidoController::class, 'acceptTerms'])->name('bienvenido.accept-terms');
 
     Route::get('/user/me', GetMyTimeEntriesController::class)->name('user.me');
+    Route::get('/report/me', MyReportController::class)->name('report.me');
 
     Route::post('/notifications/{id}/read', MarkNotificationAsReadController::class)->name('notifications.read');
 

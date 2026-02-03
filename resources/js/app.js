@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'user.detail': () => import('./modules/time-tracking/detail.js'),
         'holiday.index': () => import('./modules/holiday/index.js'),
         'admin.form': () => import('./modules/admin/form-sync.js'),
+        'report.me': () => import('./modules/report/me.js'),
     };
 
     const loader = pageModules[page];

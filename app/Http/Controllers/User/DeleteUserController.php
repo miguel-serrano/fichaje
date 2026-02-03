@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
-use App\DDD\Authorization\Domain\Exception\AccessDeniedException;
+use App\DDD\Authorization\Domain\Exceptions\AccessDeniedException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Command\DeleteUserCommand;
