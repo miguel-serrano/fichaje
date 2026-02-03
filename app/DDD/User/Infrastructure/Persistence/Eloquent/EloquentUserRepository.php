@@ -101,8 +101,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             return null;
         }
 
-        $timeEntries = $this->getTimeEntriesForUser($row->id);
-        $roleSlugs = $this->getRoleSlugsForUser($row->id);
+        $timeEntries = $this->getTimeEntriesForUser((int) $row->id);
+        $roleSlugs = $this->getRoleSlugsForUser((int) $row->id);
 
         return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
     }

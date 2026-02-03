@@ -24,9 +24,9 @@ class EloquentActiveUserRepository extends EloquentUserRepository implements Act
             throw UserNotActiveException::forUuid($uuid);
         }
 
-        $timeEntries = $this->getTimeEntriesForUser($row->id);
+        $timeEntries = $this->getTimeEntriesForUser((int) $row->id);
 
-        $roleSlugs = $this->getRoleSlugsForUser($row->id);
+        $roleSlugs = $this->getRoleSlugsForUser((int) $row->id);
 
         return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
     }
