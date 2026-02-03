@@ -6,9 +6,12 @@ use App\DDD\Administration\Domain\Entity\Permission;
 use App\DDD\Administration\Domain\Exceptions\PermissionNotFoundException;
 use App\DDD\Administration\Domain\Interface\PermissionRepositoryInterface;
 use App\DDD\Administration\Domain\ValueObjects\BoundedContext;
+use App\DDD\Administration\Domain\ValueObjects\Description;
 use App\DDD\Administration\Domain\ValueObjects\PermissionId;
+use App\DDD\Administration\Domain\ValueObjects\PermissionName;
 use App\DDD\Administration\Domain\ValueObjects\PermissionSlug;
 use App\DDD\Administration\Infrastructure\Persistence\Eloquent\Builders\PermissionQueryBuilder;
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\Permission as PermissionModel;
 use App\Models\RolePermission;
@@ -60,6 +63,17 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
         }
 
         return $this->toDomainEntity($row);
+    }
+
+    public function update(PermissionId $id, PermissionName $name, ?Description $description): Permission
+    {
+        $this->query()->wherePermissionId($id)->update([
+            'name' => $name->value(),
+            'description' => $description?->value(),
+            'updated_at' => UnixTimestamp::now()->value(),
+        ]);
+
+        return $this->findByIdOrFail($id);
     }
 
     public function findById(PermissionId $id): ?Permission

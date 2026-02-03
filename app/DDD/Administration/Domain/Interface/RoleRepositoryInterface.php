@@ -3,7 +3,10 @@
 namespace App\DDD\Administration\Domain\Interface;
 
 use App\DDD\Administration\Domain\Entity\Role;
+use App\DDD\Administration\Domain\ValueObjects\Description;
+use App\DDD\Administration\Domain\ValueObjects\RoleHierarchy;
 use App\DDD\Administration\Domain\ValueObjects\RoleId;
+use App\DDD\Administration\Domain\ValueObjects\RoleName;
 use App\DDD\Administration\Domain\ValueObjects\RoleSlug;
 use App\DDD\User\Domain\ValueObjects\UserId;
 
@@ -12,6 +15,8 @@ interface RoleRepositoryInterface
     public function userHasRole(UserId $userId, string $roleSlug): bool;
 
     public function save(Role $role): Role;
+
+    public function update(RoleId $id, RoleName $name, ?Description $description, RoleHierarchy $hierarchy): Role;
 
     public function findById(RoleId $id): ?Role;
 

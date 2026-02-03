@@ -2,6 +2,7 @@
 
 namespace App\DDD\Administration\Domain\Entity;
 
+use App\DDD\Administration\Domain\Exceptions\CannotDeleteSystemPermissionException;
 use App\DDD\Administration\Domain\ValueObjects\BoundedContext;
 use App\DDD\Administration\Domain\ValueObjects\PermissionId;
 use App\DDD\Administration\Domain\ValueObjects\PermissionName;
@@ -16,7 +17,8 @@ final class Permission
         private BoundedContext $boundedContext,
         private ?string $description,
         private bool $isSystem,
-    ) {}
+    ) {
+    }
 
     public static function create(
         PermissionName $name,
@@ -37,7 +39,7 @@ final class Permission
         bool $isSystem,
     ): self {
         return new self(
-            $id !== null ? new PermissionId($id) : null,
+            null !== $id ? new PermissionId($id) : null,
             new PermissionName($name),
             new PermissionSlug($slug),
             BoundedContext::from($boundedContext),
@@ -74,6 +76,16 @@ final class Permission
     public function isSystem(): bool
     {
         return $this->isSystem;
+    }
+
+    /**
+     * @throws CannotDeleteSystemPermissionException
+     */
+    public function assertCanDelete(): void
+    {
+        if ($this->isSystem) {
+            throw CannotDeleteSystemPermissionException::forPermission($this->slug->value());
+        }
     }
 
     /**

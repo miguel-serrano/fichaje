@@ -6,16 +6,12 @@ use App\DDD\Administration\Application\Command\UpdatePermissionCommand;
 use App\DDD\Administration\Domain\Interface\PermissionRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
-use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
-use App\Models\Permission as PermissionModel;
-use Illuminate\Database\ConnectionInterface;
 
 class UpdatePermissionCommandHandler
 {
     public function __construct(
         private PermissionRepositoryInterface $permissionRepository,
         private AuthorizationServiceInterface $authorizationService,
-        private ConnectionInterface $connection,
     ) {
     }
 
@@ -28,15 +24,7 @@ class UpdatePermissionCommandHandler
 
         $this->permissionRepository->findByIdOrFail($command->permissionId);
 
-        $this->connection->table(PermissionModel::tableName())
-            ->where('id', $command->permissionId->value())
-            ->update([
-                'name' => $command->name->value(),
-                'description' => $command->description?->value(),
-                'updated_at' => UnixTimestamp::now()->value(),
-            ]);
-
-        $updatedPermission = $this->permissionRepository->findByIdOrFail($command->permissionId);
+        $updatedPermission = $this->permissionRepository->update($command->permissionId, $command->name, $command->description);
 
         return $updatedPermission->toArray();
     }

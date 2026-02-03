@@ -4,7 +4,9 @@ namespace App\DDD\Administration\Domain\Interface;
 
 use App\DDD\Administration\Domain\Entity\Permission;
 use App\DDD\Administration\Domain\ValueObjects\BoundedContext;
+use App\DDD\Administration\Domain\ValueObjects\Description;
 use App\DDD\Administration\Domain\ValueObjects\PermissionId;
+use App\DDD\Administration\Domain\ValueObjects\PermissionName;
 use App\DDD\Administration\Domain\ValueObjects\PermissionSlug;
 use App\DDD\User\Domain\ValueObjects\UserId;
 
@@ -13,6 +15,8 @@ interface PermissionRepositoryInterface
     public function userHasPermission(UserId $userId, string $permissionSlug): bool;
 
     public function save(Permission $permission): Permission;
+
+    public function update(PermissionId $id, PermissionName $name, ?Description $description): Permission;
 
     public function findById(PermissionId $id): ?Permission;
 

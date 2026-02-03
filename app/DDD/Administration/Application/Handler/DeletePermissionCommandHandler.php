@@ -3,7 +3,6 @@
 namespace App\DDD\Administration\Application\Handler;
 
 use App\DDD\Administration\Application\Command\DeletePermissionCommand;
-use App\DDD\Administration\Domain\Exceptions\CannotDeleteSystemPermissionException;
 use App\DDD\Administration\Domain\Interface\PermissionRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
@@ -22,9 +21,7 @@ class DeletePermissionCommandHandler
 
         $permission = $this->permissionRepository->findByIdOrFail($command->permissionId);
 
-        if ($permission->isSystem()) {
-            throw CannotDeleteSystemPermissionException::forPermission($permission->slug()->value());
-        }
+        $permission->assertCanDelete();
 
         $this->permissionRepository->delete($command->permissionId);
     }

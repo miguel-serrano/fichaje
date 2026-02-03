@@ -6,16 +6,12 @@ use App\DDD\Administration\Application\Command\UpdateRoleCommand;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
-use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
-use App\Models\Role as RoleModel;
-use Illuminate\Database\ConnectionInterface;
 
 class UpdateRoleCommandHandler
 {
     public function __construct(
         private RoleRepositoryInterface $roleRepository,
         private AuthorizationServiceInterface $authorizationService,
-        private ConnectionInterface $connection,
     ) {
     }
 
@@ -28,16 +24,7 @@ class UpdateRoleCommandHandler
 
         $this->roleRepository->findByIdOrFail($command->roleId);
 
-        $this->connection->table(RoleModel::tableName())
-            ->where('id', $command->roleId->value())
-            ->update([
-                'name' => $command->name->value(),
-                'description' => $command->description?->value(),
-                'hierarchy' => $command->hierarchy->value(),
-                'updated_at' => UnixTimestamp::now()->value(),
-            ]);
-
-        $updatedRole = $this->roleRepository->findByIdOrFail($command->roleId);
+        $updatedRole = $this->roleRepository->update($command->roleId, $command->name, $command->description, $command->hierarchy);
 
         return $updatedRole->toArray();
     }

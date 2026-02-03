@@ -5,9 +5,13 @@ namespace App\DDD\Administration\Infrastructure\Persistence\Eloquent;
 use App\DDD\Administration\Domain\Entity\Role;
 use App\DDD\Administration\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
+use App\DDD\Administration\Domain\ValueObjects\Description;
+use App\DDD\Administration\Domain\ValueObjects\RoleHierarchy;
 use App\DDD\Administration\Domain\ValueObjects\RoleId;
+use App\DDD\Administration\Domain\ValueObjects\RoleName;
 use App\DDD\Administration\Domain\ValueObjects\RoleSlug;
 use App\DDD\Administration\Infrastructure\Persistence\Eloquent\Builders\RoleQueryBuilder;
+use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\Role as RoleModel;
 use App\Models\RolePermission;
@@ -61,6 +65,18 @@ class EloquentRoleRepository implements RoleRepositoryInterface
         $permissions = $this->query()->permissionsForRole((int) $row->id);
 
         return $this->toDomainEntity($row, $permissions);
+    }
+
+    public function update(RoleId $id, RoleName $name, ?Description $description, RoleHierarchy $hierarchy): Role
+    {
+        $this->query()->whereRoleId($id)->update([
+            'name' => $name->value(),
+            'description' => $description?->value(),
+            'hierarchy' => $hierarchy->value(),
+            'updated_at' => UnixTimestamp::now()->value(),
+        ]);
+
+        return $this->findByIdOrFail($id);
     }
 
     public function findById(RoleId $id): ?Role

@@ -2,6 +2,7 @@
 
 namespace App\DDD\Administration\Domain\Entity;
 
+use App\DDD\Administration\Domain\Exceptions\CannotDeleteSystemRoleException;
 use App\DDD\Administration\Domain\ValueObjects\PermissionSlug;
 use App\DDD\Administration\Domain\ValueObjects\RoleId;
 use App\DDD\Administration\Domain\ValueObjects\RoleName;
@@ -19,7 +20,8 @@ final class Role
         private ?string $description,
         private bool $isSystem,
         private int $hierarchy,
-    ) {}
+    ) {
+    }
 
     public static function create(
         RoleName $name,
@@ -32,7 +34,7 @@ final class Role
     }
 
     /**
-     * @param  array<array{id: int|null, name: string, slug: string, bounded_context: string, description: string|null, is_system: bool}>  $permissions
+     * @param array<array{id: int|null, name: string, slug: string, bounded_context: string, description: string|null, is_system: bool}> $permissions
      */
     public static function fromPrimitives(
         ?int $id,
@@ -44,7 +46,7 @@ final class Role
         array $permissions = [],
     ): self {
         $role = new self(
-            $id !== null ? new RoleId($id) : null,
+            null !== $id ? new RoleId($id) : null,
             new RoleName($name),
             new RoleSlug($slug),
             $description,
@@ -110,6 +112,16 @@ final class Role
     public function isSystem(): bool
     {
         return $this->isSystem;
+    }
+
+    /**
+     * @throws CannotDeleteSystemRoleException
+     */
+    public function assertCanDelete(): void
+    {
+        if ($this->isSystem) {
+            throw CannotDeleteSystemRoleException::forRole($this->slug->value());
+        }
     }
 
     public function hierarchy(): int
