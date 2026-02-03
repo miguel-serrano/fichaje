@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DDD\TimeTracking\Application\Handler;
 
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
+use App\DDD\Shared\Domain\Event\EventBusInterface;
 use App\DDD\TimeTracking\Application\Command\ClockInCommand;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
@@ -19,6 +20,7 @@ class ClockInCommandHandler
         private TimeEntryRepositoryInterface $timeEntryRepository,
         private AuthorizationServiceInterface $authorizationService,
         private ClockInValidatorInterface $clockInValidator,
+        private EventBusInterface $eventBus,
     ) {
     }
 
@@ -33,5 +35,7 @@ class ClockInCommandHandler
         $timeEntry = TimeEntry::create($user->id());
 
         $this->timeEntryRepository->save($timeEntry);
+
+        $this->eventBus->publish(...$timeEntry->pullDomainEvents());
     }
 }

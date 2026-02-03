@@ -3,6 +3,7 @@
 namespace Tests\Unit\User\Application;
 
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
+use App\DDD\Shared\Domain\Event\EventBusInterface;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
@@ -16,6 +17,8 @@ class DeleteUserUseCaseTest extends TestCase
 
     private AuthorizationServiceInterface $authorizationService;
 
+    private EventBusInterface $eventBus;
+
     private DeleteUserCommandHandler $handler;
 
     protected function setUp(): void
@@ -23,9 +26,11 @@ class DeleteUserUseCaseTest extends TestCase
         parent::setUp();
         $this->userRepository = app(UserRepositoryInterface::class);
         $this->authorizationService = app(AuthorizationServiceInterface::class);
+        $this->eventBus = app(EventBusInterface::class);
         $this->handler = new DeleteUserCommandHandler(
             $this->userRepository,
-            $this->authorizationService
+            $this->authorizationService,
+            $this->eventBus
         );
     }
 

@@ -7,9 +7,12 @@ use App\DDD\Administration\Domain\ValueObjects\PermissionSlug;
 use App\DDD\Administration\Domain\ValueObjects\RoleId;
 use App\DDD\Administration\Domain\ValueObjects\RoleName;
 use App\DDD\Administration\Domain\ValueObjects\RoleSlug;
+use App\DDD\Shared\Domain\Event\RecordsDomainEvents;
 
 final class Role
 {
+    use RecordsDomainEvents;
+
     /** @var Permission[] */
     private array $permissions = [];
 

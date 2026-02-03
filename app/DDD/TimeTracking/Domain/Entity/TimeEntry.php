@@ -2,12 +2,17 @@
 
 namespace App\DDD\TimeTracking\Domain\Entity;
 
+use App\DDD\Shared\Domain\Event\RecordsDomainEvents;
 use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
+use App\DDD\TimeTracking\Domain\Event\UserClockedInEvent;
+use App\DDD\TimeTracking\Domain\Event\UserClockedOutEvent;
 use App\DDD\TimeTracking\Domain\ValueObjects\TimeEntryId;
 use App\DDD\User\Domain\ValueObjects\UserId;
 
 final class TimeEntry
 {
+    use RecordsDomainEvents;
+
     private function __construct(
         private ?TimeEntryId $id,
         private UserId $userId,
@@ -22,14 +27,24 @@ final class TimeEntry
 
     public static function create(UserId $userId): self
     {
-        return new self(
+        $startTime = UnixTimestamp::now()->value();
+
+        $entry = new self(
             null,
             $userId,
-            UnixTimestamp::now()->value(),
+            $startTime,
             null,
             false,
             null
         );
+
+        $entry->recordEvent(new UserClockedInEvent(
+            (string) $userId->value(),
+            $userId->value(),
+            $startTime,
+        ));
+
+        return $entry;
     }
 
     public static function fromPrimitives(
@@ -88,6 +103,12 @@ final class TimeEntry
     public function close(): void
     {
         $this->endTime = UnixTimestamp::now()->value();
+
+        $this->recordEvent(new UserClockedOutEvent(
+            (string) $this->userId->value(),
+            $this->userId->value(),
+            $this->endTime,
+        ));
     }
 
     public function closeAt(int $closeTime, bool $autoClosed = false, ?string $autoCloseReason = null): void

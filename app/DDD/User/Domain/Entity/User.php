@@ -3,12 +3,15 @@
 namespace App\DDD\User\Domain\Entity;
 
 use App\DDD\Authentication\Domain\ValueObjects\HashedPassword;
+use App\DDD\Shared\Domain\Event\RecordsDomainEvents;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
 use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
+use App\DDD\User\Domain\Event\UserActivationToggledEvent;
+use App\DDD\User\Domain\Event\UserDeletedEvent;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\ValueObjects\Email;
@@ -18,6 +21,8 @@ use App\DDD\User\Domain\ValueObjects\Uuid;
 
 final class User
 {
+    use RecordsDomainEvents;
+
     private function __construct(
         private ?UserId $id,
         private Uuid $uuid,
@@ -119,6 +124,12 @@ final class User
     {
         $this->isActive = !$this->isActive;
 
+        $this->recordEvent(new UserActivationToggledEvent(
+            (string) ($this->id?->value() ?? $this->uuid->value()),
+            $this->id->value(),
+            $this->isActive,
+        ));
+
         return $this->isActive;
     }
 
@@ -142,6 +153,12 @@ final class User
         }
 
         $repository->delete($this->id);
+
+        $this->recordEvent(new UserDeletedEvent(
+            (string) $this->id->value(),
+            $this->id->value(),
+            $this->email->value(),
+        ));
     }
 
     /** @return string[] */

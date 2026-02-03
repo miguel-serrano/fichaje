@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DDD\TimeTracking\Application\Handler;
 
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
+use App\DDD\Shared\Domain\Event\EventBusInterface;
 use App\DDD\TimeTracking\Application\Command\ClockOutCommand;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
@@ -20,6 +21,7 @@ class ClockOutCommandHandler
         private AuthorizationServiceInterface $authorizationService,
         private ClockOutValidatorInterface $clockOutValidator,
         private TimeTrackingService $service,
+        private EventBusInterface $eventBus,
     ) {
     }
 
@@ -36,5 +38,7 @@ class ClockOutCommandHandler
         $openEntry->close();
 
         $this->timeEntryRepository->update($openEntry);
+
+        $this->eventBus->publish(...$openEntry->pullDomainEvents());
     }
 }

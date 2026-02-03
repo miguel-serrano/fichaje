@@ -9,12 +9,14 @@ use App\DDD\Holiday\Domain\Exceptions\OverlappingHolidayException;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
+use App\DDD\Shared\Domain\Event\EventBusInterface;
 use App\DDD\User\Domain\Entity\User;
 
 final class HolidayService
 {
     public function __construct(
         private HolidayRepositoryInterface $holidayRepository,
+        private EventBusInterface $eventBus,
     ) {
     }
 
@@ -28,6 +30,8 @@ final class HolidayService
 
         $this->holidayRepository->save($holidayRequest);
 
+        $this->eventBus->publish(...$holidayRequest->pullDomainEvents());
+
         return $dateRange;
     }
 
@@ -39,6 +43,8 @@ final class HolidayService
 
         $this->holidayRepository->save($holidayRequest);
 
+        $this->eventBus->publish(...$holidayRequest->pullDomainEvents());
+
         return $holidayRequest;
     }
 
@@ -49,6 +55,8 @@ final class HolidayService
         $holidayRequest->reject();
 
         $this->holidayRepository->save($holidayRequest);
+
+        $this->eventBus->publish(...$holidayRequest->pullDomainEvents());
 
         return $holidayRequest;
     }

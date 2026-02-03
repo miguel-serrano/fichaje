@@ -19,15 +19,15 @@ use Illuminate\Database\Query\Builder;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
-    private string $userTable;
+    protected string $userTable;
 
-    private string $timeEntryTable;
+    protected string $timeEntryTable;
 
-    private string $userRoleTable;
+    protected string $userRoleTable;
 
-    private string $roleTable;
+    protected string $roleTable;
 
-    public function __construct(private ConnectionInterface $connection)
+    public function __construct(protected ConnectionInterface $connection)
     {
         $this->userTable = UserModel::tableName();
         $this->timeEntryTable = TimeEntryModel::tableName();
@@ -243,12 +243,12 @@ class EloquentUserRepository implements UserRepositoryInterface
         ];
     }
 
-    private function query(): Builder
+    protected function query(): Builder
     {
         return $this->connection->table($this->userTable);
     }
 
-    private function timeEntryQuery(): Builder
+    protected function timeEntryQuery(): Builder
     {
         return $this->connection->table($this->timeEntryTable);
     }
@@ -256,7 +256,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     /**
      * @return array<array-key, mixed>
      */
-    private function getTimeEntriesForUser(int $userId): array
+    protected function getTimeEntriesForUser(int $userId): array
     {
         return $this->timeEntryQuery()
             ->where('user_id', $userId)
@@ -300,7 +300,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     /**
      * @return string[]
      */
-    private function getRoleSlugsForUser(int $userId): array
+    protected function getRoleSlugsForUser(int $userId): array
     {
         return $this->connection->table($this->userRoleTable)
             ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
@@ -334,14 +334,14 @@ class EloquentUserRepository implements UserRepositoryInterface
      * @param array<array-key, mixed> $timeEntries
      * @param string[]                $roleSlugs
      */
-    private function toDomainEntity(\stdClass $row, array $timeEntries, array $roleSlugs = []): User
+    protected function toDomainEntity(\stdClass $row, array $timeEntries, array $roleSlugs = []): User
     {
         return User::fromPrimitives(
             $row->id,
             $row->uuid,
             $row->email,
             $row->name,
-            $row->is_active ?? true,
+            (bool) ($row->is_active ?? true),
             $timeEntries,
             $roleSlugs
         );

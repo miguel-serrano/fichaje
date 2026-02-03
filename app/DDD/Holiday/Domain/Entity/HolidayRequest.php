@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\DDD\Holiday\Domain\Entity;
 
+use App\DDD\Holiday\Domain\Event\HolidayRequestApprovedEvent;
+use App\DDD\Holiday\Domain\Event\HolidayRequestCreatedEvent;
+use App\DDD\Holiday\Domain\Event\HolidayRequestRejectedEvent;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayStatus;
+use App\DDD\Shared\Domain\Event\RecordsDomainEvents;
 use App\DDD\Shared\Domain\ValueObject\UnixTimestamp;
 use App\DDD\User\Domain\ValueObjects\UserId;
 
 final class HolidayRequest
 {
+    use RecordsDomainEvents;
+
     private function __construct(
         private ?HolidayRequestId $id,
         private UserId $userId,
@@ -28,7 +34,7 @@ final class HolidayRequest
     {
         $now = UnixTimestamp::now()->value();
 
-        return new self(
+        $request = new self(
             null,
             $userId,
             $dateRange,
@@ -36,6 +42,15 @@ final class HolidayRequest
             $now,
             $now
         );
+
+        $request->recordEvent(new HolidayRequestCreatedEvent(
+            (string) $userId->value(),
+            $userId->value(),
+            $dateRange->startDate(),
+            $dateRange->endDate(),
+        ));
+
+        return $request;
     }
 
     /**
@@ -102,12 +117,26 @@ final class HolidayRequest
     {
         $this->status = HolidayStatus::Approved;
         $this->updatedAt = UnixTimestamp::now()->value();
+
+        $this->recordEvent(new HolidayRequestApprovedEvent(
+            (string) $this->id->value(),
+            $this->userId->value(),
+            $this->dateRange->startDate(),
+            $this->dateRange->endDate(),
+        ));
     }
 
     public function reject(): void
     {
         $this->status = HolidayStatus::Rejected;
         $this->updatedAt = UnixTimestamp::now()->value();
+
+        $this->recordEvent(new HolidayRequestRejectedEvent(
+            (string) $this->id->value(),
+            $this->userId->value(),
+            $this->dateRange->startDate(),
+            $this->dateRange->endDate(),
+        ));
     }
 
     public function isPending(): bool
