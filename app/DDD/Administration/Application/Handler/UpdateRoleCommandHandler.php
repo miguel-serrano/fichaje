@@ -3,7 +3,6 @@
 namespace App\DDD\Administration\Application\Handler;
 
 use App\DDD\Administration\Application\Command\UpdateRoleCommand;
-use App\DDD\Administration\Domain\Event\RoleUpdatedEvent;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
@@ -29,11 +28,8 @@ class UpdateRoleCommandHandler
 
         $updatedRole = $this->roleRepository->update($command->roleId, $command->name, $command->description, $command->hierarchy);
 
-        $this->eventBus->publish(new RoleUpdatedEvent(
-            (string) $updatedRole->id()->value(),
-            $updatedRole->name()->value(),
-            $updatedRole->slug()->value(),
-        ));
+        $updatedRole->recordUpdated();
+        $this->eventBus->publish(...$updatedRole->pullDomainEvents());
 
         return $updatedRole->toArray();
     }

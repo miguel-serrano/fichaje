@@ -11,6 +11,7 @@ use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
 use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
 use App\DDD\User\Domain\Event\UserActivationToggledEvent;
+use App\DDD\User\Domain\Event\UserCreatedEvent;
 use App\DDD\User\Domain\Event\UserDeletedEvent;
 use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
@@ -158,6 +159,16 @@ final class User
             (string) $this->id->value(),
             $this->id->value(),
             $this->email->value(),
+        ));
+    }
+
+    public function markAsCreated(): void
+    {
+        $this->recordEvent(new UserCreatedEvent(
+            $this->uuid->value(),
+            $this->id->value(),
+            $this->email->value(),
+            $this->name->value(),
         ));
     }
 

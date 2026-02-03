@@ -3,7 +3,6 @@
 namespace App\DDD\Administration\Application\Handler;
 
 use App\DDD\Administration\Application\Command\SyncPermissionsToRoleCommand;
-use App\DDD\Administration\Domain\Event\RoleUpdatedEvent;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
@@ -51,11 +50,7 @@ class SyncPermissionsToRoleCommandHandler
             $permissionsSynced['removed'] = $removed;
         }
 
-        $this->eventBus->publish(new RoleUpdatedEvent(
-            (string) $role->id()->value(),
-            $role->name()->value(),
-            $role->slug()->value(),
-            $permissionsSynced ?: null,
-        ));
+        $updatedRole->recordPermissionsSynced($permissionsSynced ?: null);
+        $this->eventBus->publish(...$updatedRole->pullDomainEvents());
     }
 }

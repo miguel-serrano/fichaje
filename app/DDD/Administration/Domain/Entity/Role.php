@@ -2,6 +2,7 @@
 
 namespace App\DDD\Administration\Domain\Entity;
 
+use App\DDD\Administration\Domain\Event\RoleUpdatedEvent;
 use App\DDD\Administration\Domain\Exceptions\CannotDeleteSystemRoleException;
 use App\DDD\Administration\Domain\ValueObjects\PermissionSlug;
 use App\DDD\Administration\Domain\ValueObjects\RoleId;
@@ -138,6 +139,28 @@ final class Role
     public function permissions(): array
     {
         return $this->permissions;
+    }
+
+    public function recordUpdated(): void
+    {
+        $this->recordEvent(new RoleUpdatedEvent(
+            (string) $this->id->value(),
+            $this->name->value(),
+            $this->slug->value(),
+        ));
+    }
+
+    /**
+     * @param array{added?: string[], removed?: string[]}|null $permissionsSynced
+     */
+    public function recordPermissionsSynced(?array $permissionsSynced): void
+    {
+        $this->recordEvent(new RoleUpdatedEvent(
+            (string) $this->id->value(),
+            $this->name->value(),
+            $this->slug->value(),
+            $permissionsSynced,
+        ));
     }
 
     /**
