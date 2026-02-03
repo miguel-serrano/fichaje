@@ -17,14 +17,13 @@ class ToastManager {
         this.container.id = 'toast-container';
         this.container.style.cssText = `
             position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 78px;
+            right: 32px;
             z-index: 10000;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            align-items: center;
+            align-items: flex-end;
             pointer-events: none;
         `;
         document.body.appendChild(this.container);
@@ -61,7 +60,7 @@ class ToastManager {
             line-height: 1.4;
             pointer-events: auto;
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateX(20px);
             transition: opacity 0.2s ease, transform 0.2s ease;
             background-color: var(--md-sys-color-surface-container-highest, #3b3a38);
             color: var(--md-sys-color-on-surface, #e7e2d9);
@@ -138,7 +137,7 @@ class ToastManager {
         // Animate in
         requestAnimationFrame(() => {
             toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0)';
+            toast.style.transform = 'translateX(0)';
         });
 
         // Auto dismiss
@@ -153,7 +152,7 @@ class ToastManager {
         if (!toast || !toast.parentNode) return;
 
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(20px)';
+        toast.style.transform = 'translateX(20px)';
 
         setTimeout(() => {
             if (toast.parentNode) {

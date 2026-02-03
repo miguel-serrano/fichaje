@@ -1,4 +1,4 @@
-.PHONY: up down stop test test-filter build npm-dev npm-build migrate fresh pint shell deploy cache-clear mysql
+.PHONY: up down stop test test-filter build npm-dev npm-build front-build migrate fresh pint shell deploy cache-clear mysql
 
 up:
 	vendor/bin/sail up -d
@@ -22,6 +22,9 @@ npm-dev:
 	vendor/bin/sail npm run dev
 
 npm-build:
+	vendor/bin/sail npm run build
+
+front-build:
 	vendor/bin/sail npm run build
 
 migrate:
