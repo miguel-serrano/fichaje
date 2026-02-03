@@ -7,8 +7,8 @@ use App\DDD\Administration\Domain\Exceptions\RoleNotFoundException;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\ValueObjects\RoleId;
 use App\DDD\Administration\Domain\ValueObjects\RoleSlug;
+use App\DDD\Administration\Infrastructure\Persistence\Eloquent\Builders\RoleQueryBuilder;
 use App\DDD\User\Domain\ValueObjects\UserId;
-use App\Models\Permission as PermissionModel;
 use App\Models\Role as RoleModel;
 use App\Models\RolePermission;
 use App\Models\UserRole;
@@ -23,23 +23,20 @@ class EloquentRoleRepository implements RoleRepositoryInterface
 
     private string $rolePermissionTable;
 
-    private string $permissionTable;
-
     public function __construct(
         private ConnectionInterface $connection,
     ) {
         $this->roleTable = RoleModel::tableName();
         $this->userRoleTable = UserRole::tableName();
         $this->rolePermissionTable = RolePermission::tableName();
-        $this->permissionTable = PermissionModel::tableName();
     }
 
     public function userHasRole(UserId $userId, string $roleSlug): bool
     {
-        return $this->userRoleQuery()
-            ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
+        return $this->query()
+            ->join($this->userRoleTable, "{$this->roleTable}.id", '=', "{$this->userRoleTable}.role_id")
             ->where("{$this->userRoleTable}.user_id", $userId->value())
-            ->where("{$this->roleTable}.slug", $roleSlug)
+            ->where('slug', $roleSlug)
             ->exists();
     }
 
@@ -54,27 +51,27 @@ class EloquentRoleRepository implements RoleRepositoryInterface
         ];
 
         if ($role->id()) {
-            $this->query()->where('id', $role->id()->value())->update($data);
-            $row = $this->query()->where('id', $role->id()->value())->first();
+            $this->query()->whereRoleId($role->id())->update($data);
+            $row = $this->query()->whereRoleId($role->id())->first();
         } else {
             $id = $this->query()->insertGetId($data);
             $row = $this->query()->where('id', $id)->first();
         }
 
-        $permissions = $this->getPermissionsForRole((int) $row->id);
+        $permissions = $this->query()->permissionsForRole((int) $row->id);
 
         return $this->toDomainEntity($row, $permissions);
     }
 
     public function findById(RoleId $id): ?Role
     {
-        $row = $this->query()->where('id', $id->value())->first();
+        $row = $this->query()->whereRoleId($id)->first();
 
         if (!$row) {
             return null;
         }
 
-        $permissions = $this->getPermissionsForRole($id->value());
+        $permissions = $this->query()->permissionsForRole($id->value());
 
         return $this->toDomainEntity($row, $permissions);
     }
@@ -92,13 +89,13 @@ class EloquentRoleRepository implements RoleRepositoryInterface
 
     public function findBySlug(RoleSlug $slug): ?Role
     {
-        $row = $this->query()->where('slug', $slug->value())->first();
+        $row = $this->query()->whereSlug($slug)->first();
 
         if (!$row) {
             return null;
         }
 
-        $permissions = $this->getPermissionsForRole((int) $row->id);
+        $permissions = $this->query()->permissionsForRole((int) $row->id);
 
         return $this->toDomainEntity($row, $permissions);
     }
@@ -119,12 +116,10 @@ class EloquentRoleRepository implements RoleRepositoryInterface
      */
     public function findAll(): array
     {
-        $rows = $this->query()
-            ->orderBy('hierarchy', 'desc')
-            ->get();
+        $rows = $this->query()->orderByHierarchy()->get();
 
         return $rows->map(function (\stdClass $row) {
-            $permissions = $this->getPermissionsForRole((int) $row->id);
+            $permissions = $this->query()->permissionsForRole((int) $row->id);
 
             return $this->toDomainEntity($row, $permissions);
         })->toArray();
@@ -134,7 +129,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     {
         $this->rolePermissionQuery()->where('role_id', $id->value())->delete();
 
-        return $this->query()->where('id', $id->value())->delete() > 0;
+        return $this->query()->whereRoleId($id)->delete() > 0;
     }
 
     /**
@@ -205,19 +200,22 @@ class EloquentRoleRepository implements RoleRepositoryInterface
 
         return $this->query()
             ->whereIn('id', $roleIds)
-            ->orderBy('hierarchy', 'desc')
+            ->orderByHierarchy()
             ->get()
             ->map(function (\stdClass $row) {
-                $permissions = $this->getPermissionsForRole((int) $row->id);
+                $permissions = $this->query()->permissionsForRole((int) $row->id);
 
                 return $this->toDomainEntity($row, $permissions);
             })
             ->toArray();
     }
 
-    private function query(): Builder
+    private function query(): RoleQueryBuilder
     {
-        return $this->connection->table($this->roleTable);
+        $builder = new RoleQueryBuilder($this->connection);
+        $builder->from($this->roleTable);
+
+        return $builder;
     }
 
     private function userRoleQuery(): Builder
@@ -228,27 +226,6 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     private function rolePermissionQuery(): Builder
     {
         return $this->connection->table($this->rolePermissionTable);
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function getPermissionsForRole(int $roleId): array
-    {
-        $rows = $this->connection->table($this->rolePermissionTable)
-            ->join($this->permissionTable, "{$this->rolePermissionTable}.permission_id", '=', "{$this->permissionTable}.id")
-            ->where("{$this->rolePermissionTable}.role_id", $roleId)
-            ->select("{$this->permissionTable}.*")
-            ->get();
-
-        return $rows->map(fn (\stdClass $row) => [
-            'id' => $row->id,
-            'name' => $row->name,
-            'slug' => $row->slug,
-            'bounded_context' => $row->bounded_context,
-            'description' => $row->description,
-            'is_system' => (bool) $row->is_system,
-        ])->toArray();
     }
 
     /**
