@@ -36,12 +36,11 @@ class EloquentRoleRepository implements RoleRepositoryInterface
 
     public function userHasRole(UserId $userId, string $roleSlug): bool
     {
-        $query = $this->connection->table($this->userRoleTable)
+        return $this->userRoleQuery()
             ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
             ->where("{$this->userRoleTable}.user_id", $userId->value())
-            ->where("{$this->roleTable}.slug", $roleSlug);
-
-        return $query->exists();
+            ->where("{$this->roleTable}.slug", $roleSlug)
+            ->exists();
     }
 
     public function save(Role $role): Role
@@ -71,7 +70,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     {
         $row = $this->query()->where('id', $id->value())->first();
 
-        if (! $row) {
+        if (!$row) {
             return null;
         }
 
@@ -84,7 +83,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     {
         $role = $this->findById($id);
 
-        if (! $role) {
+        if (!$role) {
             throw RoleNotFoundException::withId($id->value());
         }
 
@@ -95,7 +94,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     {
         $row = $this->query()->where('slug', $slug->value())->first();
 
-        if (! $row) {
+        if (!$row) {
             return null;
         }
 
@@ -108,7 +107,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     {
         $role = $this->findBySlug($slug);
 
-        if (! $role) {
+        if (!$role) {
             throw RoleNotFoundException::withSlug($slug->value());
         }
 
@@ -139,7 +138,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     }
 
     /**
-     * @param  int[]  $permissionIds
+     * @param int[] $permissionIds
      */
     public function syncPermissions(RoleId $roleId, array $permissionIds): void
     {
@@ -153,7 +152,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
                 'permission_id' => $permissionId,
             ], $uniquePermissionIds);
 
-            if (! empty($inserts)) {
+            if (!empty($inserts)) {
                 $this->rolePermissionQuery()->insert($inserts);
             }
         });
@@ -165,15 +164,65 @@ class EloquentRoleRepository implements RoleRepositoryInterface
 
         $now = time();
 
-        $this->connection->table($this->userRoleTable)->updateOrInsert(
+        $this->userRoleQuery()->updateOrInsert(
             ['user_id' => $userId->value(), 'role_id' => $role->id()->value()],
             ['created_at' => $now, 'updated_at' => $now]
         );
     }
 
+    public function assignRole(UserId $userId, RoleId $roleId): void
+    {
+        $now = time();
+
+        $this->userRoleQuery()->updateOrInsert(
+            ['user_id' => $userId->value(), 'role_id' => $roleId->value()],
+            ['created_at' => $now, 'updated_at' => $now]
+        );
+    }
+
+    public function removeRole(UserId $userId, RoleId $roleId): void
+    {
+        $this->userRoleQuery()
+            ->where('user_id', $userId->value())
+            ->where('role_id', $roleId->value())
+            ->delete();
+    }
+
+    /**
+     * @return Role[]
+     */
+    public function userRoles(UserId $userId): array
+    {
+        $roleIds = $this->userRoleQuery()
+            ->where('user_id', $userId->value())
+            ->pluck('role_id')
+            ->map(fn ($id) => (int) $id)
+            ->toArray();
+
+        if (empty($roleIds)) {
+            return [];
+        }
+
+        return $this->query()
+            ->whereIn('id', $roleIds)
+            ->orderBy('hierarchy', 'desc')
+            ->get()
+            ->map(function (\stdClass $row) {
+                $permissions = $this->getPermissionsForRole((int) $row->id);
+
+                return $this->toDomainEntity($row, $permissions);
+            })
+            ->toArray();
+    }
+
     private function query(): Builder
     {
         return $this->connection->table($this->roleTable);
+    }
+
+    private function userRoleQuery(): Builder
+    {
+        return $this->connection->table($this->userRoleTable);
     }
 
     private function rolePermissionQuery(): Builder
@@ -203,7 +252,7 @@ class EloquentRoleRepository implements RoleRepositoryInterface
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $permissions
+     * @param array<int, array<string, mixed>> $permissions
      */
     private function toDomainEntity(\stdClass $row, array $permissions): Role
     {

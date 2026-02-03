@@ -6,15 +6,12 @@ use App\DDD\Administration\Application\Command\RemoveRoleFromUserCommand;
 use App\DDD\Administration\Domain\Interface\RoleRepositoryInterface;
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
-use App\Models\UserRole;
-use Illuminate\Database\ConnectionInterface;
 
 class RemoveRoleFromUserCommandHandler
 {
     public function __construct(
         private RoleRepositoryInterface $roleRepository,
         private AuthorizationServiceInterface $authorizationService,
-        private ConnectionInterface $connection,
     ) {
     }
 
@@ -24,9 +21,6 @@ class RemoveRoleFromUserCommandHandler
 
         $role = $this->roleRepository->findBySlugOrFail($command->roleSlug);
 
-        $this->connection->table(UserRole::tableName())
-            ->where('user_id', $command->targetUserId->value())
-            ->where('role_id', $role->id()->value())
-            ->delete();
+        $this->roleRepository->removeRole($command->targetUserId, $role->id());
     }
 }

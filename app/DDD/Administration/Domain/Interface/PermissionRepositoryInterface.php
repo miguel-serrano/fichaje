@@ -33,4 +33,9 @@ interface PermissionRepositoryInterface
     public function findByBoundedContext(BoundedContext $context): array;
 
     public function delete(PermissionId $id): bool;
+
+    /**
+     * @return string[]
+     */
+    public function userPermissions(UserId $userId): array;
 }

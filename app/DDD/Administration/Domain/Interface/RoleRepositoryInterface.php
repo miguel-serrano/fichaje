@@ -29,9 +29,18 @@ interface RoleRepositoryInterface
     public function delete(RoleId $id): bool;
 
     /**
-     * @param  int[]  $permissionIds
+     * @param int[] $permissionIds
      */
     public function syncPermissions(RoleId $roleId, array $permissionIds): void;
 
     public function assignRoleToUserBySystem(UserId $userId, RoleSlug $slug): void;
+
+    public function assignRole(UserId $userId, RoleId $roleId): void;
+
+    public function removeRole(UserId $userId, RoleId $roleId): void;
+
+    /**
+     * @return Role[]
+     */
+    public function userRoles(UserId $userId): array;
 }

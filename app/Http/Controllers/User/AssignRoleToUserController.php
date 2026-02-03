@@ -35,13 +35,7 @@ class AssignRoleToUserController extends Controller
 
             return redirect()->route('user.show', ['id' => $id])
                 ->with('success', 'Rol asignado correctamente');
-        } catch (UserNotFoundException $e) {
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
-        } catch (RoleNotFoundException $e) {
-            return redirect()->route('user.show', ['id' => $id])
-                ->with('error', $e->getMessage());
-        } catch (UnauthorizedException $e) {
+        } catch (UserNotFoundException|RoleNotFoundException|UnauthorizedException $e) {
             return redirect()->route('users.index')
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {

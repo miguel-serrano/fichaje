@@ -10,6 +10,7 @@ use App\DDD\Administration\Domain\ValueObjects\PermissionId;
 use App\DDD\Administration\Domain\ValueObjects\PermissionSlug;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\Models\Permission as PermissionModel;
+use App\Models\Role as RoleModel;
 use App\Models\RolePermission;
 use App\Models\UserRole;
 use Illuminate\Database\ConnectionInterface;
@@ -23,12 +24,15 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
 
     private string $rolePermissionTable;
 
+    private string $roleTable;
+
     public function __construct(
         private ConnectionInterface $connection,
     ) {
         $this->permissionTable = PermissionModel::tableName();
         $this->userRoleTable = UserRole::tableName();
         $this->rolePermissionTable = RolePermission::tableName();
+        $this->roleTable = RoleModel::tableName();
     }
 
     public function userHasPermission(UserId $userId, string $permissionSlug): bool
@@ -74,7 +78,7 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
     {
         $permission = $this->findById($id);
 
-        if (! $permission) {
+        if (!$permission) {
             throw PermissionNotFoundException::withId($id->value());
         }
 
@@ -92,7 +96,7 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
     {
         $permission = $this->findBySlug($slug);
 
-        if (! $permission) {
+        if (!$permission) {
             throw PermissionNotFoundException::withSlug($slug->value());
         }
 
@@ -128,6 +132,32 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
     public function delete(PermissionId $id): bool
     {
         return $this->query()->where('id', $id->value())->delete() > 0;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function userPermissions(UserId $userId): array
+    {
+        $hasSuperAdmin = $this->connection->table($this->userRoleTable)
+            ->join($this->roleTable, "{$this->userRoleTable}.role_id", '=', "{$this->roleTable}.id")
+            ->where("{$this->userRoleTable}.user_id", $userId->value())
+            ->where("{$this->roleTable}.slug", 'super_admin')
+            ->exists();
+
+        if ($hasSuperAdmin) {
+            return $this->query()
+                ->pluck('slug')
+                ->toArray();
+        }
+
+        return $this->connection->table($this->userRoleTable)
+            ->join($this->rolePermissionTable, "{$this->userRoleTable}.role_id", '=', "{$this->rolePermissionTable}.role_id")
+            ->join($this->permissionTable, "{$this->rolePermissionTable}.permission_id", '=', "{$this->permissionTable}.id")
+            ->where("{$this->userRoleTable}.user_id", $userId->value())
+            ->distinct()
+            ->pluck("{$this->permissionTable}.slug")
+            ->toArray();
     }
 
     private function query(): Builder
