@@ -47,9 +47,15 @@ class RoleQueryBuilder extends Builder
      */
     public function permissionsForRole(int $roleId): array
     {
-        return $this->connection->table($this->permissionTable)
-            ->join($this->rolePermissionTable, "{$this->permissionTable}.id", '=', "{$this->rolePermissionTable}.permission_id")
+        return $this->connection->table($this->rolePermissionTable)
             ->where("{$this->rolePermissionTable}.role_id", $roleId)
+            ->join(
+                $this->permissionTable,
+                "{$this->rolePermissionTable}.permission_id",
+                '=',
+                "{$this->permissionTable}.id"
+            )
+            ->select("{$this->permissionTable}.*")
             ->get()
             ->map(fn (\stdClass $row) => [
                 'id' => $row->id,
