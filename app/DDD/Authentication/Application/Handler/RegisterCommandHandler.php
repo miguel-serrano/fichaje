@@ -9,7 +9,6 @@ use App\DDD\Authentication\Domain\Services\AuthenticationService;
 use App\DDD\Authentication\Domain\Services\PasswordHashingService;
 use App\DDD\Shared\Domain\Event\EventBusInterface;
 use App\DDD\User\Domain\Entity\User;
-use App\DDD\User\Domain\Event\UserCreatedEvent;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\DDD\User\Domain\Services\UserCreationPolicyService;
 
@@ -39,12 +38,8 @@ final class RegisterCommandHandler
 
         $user = $this->userRepository->save($user);
 
-        $this->eventBus->publish(new UserCreatedEvent(
-            $user->uuid()->value(),
-            $user->id()->value(),
-            $user->email()->value(),
-            $user->name()->value(),
-        ));
+        $user->markAsCreated();
+        $this->eventBus->publish(...$user->pullDomainEvents());
 
         $this->roleRepository->assignRoleToUserBySystem(
             $user->id(),
