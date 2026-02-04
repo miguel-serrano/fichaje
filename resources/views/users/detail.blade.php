@@ -28,31 +28,6 @@
 
 @include('users.partials.personal-info', ['user' => $user])
 
-<!-- Histórico de Fichajes - Gráfica (oculto en móviles) -->
-<div class="row hide-on-small-only">
-    <div class="col s12">
-        <div class="card">
-            <div class="card-content">
-                <span class="card-title">
-                    <md-icon style="margin-right: 8px;">show_chart</md-icon>
-                    Histórico de Fichajes
-                </span>
-
-                @if(isset($chartData) && $chartData['hasData'])
-                    <div style="position: relative; height: 300px; margin-top: 20px;">
-                        <canvas id="dailyHoursChart"></canvas>
-                    </div>
-                    <p class="text-secondary center-align" style="margin-top: 10px; font-size: 0.9rem;">
-                        Horas trabajadas por día (solo fichajes cerrados)
-                    </p>
-                @else
-                    <x-empty-state icon="insert_chart_outlined" title="Sin datos para mostrar" description="No hay fichajes cerrados en los últimos 30 días." />
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Aviso de cuenta inactiva -->
 @if(!$user->isActive())
 <div class="row">
@@ -88,5 +63,5 @@
 @endsection
 
 @push('page-data')
-<script>window.__pageData = { chartData: @json($chartData ?? null) };</script>
+<script>window.__pageData = {};</script>
 @endpush

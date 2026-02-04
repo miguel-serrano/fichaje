@@ -13,6 +13,31 @@
     </div>
 </div>
 
+<!-- Histórico de Fichajes - Gráfica -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    <md-icon style="margin-right: 8px;">show_chart</md-icon>
+                    Histórico de Fichajes
+                </span>
+
+                @if(isset($chartData) && $chartData['hasData'])
+                    <div style="position: relative; height: 300px; margin-top: 20px;">
+                        <canvas id="dailyHoursChart"></canvas>
+                    </div>
+                    <p class="text-secondary center-align" style="margin-top: 10px; font-size: 0.9rem;">
+                        Horas trabajadas por día (solo fichajes cerrados)
+                    </p>
+                @else
+                    <x-empty-state icon="insert_chart_outlined" title="Sin datos para mostrar" description="No hay fichajes cerrados en los últimos 30 días." />
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Horas trabajadas del mes -->
     <div class="col s12 l6">
@@ -59,6 +84,7 @@ window.__pageData = {
     hoursTarget: @json($hoursTarget),
     approvedDays: @json($approvedDays),
     holidaysTarget: @json($holidaysTarget),
+    chartData: @json($chartData),
 };
 </script>
 @endpush

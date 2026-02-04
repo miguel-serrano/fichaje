@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Report;
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
+use App\DDD\TimeTracking\Application\Query\GetDailyHoursHistoryQuery;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
@@ -32,6 +33,7 @@ class MyReportController extends Controller
             'hoursTarget' => 160,
             'approvedDays' => $holidaysData['approved'],
             'holidaysTarget' => 22,
+            'chartData' => $this->getChartData($userId),
         ]);
     }
 
@@ -55,6 +57,19 @@ class MyReportController extends Controller
         return [
             'worked' => round($totalSeconds / 3600, 1),
         ];
+    }
+
+    /**
+     * @return array{labels: array<string>, data: array<float>, hasData: bool}
+     */
+    private function getChartData(int $userId): array
+    {
+        return $this->queryBus->dispatch(
+            GetDailyHoursHistoryQuery::create(
+                userId: $userId,
+                days: 0,
+            )
+        )->response();
     }
 
     /**

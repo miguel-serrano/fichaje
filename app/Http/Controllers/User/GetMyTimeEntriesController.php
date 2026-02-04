@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
-use App\DDD\TimeTracking\Application\Query\GetDailyHoursHistoryQuery;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
@@ -32,7 +31,6 @@ class GetMyTimeEntriesController extends Controller
                 'monthlyRegistros' => $this->getMonthlyRegistros($authenticatedUser),
                 'dailyRegistros' => $dailyRegistrosData['registros'],
                 'totalMes' => $dailyRegistrosData['total_mes_actual'],
-                'chartData' => $this->getChartData($userId),
                 'isAdmin' => false,
             ]);
         } catch (\Exception $e) {
@@ -80,18 +78,5 @@ class GetMyTimeEntriesController extends Controller
             $user->timeEntries(),
             fn (TimeEntry $r) => date('Y-m', $r->startTime()) === date('Y-m')
         );
-    }
-
-    /**
-     * @return array{labels: array<string>, data: array<float>, hasData: bool}
-     */
-    private function getChartData(string $userId): array
-    {
-        return $this->queryBus->dispatch(
-            GetDailyHoursHistoryQuery::create(
-                userId: (int) $userId,
-                days: 0,
-            )
-        )->response();
     }
 }
