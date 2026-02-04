@@ -14,53 +14,72 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Paso 1: Eliminar índice existente que depende de las columnas de fecha (si existe)
-        $indexExists = DB::select("SHOW INDEXES FROM time_entries WHERE Key_name = 'idx_user_time_range'");
-        if (! empty($indexExists)) {
+        // Paso 1: Eliminar foreign key para poder eliminar índices
+        $fkExists = DB::select("SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'time_entries' AND CONSTRAINT_NAME = 'time_entries_user_id_foreign'");
+        if (! empty($fkExists)) {
             Schema::table('time_entries', function (Blueprint $table) {
-                $table->dropIndex('idx_user_time_range');
+                $table->dropForeign('time_entries_user_id_foreign');
             });
         }
 
-        // Paso 2: Agregar columnas temporales con tipo BIGINT
+        // Paso 2: Eliminar todos los índices personalizados
+        $indexes = ['idx_user_open_entries', 'idx_entrada_date', 'idx_salida_date', 'idx_user_entrada', 'idx_date_range', 'idx_user_time_range'];
+        foreach ($indexes as $indexName) {
+            $indexExists = DB::select('SHOW INDEXES FROM time_entries WHERE Key_name = ?', [$indexName]);
+            if (! empty($indexExists)) {
+                Schema::table('time_entries', function (Blueprint $table) use ($indexName) {
+                    $table->dropIndex($indexName);
+                });
+            }
+        }
+
+        // Paso 3: Convertir columnas solo si aún son TIMESTAMP (idempotente)
+        $columnType = DB::select("SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'time_entries' AND COLUMN_NAME = 'entrada'");
+        if (! empty($columnType) && $columnType[0]->DATA_TYPE === 'timestamp') {
+            // Agregar columnas temporales con tipo BIGINT
+            Schema::table('time_entries', function (Blueprint $table) {
+                $table->unsignedBigInteger('entrada_unix')->nullable()->after('user_id');
+                $table->unsignedBigInteger('salida_unix')->nullable()->after('entrada_unix');
+                $table->unsignedBigInteger('created_at_unix')->nullable()->after('auto_close_reason');
+                $table->unsignedBigInteger('updated_at_unix')->nullable()->after('created_at_unix');
+            });
+
+            // Migrar datos existentes
+            DB::statement('UPDATE time_entries SET entrada_unix = UNIX_TIMESTAMP(entrada)');
+            DB::statement('UPDATE time_entries SET salida_unix = UNIX_TIMESTAMP(salida) WHERE salida IS NOT NULL');
+            DB::statement('UPDATE time_entries SET created_at_unix = COALESCE(UNIX_TIMESTAMP(created_at), UNIX_TIMESTAMP(entrada))');
+            DB::statement('UPDATE time_entries SET updated_at_unix = COALESCE(UNIX_TIMESTAMP(updated_at), UNIX_TIMESTAMP(created_at), UNIX_TIMESTAMP(entrada))');
+            $now = time();
+            DB::statement("UPDATE time_entries SET created_at_unix = {$now} WHERE created_at_unix IS NULL");
+            DB::statement("UPDATE time_entries SET updated_at_unix = {$now} WHERE updated_at_unix IS NULL");
+
+            // Eliminar columnas antiguas
+            Schema::table('time_entries', function (Blueprint $table) {
+                $table->dropColumn(['entrada', 'salida', 'created_at', 'updated_at']);
+            });
+
+            // Renombrar columnas nuevas
+            Schema::table('time_entries', function (Blueprint $table) {
+                $table->renameColumn('entrada_unix', 'entrada');
+                $table->renameColumn('salida_unix', 'salida');
+                $table->renameColumn('created_at_unix', 'created_at');
+                $table->renameColumn('updated_at_unix', 'updated_at');
+            });
+
+            // Hacer campos NOT NULL
+            Schema::table('time_entries', function (Blueprint $table) {
+                $table->unsignedBigInteger('entrada')->nullable(false)->change();
+                $table->unsignedBigInteger('created_at')->nullable(false)->change();
+                $table->unsignedBigInteger('updated_at')->nullable(false)->change();
+            });
+        }
+
+        // Paso 4: Recrear foreign key
         Schema::table('time_entries', function (Blueprint $table) {
-            $table->unsignedBigInteger('entrada_unix')->nullable()->after('user_id');
-            $table->unsignedBigInteger('salida_unix')->nullable()->after('entrada_unix');
-            $table->unsignedBigInteger('created_at_unix')->nullable()->after('auto_close_reason');
-            $table->unsignedBigInteger('updated_at_unix')->nullable()->after('created_at_unix');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        // Paso 3: Migrar datos existentes
-        DB::statement('UPDATE time_entries SET entrada_unix = UNIX_TIMESTAMP(entrada)');
-        DB::statement('UPDATE time_entries SET salida_unix = UNIX_TIMESTAMP(salida) WHERE salida IS NOT NULL');
-        DB::statement('UPDATE time_entries SET created_at_unix = COALESCE(UNIX_TIMESTAMP(created_at), UNIX_TIMESTAMP(entrada))');
-        DB::statement('UPDATE time_entries SET updated_at_unix = COALESCE(UNIX_TIMESTAMP(updated_at), UNIX_TIMESTAMP(created_at), UNIX_TIMESTAMP(entrada))');
-        // Asegurar que no queden NULLs
-        $now = time();
-        DB::statement("UPDATE time_entries SET created_at_unix = {$now} WHERE created_at_unix IS NULL");
-        DB::statement("UPDATE time_entries SET updated_at_unix = {$now} WHERE updated_at_unix IS NULL");
-
-        // Paso 4: Eliminar columnas antiguas
-        Schema::table('time_entries', function (Blueprint $table) {
-            $table->dropColumn(['entrada', 'salida', 'created_at', 'updated_at']);
-        });
-
-        // Paso 5: Renombrar columnas nuevas
-        Schema::table('time_entries', function (Blueprint $table) {
-            $table->renameColumn('entrada_unix', 'entrada');
-            $table->renameColumn('salida_unix', 'salida');
-            $table->renameColumn('created_at_unix', 'created_at');
-            $table->renameColumn('updated_at_unix', 'updated_at');
-        });
-
-        // Paso 6: Hacer entrada NOT NULL (siempre debe tener valor)
-        Schema::table('time_entries', function (Blueprint $table) {
-            $table->unsignedBigInteger('entrada')->nullable(false)->change();
-            $table->unsignedBigInteger('created_at')->nullable(false)->change();
-            $table->unsignedBigInteger('updated_at')->nullable(false)->change();
-        });
-
-        // Paso 7: Recrear índices
+        // Paso 5: Recrear índices
         Schema::table('time_entries', function (Blueprint $table) {
             $table->index(['user_id', 'salida'], 'idx_user_open_entries');
             $table->index(['entrada'], 'idx_entrada_date');

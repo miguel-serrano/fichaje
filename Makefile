@@ -1,4 +1,4 @@
-.PHONY: up down stop test test-filter build npm-dev npm-build front-build migrate fresh pint shell deploy cache-clear mysql
+.PHONY: up down stop test test-filter build npm-dev npm-build front-build migrate fresh seed pint shell deploy cache-clear mysql
 
 up:
 	vendor/bin/sail up -d
@@ -33,6 +33,9 @@ migrate:
 fresh:
 	vendor/bin/sail artisan migrate:fresh --seed
 
+seed:
+	vendor/bin/sail artisan db:seed
+
 pint:
 	vendor/bin/sail bin pint --dirty
 
@@ -43,7 +46,7 @@ cache-clear:
 	vendor/bin/sail artisan cache:clear
 
 mysql:
-	docker exec -it laravel_local-mysql-1 mysql -u sail -ppassword
+	docker exec -it fichaje-mysql-1 mysql -u sail -ppassword
 
 deploy:
 	./deploy-remote.sh
