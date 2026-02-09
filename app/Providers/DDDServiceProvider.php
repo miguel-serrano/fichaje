@@ -90,6 +90,8 @@ use App\DDD\User\Application\Query\GetAllUsersQuery;
 use App\DDD\User\Application\Query\GetUserByIdQuery;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
+use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Joselfonseca\LaravelTactician\CommandBusInterface as TacticianCommandBusInterface;
 
@@ -102,6 +104,7 @@ class DDDServiceProvider extends ServiceProvider
         $this->app->bind(QueryBusInterface::class, LaravelTacticianQueryBus::class);
 
         // Register Authentication services
+        $this->app->bind(StatefulGuard::class, fn ($app) => Auth::guard());
         $this->app->bind(AuthenticationService::class, LaravelAuthenticationService::class);
         $this->app->bind(PasswordHashingService::class, LaravelPasswordHashingService::class);
 
