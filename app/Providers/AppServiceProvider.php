@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\DDD\Notification\Infrastructure\Subscriber\SendDomainEventEmailSubscriber;
 use App\DDD\Shared\Domain\Event\DomainEventRepositoryInterface;
 use App\DDD\Shared\Domain\Event\EventBusInterface;
 use App\DDD\Shared\Infrastructure\Event\LaravelEventBus;
@@ -18,17 +19,18 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DomainEventRepositoryInterface::class, EloquentDomainEventRepository::class);
 
         $this->app->singleton(EventBusInterface::class, function ($app) {
-            return new LaravelEventBus(
+            $eventBus = new LaravelEventBus(
                 $app->make(DomainEventRepositoryInterface::class),
                 $app,
             );
+            $eventBus->subscribe(SendDomainEventEmailSubscriber::class);
+
+            return $eventBus;
         });
     }
 
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 }

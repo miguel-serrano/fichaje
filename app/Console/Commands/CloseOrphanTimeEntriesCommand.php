@@ -30,7 +30,7 @@ class CloseOrphanTimeEntriesCommand extends Command
     {
         $this->info('Buscando fichajes huérfanos...');
 
-        $admins = $userRepository->findAdmins();
+        $admins = $userRepository->findByRole('super_admin');
 
         if (empty($admins)) {
             $this->error('No hay administradores en el sistema para ejecutar esta operación.');
@@ -47,7 +47,7 @@ class CloseOrphanTimeEntriesCommand extends Command
         $total = $response->totalClosed();
         $usersAffected = $response->usersAffected();
 
-        if (0 === $total) {
+        if ($total === 0) {
             $this->info('No se encontraron fichajes huérfanos.');
         } else {
             $this->info("Cerrados {$total} fichajes huérfanos de {$usersAffected} usuarios.");

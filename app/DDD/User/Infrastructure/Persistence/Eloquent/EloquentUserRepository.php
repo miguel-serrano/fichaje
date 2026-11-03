@@ -25,7 +25,6 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     protected string $userRoleTable;
 
-    protected string $roleTable;
 
     public function __construct(protected ConnectionInterface $connection)
     {
@@ -55,7 +54,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
             if ($userId) {
                 $exists = $this->query()->where('id', $userId)->exists();
-                if (!$exists) {
+                if (! $exists) {
                     throw new UserNotFoundException("User {$userId} not found");
                 }
                 $this->query()->where('id', $userId)->update($data);
@@ -72,7 +71,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $row = $this->query()->where('id', $id->value())->first();
 
-        if (!$row) {
+        if (! $row) {
             return null;
         }
 
@@ -86,7 +85,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $user = $this->findById($id);
 
-        if (!$user) {
+        if (! $user) {
             throw new UserNotFoundException("User {$id->value()} not found");
         }
 
@@ -97,7 +96,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $row = $this->query()->where('uuid', $uuid->value())->first();
 
-        if (!$row) {
+        if (! $row) {
             return null;
         }
 
@@ -111,7 +110,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $user = $this->findByUuid($uuid);
 
-        if (!$user) {
+        if (! $user) {
             throw new UserNotFoundException("User with UUID {$uuid->value()} not found");
         }
 
@@ -152,7 +151,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             return $this->query()->where('id', $id->value())->delete() > 0;
         });
 
-        if (!$deleted) {
+        if (! $deleted) {
             throw UserDeletionFailedException::withId($id);
         }
     }
@@ -187,22 +186,23 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /** @return User[] */
-    public function findAdmins(): array
+    public function findByRole(string $roleSlug): array
     {
-        $adminUserIds = $this->connection->table($this->userRoleTable)
-            ->join('roles', 'user_role.role_id', '=', 'roles.id')
-            ->whereIn('roles.slug', ['super_admin', 'admin'])
-            ->pluck('user_role.user_id')
-            ->unique()
-            ->toArray();
+        $rows = $this->query()
+            ->select("{$this->userTable}.*")
+            ->join($this->userRoleTable, "{$this->userRoleTable}.user_id", '=', "{$this->userTable}.id")
+            ->join($this->roleTable, "{$this->roleTable}.id", '=', "{$this->userRoleTable}.role_id")
+            ->where("{$this->roleTable}.slug", $roleSlug)
+            ->distinct()
+            ->get();
 
-        if (empty($adminUserIds)) {
+        if ($rows->isEmpty()) {
             return [];
         }
 
-        $rows = $this->query()->whereIn('id', $adminUserIds)->get();
-        $allTimeEntries = $this->getTimeEntriesForUsers($adminUserIds);
-        $allRoleSlugs = $this->getRoleSlugsForUsers($adminUserIds);
+        $userIds = $rows->pluck('id')->toArray();
+        $allTimeEntries = $this->getTimeEntriesForUsers($userIds);
+        $allRoleSlugs = $this->getRoleSlugsForUsers($userIds);
 
         return $rows->map(function (\stdClass $row) use ($allTimeEntries, $allRoleSlugs) {
             $timeEntries = $allTimeEntries[$row->id] ?? [];
@@ -210,6 +210,15 @@ class EloquentUserRepository implements UserRepositoryInterface
 
             return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
         })->toArray();
+    }
+
+    public function userHasRole(UserId $id, string $roleSlug): bool
+    {
+        return $this->connection->table($this->userRoleTable)
+            ->join($this->roleTable, "{$this->roleTable}.id", '=', "{$this->userRoleTable}.role_id")
+            ->where("{$this->userRoleTable}.user_id", $id->value())
+            ->where("{$this->roleTable}.slug", $roleSlug)
+            ->exists();
     }
 
     /**
@@ -272,8 +281,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * @param array<int> $userIds
-     *
+     * @param  array<int>  $userIds
      * @return array<int, array<array-key, mixed>>
      */
     private function getTimeEntriesForUsers(array $userIds): array
@@ -310,8 +318,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * @param int[] $userIds
-     *
+     * @param  int[]  $userIds
      * @return array<int, string[]>
      */
     private function getRoleSlugsForUsers(array $userIds): array
@@ -331,8 +338,8 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * @param array<array-key, mixed> $timeEntries
-     * @param string[]                $roleSlugs
+     * @param  array<array-key, mixed>  $timeEntries
+     * @param  string[]  $roleSlugs
      */
     protected function toDomainEntity(\stdClass $row, array $timeEntries, array $roleSlugs = []): User
     {

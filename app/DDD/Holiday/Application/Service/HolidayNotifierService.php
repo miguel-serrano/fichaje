@@ -17,12 +17,11 @@ final class HolidayNotifierService
     public function __construct(
         private NotificationService $notificationService,
         private UserRepositoryInterface $userRepository,
-    ) {
-    }
+    ) {}
 
     public function notifyHolidayRequested(User $requester, DateRange $dateRange): void
     {
-        $admins = $this->userRepository->findAdmins();
+        $admins = $this->userRepository->findByRole('super_admin');
 
         $notification = Notification::create(
             NotificationType::HolidayRequested,

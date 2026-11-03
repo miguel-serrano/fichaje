@@ -43,7 +43,9 @@ interface UserRepositoryInterface
     public function findTodayTimeEntriesByUserId(UserId $id): array;
 
     /** @return User[] */
-    public function findAdmins(): array;
+    public function findByRole(string $roleSlug): array;
+
+    public function userHasRole(UserId $id, string $roleSlug): bool;
 
     /**
      * @return array{cerrados: \Illuminate\Support\Collection<int, \stdClass>, abiertos: \Illuminate\Support\Collection<int, \stdClass>}
