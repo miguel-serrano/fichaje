@@ -1,9 +1,36 @@
 /**
  * User index page module.
+ * - Actions menu (activate/deactivate user)
  * - Delete user confirmation dialog
  */
 
+function initActionsMenus() {
+    document.querySelectorAll('.user-actions-menu').forEach(function (wrapper) {
+        const trigger = wrapper.querySelector('.btn-user-actions');
+        const menu = wrapper.querySelector('md-menu');
+        const toggleItem = wrapper.querySelector('.btn-toggle-active');
+        const toggleForm = wrapper.querySelector('form');
+
+        if (!trigger || !menu) {
+            return;
+        }
+
+        menu.anchorElement = trigger;
+        trigger.addEventListener('click', function () {
+            menu.open = !menu.open;
+        });
+
+        if (toggleItem && toggleForm) {
+            toggleItem.addEventListener('click', function () {
+                toggleForm.submit();
+            });
+        }
+    });
+}
+
 export function init() {
+    initActionsMenus();
+
     const dialog = document.getElementById('delete-user-dialog');
     const deleteButtons = document.querySelectorAll('.btn-delete-user');
     const deleteForm = document.getElementById('delete-user-form');

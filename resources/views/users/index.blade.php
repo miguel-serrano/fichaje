@@ -112,19 +112,26 @@
                                                         <md-icon>visibility</md-icon>
                                                     </md-icon-button>
                                                     @if($isAdmin)
-                                                        <form action="{{ route('user.toggle-active', $user['id']) }}" method="POST" style="display: inline;">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            @if($user['is_active'])
-                                                                <md-icon-button type="submit" title="Desactivar usuario" style="--md-icon-button-icon-color: var(--error);">
-                                                                    <md-icon>block</md-icon>
-                                                                </md-icon-button>
-                                                            @else
-                                                                <md-icon-button type="submit" title="Activar usuario" style="--md-icon-button-icon-color: var(--success);">
-                                                                    <md-icon>check_circle</md-icon>
-                                                                </md-icon-button>
-                                                            @endif
-                                                        </form>
+                                                        <span class="user-actions-menu">
+                                                            <md-icon-button type="button" class="btn-user-actions" title="Más acciones">
+                                                                <md-icon>more_vert</md-icon>
+                                                            </md-icon-button>
+                                                            <md-menu positioning="popover">
+                                                                <md-menu-item class="btn-toggle-active">
+                                                                    @if($user['is_active'])
+                                                                        <md-icon slot="start" style="color: var(--error);">block</md-icon>
+                                                                        <div slot="headline">Desactivar usuario</div>
+                                                                    @else
+                                                                        <md-icon slot="start" style="color: var(--success);">check_circle</md-icon>
+                                                                        <div slot="headline">Activar usuario</div>
+                                                                    @endif
+                                                                </md-menu-item>
+                                                            </md-menu>
+                                                            <form action="{{ route('user.toggle-active', $user['id']) }}" method="POST" style="display: none;">
+                                                                @csrf
+                                                                @method('PATCH')
+                                                            </form>
+                                                        </span>
                                                         <md-icon-button
                                                             type="button"
                                                             class="btn-delete-user"
