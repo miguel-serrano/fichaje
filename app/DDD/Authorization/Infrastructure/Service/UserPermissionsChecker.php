@@ -30,12 +30,8 @@ final class UserPermissionsChecker implements UserPermissionsCheckerInterface
         $this->rolePermissionTable = RolePermission::tableName();
     }
 
-    public function hasPermission(int $userId, string $permissionSlug): bool
+    public function hasRolePermission(int $userId, string $permissionSlug): bool
     {
-        if ($this->isSuperAdmin($userId)) {
-            return true;
-        }
-
         return $this->connection->table($this->userRoleTable)
             ->join($this->rolePermissionTable, "{$this->userRoleTable}.role_id", '=', "{$this->rolePermissionTable}.role_id")
             ->join($this->permissionTable, "{$this->rolePermissionTable}.permission_id", '=', "{$this->permissionTable}.id")

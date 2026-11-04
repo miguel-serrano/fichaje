@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
+use App\DDD\Authorization\Domain\Exceptions\AccessDeniedException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\DDD\User\Application\Command\ToggleUserActiveCommand;
@@ -34,10 +35,7 @@ class ToggleUserActiveController extends Controller
             $message = $isActive ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente';
 
             return redirect()->route('users.index')->with('success', $message);
-        } catch (UserNotFoundException $e) {
-            return redirect()->route('users.index')
-                ->with('error', $e->getMessage());
-        } catch (UnauthorizedException $e) {
+        } catch (UserNotFoundException|UnauthorizedException|AccessDeniedException $e) {
             return redirect()->route('users.index')
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {

@@ -19,6 +19,6 @@ abstract class AbstractPermissionVoter extends AbstractVoter
             return true;
         }
 
-        return $this->permissionsChecker->hasPermission($userId, $attribute);
+        return $this->permissionsChecker->hasRolePermission($userId, $attribute);
     }
 }

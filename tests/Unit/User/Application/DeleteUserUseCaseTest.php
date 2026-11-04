@@ -3,12 +3,16 @@
 namespace Tests\Unit\User\Application;
 
 use App\DDD\Authorization\Application\Service\AuthorizationServiceInterface;
+use App\DDD\Authorization\Domain\Exceptions\AccessDeniedException;
 use App\DDD\Shared\Domain\Event\EventBusInterface;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
-use App\DDD\User\Domain\Exceptions\UnauthorizedException;
 use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\Models\User;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Tests\TestCase;
 
 class DeleteUserUseCaseTest extends TestCase
@@ -34,15 +38,15 @@ class DeleteUserUseCaseTest extends TestCase
         );
     }
 
-    public function test_it_deletes_a_user_successfully(): void
+    public function testItDeletesAUserSuccessfully(): void
     {
         // Seed roles if not present
-        $this->seed(\Database\Seeders\PermissionSeeder::class);
-        $this->seed(\Database\Seeders\RoleSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
 
         // Create admin user with super_admin role
-        $adminUser = \App\Models\User::create([
+        $adminUser = User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -52,7 +56,7 @@ class DeleteUserUseCaseTest extends TestCase
         $adminUser->assignRole('super_admin');
 
         // Create target user to delete
-        $eloquentUser = \App\Models\User::create([
+        $eloquentUser = User::create([
             'uuid' => '123e4567-e89b-12d3-a456-426614174000',
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -69,14 +73,14 @@ class DeleteUserUseCaseTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $userId]);
     }
 
-    public function test_it_throws_exception_when_user_not_found(): void
+    public function testItThrowsExceptionWhenUserNotFound(): void
     {
         // Seed roles if not present
-        $this->seed(\Database\Seeders\PermissionSeeder::class);
-        $this->seed(\Database\Seeders\RoleSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
 
-        $adminUser = \App\Models\User::create([
+        $adminUser = User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -93,14 +97,14 @@ class DeleteUserUseCaseTest extends TestCase
         $this->handler->handle($command);
     }
 
-    public function test_it_throws_exception_when_delete_fails(): void
+    public function testItThrowsExceptionWhenDeleteFails(): void
     {
         // Seed roles if not present
-        $this->seed(\Database\Seeders\PermissionSeeder::class);
-        $this->seed(\Database\Seeders\RoleSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
 
-        $adminUser = \App\Models\User::create([
+        $adminUser = User::create([
             'uuid' => \Illuminate\Support\Str::orderedUuid(),
             'name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -110,7 +114,7 @@ class DeleteUserUseCaseTest extends TestCase
         $adminUser->assignRole('super_admin');
 
         // Try to delete another admin - should fail authorization
-        $targetAdminUser = \App\Models\User::create([
+        $targetAdminUser = User::create([
             'uuid' => '123e4567-e89b-12d3-a456-426614174001',
             'name' => 'Another Admin',
             'email' => 'admin2@example.com',
@@ -119,9 +123,79 @@ class DeleteUserUseCaseTest extends TestCase
         ]);
         $targetAdminUser->assignRole('super_admin');
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(AccessDeniedException::class);
 
         $command = DeleteUserCommand::create($adminUser->id, $targetAdminUser->id);
         $this->handler->handle($command);
+    }
+
+    public function testAdminWithDeletePermissionDeletesAUser(): void
+    {
+        $this->seedRolesAndPermissions();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        $target = User::factory()->create();
+        $target->assignRole('employee');
+
+        $this->handler->handle(DeleteUserCommand::create($admin->id, $target->id));
+
+        $this->assertDatabaseMissing('users', ['id' => $target->id]);
+    }
+
+    public function testAdminCannotDeleteASuperAdmin(): void
+    {
+        $this->seedRolesAndPermissions();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        try {
+            $this->handler->handle(DeleteUserCommand::create($admin->id, $superAdmin->id));
+            $this->fail('Expected AccessDeniedException was not thrown');
+        } catch (AccessDeniedException) {
+            $this->assertDatabaseHas('users', ['id' => $superAdmin->id]);
+        }
+    }
+
+    public function testUserWithoutDeletePermissionCannotDeleteAUser(): void
+    {
+        $this->seedRolesAndPermissions();
+
+        $employee = User::factory()->create();
+        $employee->assignRole('employee');
+        $target = User::factory()->create();
+        $target->assignRole('employee');
+
+        try {
+            $this->handler->handle(DeleteUserCommand::create($employee->id, $target->id));
+            $this->fail('Expected AccessDeniedException was not thrown');
+        } catch (AccessDeniedException) {
+            $this->assertDatabaseHas('users', ['id' => $target->id]);
+        }
+    }
+
+    public function testAdminCannotDeleteThemselves(): void
+    {
+        $this->seedRolesAndPermissions();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        try {
+            $this->handler->handle(DeleteUserCommand::create($admin->id, $admin->id));
+            $this->fail('Expected AccessDeniedException was not thrown');
+        } catch (AccessDeniedException) {
+            $this->assertDatabaseHas('users', ['id' => $admin->id]);
+        }
+    }
+
+    private function seedRolesAndPermissions(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
     }
 }

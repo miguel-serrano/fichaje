@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(sort -u -k2)",
+      "Bash(xargs -I{} sh -c 'echo \"--- {}\"; sed -n \"/function handle/,/^    }/p\" {}')"
     ]
   }
 }

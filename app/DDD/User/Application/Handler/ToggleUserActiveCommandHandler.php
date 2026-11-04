@@ -19,7 +19,7 @@ class ToggleUserActiveCommandHandler
 
     public function handle(ToggleUserActiveCommand $command): bool
     {
-        $this->authorizationService->denyAccessUnlessGranted(UserPermission::ToggleActive->value, $command->authenticatedUserId->value());
+        $this->authorizationService->denyAccessUnlessGranted(UserPermission::ToggleActive->value, $command->authenticatedUserId->value(), $command->targetUserId->value());
 
         $user = $this->userRepository->findByIdOrFail($command->targetUserId);
 

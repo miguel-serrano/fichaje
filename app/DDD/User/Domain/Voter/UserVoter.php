@@ -13,12 +13,17 @@ use App\DDD\User\Domain\Permission\UserPermission;
  *
  * Lógica especial:
  * - canView: superAdmin O el propio usuario (subject = targetUserId)
- * - canDelete: superAdmin Y target NO es superAdmin (subject = targetUserId)
- * - canList, canToggleActive: solo superAdmin
+ * - canDelete, canToggleActive: (superAdmin O permiso por rol)
+ *   Y target NO es el propio usuario Y target NO es superAdmin (subject = targetUserId)
  * - Resto: por permisos estándar
  */
 final class UserVoter extends AbstractVoter
 {
+    private const TARGET_MANAGEMENT_ATTRIBUTES = [
+        UserPermission::Delete->value,
+        UserPermission::ToggleActive->value,
+    ];
+
     public function __construct(
         private readonly UserPermissionsCheckerInterface $permissionsChecker,
     ) {
@@ -37,20 +42,32 @@ final class UserVoter extends AbstractVoter
 
     protected function voteOnAttribute(int $userId, string $attribute, mixed $subject): bool
     {
-        if ($this->permissionsChecker->isSuperAdmin($userId)) {
-            if ($attribute === UserPermission::Delete->value && null !== $subject) {
-                return !$this->permissionsChecker->isSuperAdmin((int) $subject);
-            }
+        if (in_array($attribute, self::TARGET_MANAGEMENT_ATTRIBUTES, true)) {
+            return $this->canManageTarget($userId, $attribute, $subject);
+        }
 
+        if ($this->permissionsChecker->isSuperAdmin($userId)) {
             return true;
         }
 
         return match ($attribute) {
             UserPermission::View->value,
             UserPermission::ViewOwn->value => null !== $subject && $userId === (int) $subject,
-            UserPermission::ToggleActive->value,
-            UserPermission::Delete->value => false,
-            default => $this->permissionsChecker->hasPermission($userId, $attribute),
+            default => $this->permissionsChecker->hasRolePermission($userId, $attribute),
         };
+    }
+
+    private function canManageTarget(int $userId, string $attribute, mixed $subject): bool
+    {
+        if (null !== $subject) {
+            $targetUserId = (int) $subject;
+
+            if ($userId === $targetUserId || $this->permissionsChecker->isSuperAdmin($targetUserId)) {
+                return false;
+            }
+        }
+
+        return $this->permissionsChecker->isSuperAdmin($userId)
+            || $this->permissionsChecker->hasRolePermission($userId, $attribute);
     }
 }
