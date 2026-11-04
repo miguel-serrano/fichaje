@@ -27,6 +27,7 @@ class LaravelServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(AdministrationVoter::class);
+
         AuthorizationServiceProvider::tagVoter($this, AdministrationVoter::class);
     }
 
