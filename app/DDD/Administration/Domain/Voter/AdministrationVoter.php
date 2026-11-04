@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DDD\Administration\Domain\Voter;
 
 use App\DDD\Administration\Domain\Permission\AdministrationPermission;
-use App\DDD\Authorization\Infrastructure\Service\Voter\AbstractPermissionVoter;
+use App\DDD\Authorization\Domain\Voter\AbstractPermissionVoter;
 
 final class AdministrationVoter extends AbstractPermissionVoter
 {

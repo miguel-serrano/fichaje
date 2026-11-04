@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Domain\Voter;
 
-use App\DDD\Authorization\Infrastructure\Service\Voter\AbstractPermissionVoter;
+use App\DDD\Authorization\Domain\Voter\AbstractPermissionVoter;
 use App\DDD\TimeTracking\Domain\Permission\TimeTrackingPermission;
 
 final class TimeTrackingVoter extends AbstractPermissionVoter

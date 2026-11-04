@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DDD\Notification\Domain\Voter;
 
-use App\DDD\Authorization\Infrastructure\Service\Voter\AbstractPermissionVoter;
+use App\DDD\Authorization\Domain\Voter\AbstractPermissionVoter;
 use App\DDD\Notification\Domain\Permission\NotificationPermission;
 
 final class NotificationVoter extends AbstractPermissionVoter

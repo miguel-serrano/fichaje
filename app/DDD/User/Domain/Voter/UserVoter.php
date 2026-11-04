@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DDD\User\Domain\Voter;
 
 use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
-use App\DDD\Authorization\Infrastructure\Service\Voter\AbstractVoter;
+use App\DDD\Authorization\Domain\Voter\AbstractVoter;
 use App\DDD\User\Domain\Permission\UserPermission;
 
 /**

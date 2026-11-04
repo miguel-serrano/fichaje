@@ -3,7 +3,9 @@
     "allow": [
       "Bash(docker logs:*)",
       "Bash(sort -u -k2)",
-      "Bash(xargs -I{} sh -c 'echo \"--- {}\"; sed -n \"/function handle/,/^    }/p\" {}')"
+      "Bash(xargs -I{} sh -c 'echo \"--- {}\"; sed -n \"/function handle/,/^    }/p\" {}')",
+      "Bash(git mv *)",
+      "Bash(xargs sed -i '' 's/Authorization\\\\\\\\Infrastructure\\\\\\\\Service\\\\\\\\Voter/Authorization\\\\\\\\Domain\\\\\\\\Voter/g')"
     ]
   }
 }

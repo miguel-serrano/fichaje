@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DDD\Authorization\Infrastructure\Service\Voter;
+namespace App\DDD\Authorization\Domain\Voter;
 
 use App\DDD\Authorization\Domain\Interface\VoterInterface;
 use App\DDD\Authorization\Domain\ValueObjects\VoteResult;

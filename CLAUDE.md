@@ -348,6 +348,7 @@ app/DDD/
 
 - **Bounded Context User (referencia para refactorizar)**: `.claude/docs/refactor-feb.md`
 - **Base de datos de testing**: `.claude/docs/testing-database.md`
+- **Sistema de autorización (voters)**: `.claude/docs/sistema-autorizacion-voters.md` — todo cambio en autorización, voters o permisos se documenta en su "Registro de cambios"
 - **Debugging**: `/telescope`
 - **Pre-commit hook**: php-cs-fixer con reglas `@Symfony`
 - **Skill disponible**: `/php-fixer-symfony`

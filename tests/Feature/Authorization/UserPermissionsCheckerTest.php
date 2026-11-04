@@ -3,7 +3,7 @@
 namespace Tests\Feature\Authorization;
 
 use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
-use App\DDD\Authorization\Infrastructure\Service\Voter\AbstractPermissionVoter;
+use App\DDD\Authorization\Domain\Voter\AbstractPermissionVoter;
 use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 use App\DDD\User\Domain\Permission\UserPermission;
 use App\Models\Permission;
