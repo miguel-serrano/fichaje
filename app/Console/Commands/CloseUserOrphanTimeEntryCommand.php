@@ -13,7 +13,7 @@ use App\Models\User as UserModel;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 class CloseUserOrphanTimeEntryCommand extends Command
 {
@@ -42,6 +42,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
         UserRepositoryInterface $userRepository,
         NotificationService $notificationService,
         ConnectionInterface $connection,
+        LoggerInterface $logger,
     ): int {
         $this->connection = $connection;
         $uuid = $this->argument('uuid');
@@ -50,7 +51,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
 
         $user = $userRepository->findByUuid(new Uuid($uuid));
 
-        if (!$user) {
+        if (! $user) {
             $this->error("Usuario no encontrado con UUID: {$uuid}");
 
             return Command::FAILURE;
@@ -136,7 +137,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
         );
         $notificationService->notify($user, $notification);
 
-        Log::info('Fichajes cerrados manualmente para usuario', [
+        $logger->info('Fichajes cerrados manualmente para usuario', [
             'user_uuid' => $uuid,
             'entries_closed' => count($closedEntries),
         ]);
@@ -158,7 +159,7 @@ class CloseUserOrphanTimeEntryCommand extends Command
             ->where('entrada', '<=', $dayEnd)
             ->whereNotNull('salida');
 
-        if (null !== $excludeEntryId) {
+        if ($excludeEntryId !== null) {
             $query->where('id', '!=', $excludeEntryId);
         }
 
@@ -178,15 +179,15 @@ class CloseUserOrphanTimeEntryCommand extends Command
     }
 
     /**
-     * @param array<int, array<string, mixed>> $entries
+     * @param  array<int, array<string, mixed>>  $entries
      */
     private function buildNotificationMessage(array $entries): string
     {
-        if (1 === count($entries)) {
+        if (count($entries) === 1) {
             $entry = $entries[0];
             $entradaTimestamp = strtotime($entry['entrada']);
             $salidaTimestamp = strtotime($entry['salida']);
-            $reason = 'max_hours_exceeded' === $entry['reason']
+            $reason = $entry['reason'] === 'max_hours_exceeded'
                 ? 'al alcanzar el límite de 8 horas diarias'
                 : 'al final del día';
 

@@ -4,8 +4,51 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a63f7cc913f653bb49b56c429b8ab2cb",
+    "content-hash": "de62e6441d9dcba7df1ac71d05758f87",
     "packages": [
+        {
+            "name": "akashjoshi1999/http-status-code",
+            "version": "v1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/akashjoshi1999/http-status-code.git",
+                "reference": "7db5dbbcc6a04e219a1a9ef2f8e30064694f1d86"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/akashjoshi1999/http-status-code/zipball/7db5dbbcc6a04e219a1a9ef2f8e30064694f1d86",
+                "reference": "7db5dbbcc6a04e219a1a9ef2f8e30064694f1d86",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HttpStatusCode\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aakash Joshi",
+                    "email": "akashjoshi61099@gmail.com"
+                }
+            ],
+            "description": "HTTP status code constants and helpers for PHP (Composer package)",
+            "support": {
+                "issues": "https://github.com/akashjoshi1999/http-status-code/issues",
+                "source": "https://github.com/akashjoshi1999/http-status-code/tree/v1.0"
+            },
+            "time": "2025-12-25T06:01:24+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.14.1",

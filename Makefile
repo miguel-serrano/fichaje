@@ -1,4 +1,4 @@
-.PHONY: up down stop test test-filter build npm-dev npm-build front-build migrate fresh seed pint shell deploy cache-clear mysql
+.PHONY: up down stop test test-filter build npm-dev npm-build front-build migrate fresh seed pint shell deploy cache-clear mysql logs logs-laravel
 
 up:
 	vendor/bin/sail up -d
@@ -47,6 +47,12 @@ cache-clear:
 
 mysql:
 	docker exec -it fichaje-mysql-1 mysql -u sail -ppassword
+
+logs:
+	tail -n 50 -F storage/logs/app-$$(date +%F).json | jq .
+
+logs-laravel:
+	tail -n 50 -F storage/logs/laravel.log
 
 deploy:
 	./deploy-remote.sh

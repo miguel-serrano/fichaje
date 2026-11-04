@@ -17,6 +17,7 @@ use App\DDD\User\Domain\Event\UserCreatedEvent;
 use App\DDD\User\Domain\Event\UserDeletedEvent;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
 use App\Mail\DomainEventMail;
+use HttpStatusCode\HttpStatus;
 use Illuminate\Contracts\Mail\Mailer;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -53,14 +54,26 @@ final class SendDomainEventEmailSubscriber implements DomainEventSubscriber
         $mail = DomainEventMail::fromDomainEvent($event);
 
         foreach ($this->userRepository->findByRole('super_admin') as $superAdmin) {
+
+            $this->logger->info(__CLASS__, [
+                'status' => HttpStatus::OK,
+                'event' => $event::eventName(),
+                'event_id' => $event->eventId(),
+                'data' => $event->toPrimitives(),
+                'recipient' => $superAdmin->email()->value(),
+            ]);
+
             try {
                 $this->mailer->to($superAdmin->email()->value())->send(clone $mail);
             } catch (Throwable $exception) {
-                $this->logger->error('No se pudo enviar el email del evento de dominio', [
-                    'event' => $event::eventName(),
-                    'event_id' => $event->eventId(),
-                    'recipient' => $superAdmin->email()->value(),
+
+                $this->logger->info('No se pudo enviar el email del evento de dominio', [
+                    'status' => HttpStatus::INTERNAL_SERVER_ERROR,
                     'exception' => $exception->getMessage(),
+                    'class' => __CLASS__,
+                    'event' => $event::eventName(),
+                    'data' => $event->toPrimitives(),
+                    'recipient' => $superAdmin->email()->value(),
                 ]);
             }
         }

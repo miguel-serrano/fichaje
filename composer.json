@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "akashjoshi1999/http-status-code": "^1.0",
         "guzzlehttp/guzzle": "^7.2",
         "jagarsoft/laravel-tactician": "^1.0",
         "laravel/framework": "^11.0",
