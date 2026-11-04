@@ -45,9 +45,9 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', ShowLoginFormController::class)->name('login');
-    Route::post('/login', LoginController::class);
+    Route::post('/login', LoginController::class)->middleware('throttle:login');
     Route::get('/register', ShowRegisterFormController::class)->name('register');
-    Route::post('/register', RegisterController::class);
+    Route::post('/register', RegisterController::class)->middleware('throttle:register');
 });
 
 Route::middleware('auth')->group(function () {

@@ -32,7 +32,6 @@ class User extends Authenticatable
         'password',
         'is_active',
         'accepted_terms',
-        'remember_token',
         'created_at',
         'updated_at',
     ];

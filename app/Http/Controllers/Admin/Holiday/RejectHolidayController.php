@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Holiday;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
+use App\DDD\Authorization\Domain\Exceptions\AccessDeniedException;
 use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
+use App\DDD\Holiday\Domain\Exceptions\HolidayRequestNotFoundException;
+use App\DDD\Holiday\Domain\Exceptions\HolidayRequestNotPendingException;
 use App\DDD\Shared\Domain\Bus\CommandBusInterface;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
 use App\Http\Controllers\Controller;
@@ -23,9 +26,15 @@ class RejectHolidayController extends Controller
     {
         $authenticatedUser = $this->queryBus->dispatch(new GetAuthenticatedUserQuery());
 
-        $this->commandBus->dispatch(
-            RejectHolidayRequestCommand::create($authenticatedUser->id()->value(), $id)
-        );
+        try {
+            $this->commandBus->dispatch(
+                RejectHolidayRequestCommand::create($authenticatedUser->id()->value(), $id)
+            );
+        } catch (HolidayRequestNotFoundException|HolidayRequestNotPendingException|AccessDeniedException $e) {
+            return redirect()
+                ->route('admin.holidays.index')
+                ->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('admin.holidays.index')

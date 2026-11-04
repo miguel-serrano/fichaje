@@ -20,7 +20,6 @@ use App\Mail\DomainEventMail;
 use HttpStatusCode\HttpStatus;
 use Illuminate\Contracts\Mail\Mailer;
 use Psr\Log\LoggerInterface;
-use Throwable;
 
 /**
  * Envía un email a los super administradores por cada evento de dominio publicado.
@@ -31,7 +30,8 @@ final class SendDomainEventEmailSubscriber implements DomainEventSubscriber
         private readonly Mailer $mailer,
         private readonly UserRepositoryInterface $userRepository,
         private readonly LoggerInterface $logger,
-    ) {}
+    ) {
+    }
 
     /** @return string[] */
     public static function subscribedTo(): array
@@ -54,7 +54,6 @@ final class SendDomainEventEmailSubscriber implements DomainEventSubscriber
         $mail = DomainEventMail::fromDomainEvent($event);
 
         foreach ($this->userRepository->findByRole('super_admin') as $superAdmin) {
-
             $this->logger->info(__CLASS__, [
                 'status' => HttpStatus::OK,
                 'event' => $event::eventName(),
@@ -65,9 +64,8 @@ final class SendDomainEventEmailSubscriber implements DomainEventSubscriber
 
             try {
                 $this->mailer->to($superAdmin->email()->value())->send(clone $mail);
-            } catch (Throwable $exception) {
-
-                $this->logger->info('No se pudo enviar el email del evento de dominio', [
+            } catch (\Throwable $exception) {
+                $this->logger->error('No se pudo enviar el email del evento de dominio', [
                     'status' => HttpStatus::INTERNAL_SERVER_ERROR,
                     'exception' => $exception->getMessage(),
                     'class' => __CLASS__,

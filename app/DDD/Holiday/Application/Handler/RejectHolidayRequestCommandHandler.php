@@ -21,9 +21,15 @@ final class RejectHolidayRequestCommandHandler
 
     public function handle(RejectHolidayRequestCommand $command): void
     {
-        $this->authorizationService->denyAccessUnlessGranted(HolidayPermission::Reject->value, $command->authenticatedUserId->value());
+        $holidayRequest = $this->holidayService->findOrFail($command->holidayRequestId);
 
-        $holidayRequest = $this->holidayService->reject($command->holidayRequestId);
+        $this->authorizationService->denyAccessUnlessGranted(
+            HolidayPermission::Reject->value,
+            $command->authenticatedUserId->value(),
+            $holidayRequest->userId()->value(),
+        );
+
+        $this->holidayService->reject($holidayRequest);
 
         $this->notifierService->notifyHolidayRejected($holidayRequest);
     }

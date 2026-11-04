@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\DDD\Holiday\Application\Service;
 
 use App\DDD\Holiday\Domain\Entity\HolidayRequest;
+use App\DDD\Holiday\Domain\Exceptions\HolidayRequestNotFoundException;
+use App\DDD\Holiday\Domain\Exceptions\HolidayRequestNotPendingException;
 use App\DDD\Holiday\Domain\Exceptions\OverlappingHolidayException;
 use App\DDD\Holiday\Domain\Interface\HolidayRepositoryInterface;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
@@ -35,29 +37,38 @@ final class HolidayService
         return $dateRange;
     }
 
-    public function approve(HolidayRequestId $holidayRequestId): HolidayRequest
+    /**
+     * @throws HolidayRequestNotFoundException
+     */
+    public function findOrFail(HolidayRequestId $holidayRequestId): HolidayRequest
     {
-        $holidayRequest = $this->holidayRepository->findByIdOrFail($holidayRequestId);
-
-        $holidayRequest->approve();
-
-        $this->holidayRepository->save($holidayRequest);
-
-        $this->eventBus->publish(...$holidayRequest->pullDomainEvents());
-
-        return $holidayRequest;
+        return $this->holidayRepository->findByIdOrFail($holidayRequestId);
     }
 
-    public function reject(HolidayRequestId $holidayRequestId): HolidayRequest
+    /**
+     * @throws HolidayRequestNotPendingException
+     */
+    public function approve(HolidayRequest $holidayRequest): void
     {
-        $holidayRequest = $this->holidayRepository->findByIdOrFail($holidayRequestId);
+        $holidayRequest->approve();
 
+        $this->persistAndPublish($holidayRequest);
+    }
+
+    /**
+     * @throws HolidayRequestNotPendingException
+     */
+    public function reject(HolidayRequest $holidayRequest): void
+    {
         $holidayRequest->reject();
 
+        $this->persistAndPublish($holidayRequest);
+    }
+
+    private function persistAndPublish(HolidayRequest $holidayRequest): void
+    {
         $this->holidayRepository->save($holidayRequest);
 
         $this->eventBus->publish(...$holidayRequest->pullDomainEvents());
-
-        return $holidayRequest;
     }
 }

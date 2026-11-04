@@ -7,6 +7,7 @@ namespace App\DDD\Holiday\Domain\Entity;
 use App\DDD\Holiday\Domain\Event\HolidayRequestApprovedEvent;
 use App\DDD\Holiday\Domain\Event\HolidayRequestCreatedEvent;
 use App\DDD\Holiday\Domain\Event\HolidayRequestRejectedEvent;
+use App\DDD\Holiday\Domain\Exceptions\HolidayRequestNotPendingException;
 use App\DDD\Holiday\Domain\ValueObjects\DateRange;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayRequestId;
 use App\DDD\Holiday\Domain\ValueObjects\HolidayStatus;
@@ -113,8 +114,13 @@ final class HolidayRequest
         return null !== $this->updatedAt ? date($format, $this->updatedAt) : null;
     }
 
+    /**
+     * @throws HolidayRequestNotPendingException
+     */
     public function approve(): void
     {
+        $this->ensureIsPending();
+
         $this->status = HolidayStatus::Approved;
         $this->updatedAt = UnixTimestamp::now()->value();
 
@@ -126,8 +132,13 @@ final class HolidayRequest
         ));
     }
 
+    /**
+     * @throws HolidayRequestNotPendingException
+     */
     public function reject(): void
     {
+        $this->ensureIsPending();
+
         $this->status = HolidayStatus::Rejected;
         $this->updatedAt = UnixTimestamp::now()->value();
 
@@ -142,6 +153,16 @@ final class HolidayRequest
     public function isPending(): bool
     {
         return $this->status->isPending();
+    }
+
+    /**
+     * @throws HolidayRequestNotPendingException
+     */
+    private function ensureIsPending(): void
+    {
+        if (!$this->isPending()) {
+            throw HolidayRequestNotPendingException::forStatus($this->status);
+        }
     }
 
     public function isApproved(): bool
