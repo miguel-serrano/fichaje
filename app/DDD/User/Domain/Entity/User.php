@@ -5,9 +5,6 @@ namespace App\DDD\User\Domain\Entity;
 use App\DDD\Authentication\Domain\ValueObjects\HashedPassword;
 use App\DDD\Shared\Domain\Event\RecordsDomainEvents;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
-use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
-use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
-use App\DDD\TimeTracking\Domain\Exceptions\UnsavedUserCannotClockInException;
 use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
 use App\DDD\TimeTracking\Domain\Interface\ClockOutValidatorInterface;
 use App\DDD\User\Domain\Event\UserActivationToggledEvent;
@@ -35,6 +32,7 @@ final class User
         private array $timeEntries = [],
         /** @var string[] */
         private array $roleSlugs = [],
+        private bool $acceptedTerms = false,
     ) {
     }
 
@@ -60,6 +58,7 @@ final class User
         bool $isActive,
         array $timeEntries = [],
         array $roleSlugs = [],
+        bool $acceptedTerms = false,
     ): self {
         $user = new self(
             null !== $id ? new UserId($id) : null,
@@ -69,7 +68,8 @@ final class User
             $isActive,
             null,
             [],
-            $roleSlugs
+            $roleSlugs,
+            $acceptedTerms
         );
 
         foreach ($timeEntries as $entry) {
@@ -109,6 +109,16 @@ final class User
     public function isActive(): bool
     {
         return $this->isActive;
+    }
+
+    public function hasAcceptedTerms(): bool
+    {
+        return $this->acceptedTerms;
+    }
+
+    public function acceptTerms(): void
+    {
+        $this->acceptedTerms = true;
     }
 
     public function deactivate(): void
@@ -199,42 +209,6 @@ final class User
         $this->timeEntries[] = $timeEntry;
     }
 
-    public function clockIn(): void
-    {
-        if ($this->getOpenTimeEntry()) {
-            throw new OpenTimeEntryAlreadyExistsException();
-        }
-
-        if (!$this->id()) {
-            throw new UnsavedUserCannotClockInException();
-        }
-
-        $this->addTimeEntry(
-            TimeEntry::create($this->id())
-        );
-    }
-
-    public function clockOut(): void
-    {
-        $openEntry = $this->getOpenTimeEntry();
-        if (!$openEntry) {
-            throw new NoOpenTimeEntryException();
-        }
-
-        $openEntry->close();
-    }
-
-    private function getOpenTimeEntry(): ?TimeEntry
-    {
-        foreach ($this->timeEntries as $entry) {
-            if ($entry->isOpen()) {
-                return $entry;
-            }
-        }
-
-        return null;
-    }
-
     public function toArray(): array
     {
         return [
@@ -243,9 +217,6 @@ final class User
             'email' => $this->email->value(),
             'name' => $this->name->value(),
             'is_active' => $this->isActive(),
-            'registros_horarios' => array_map(function (TimeEntry $entry) {
-                return $entry->toArray();
-            }, $this->timeEntries),
         ];
     }
 }

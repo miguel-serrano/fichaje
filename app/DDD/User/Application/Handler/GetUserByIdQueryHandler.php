@@ -18,7 +18,7 @@ class GetUserByIdQueryHandler
 
     public function handle(GetUserByIdQuery $query): User
     {
-        $targetUser = $this->userRepository->findByIdOrFail($query->targetUserId);
+        $targetUser = $this->userRepository->findByIdWithTimeEntriesOrFail($query->targetUserId);
 
         $this->authorizationService->denyAccessUnlessGranted(UserPermission::View->value, $query->authenticatedUserId->value(), $query->targetUserId->value());
 

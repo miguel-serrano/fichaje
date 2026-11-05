@@ -37,24 +37,12 @@
                 <md-icon>menu</md-icon>
             </a>
             <ul id="nav-mobile" class="hide-on-med-and-down">
-                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+                @if($navigation['users'])
                     <x-nav-item
                         :route="route('users.index')"
                         icon="people"
                         label="Usuarios"
                         :active="request()->routeIs('users.*') || request()->routeIs('user.*')"
-                    />
-                    <x-nav-item
-                        :route="route('admin.roles.index')"
-                        icon="security"
-                        label="Roles"
-                        :active="request()->routeIs('admin.roles.*')"
-                    />
-                    <x-nav-item
-                        :route="route('admin.permissions.index')"
-                        icon="vpn_key"
-                        label="Permisos"
-                        :active="request()->routeIs('admin.permissions.*')"
                     />
                 @else
                     <x-nav-item
@@ -62,6 +50,22 @@
                         icon="chrome_reader_mode"
                         label="Seguimiento"
                         :active="request()->routeIs('user.me')"
+                    />
+                @endif
+                @if($navigation['roles'])
+                    <x-nav-item
+                        :route="route('admin.roles.index')"
+                        icon="security"
+                        label="Roles"
+                        :active="request()->routeIs('admin.roles.*')"
+                    />
+                @endif
+                @if($navigation['permissions'])
+                    <x-nav-item
+                        :route="route('admin.permissions.index')"
+                        icon="vpn_key"
+                        label="Permisos"
+                        :active="request()->routeIs('admin.permissions.*')"
                     />
                 @endif
                 <x-nav-item
@@ -82,7 +86,7 @@
                     label="Informe"
                     :active="request()->routeIs('report.*')"
                 />
-                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+                @if($navigation['holidayReview'])
                     <x-nav-item
                         :route="route('admin.holidays.index')"
                         icon="event_available"
@@ -171,24 +175,12 @@
             <span class="email">{{ auth()->user()->email }}</span>
         </div>
         <ul>
-            @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+            @if($navigation['users'])
                 <x-nav-item
                     :route="route('users.index')"
                     icon="people"
                     label="Usuarios"
                     :active="request()->routeIs('users.*') || request()->routeIs('user.*')"
-                />
-                <x-nav-item
-                    :route="route('admin.roles.index')"
-                    icon="security"
-                    label="Roles"
-                    :active="request()->routeIs('admin.roles.*')"
-                />
-                <x-nav-item
-                    :route="route('admin.permissions.index')"
-                    icon="vpn_key"
-                    label="Permisos"
-                    :active="request()->routeIs('admin.permissions.*')"
                 />
             @else
                 <x-nav-item
@@ -196,6 +188,22 @@
                     icon="chrome_reader_mode"
                     label="Seguimiento"
                     :active="request()->routeIs('user.me')"
+                />
+            @endif
+            @if($navigation['roles'])
+                <x-nav-item
+                    :route="route('admin.roles.index')"
+                    icon="security"
+                    label="Roles"
+                    :active="request()->routeIs('admin.roles.*')"
+                />
+            @endif
+            @if($navigation['permissions'])
+                <x-nav-item
+                    :route="route('admin.permissions.index')"
+                    icon="vpn_key"
+                    label="Permisos"
+                    :active="request()->routeIs('admin.permissions.*')"
                 />
             @endif
             <x-nav-item
@@ -216,7 +224,7 @@
                 label="Informe"
                 :active="request()->routeIs('report.*')"
             />
-            @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+            @if($navigation['holidayReview'])
                 <x-nav-item
                     :route="route('admin.holidays.index')"
                     icon="event_available"

@@ -12,7 +12,8 @@ use App\DDD\User\Domain\Permission\UserPermission;
  * Voter para el bounded context User.
  *
  * Lógica especial:
- * - canView: superAdmin O el propio usuario (subject = targetUserId)
+ * - canView: superAdmin O el propio usuario (subject = targetUserId) O permiso user.view por rol
+ * - canViewOwn: superAdmin O el propio usuario
  * - canDelete, canToggleActive: (superAdmin O permiso por rol)
  *   Y target NO es el propio usuario Y target NO es superAdmin (subject = targetUserId)
  * - Resto: por permisos estándar
@@ -51,10 +52,16 @@ final class UserVoter extends AbstractVoter
         }
 
         return match ($attribute) {
-            UserPermission::View->value,
-            UserPermission::ViewOwn->value => null !== $subject && $userId === (int) $subject,
+            UserPermission::View->value => $this->isOwnUser($userId, $subject)
+                || $this->permissionsChecker->hasRolePermission($userId, $attribute),
+            UserPermission::ViewOwn->value => $this->isOwnUser($userId, $subject),
             default => $this->permissionsChecker->hasRolePermission($userId, $attribute),
         };
+    }
+
+    private function isOwnUser(int $userId, mixed $subject): bool
+    {
+        return null !== $subject && $userId === (int) $subject;
     }
 
     private function canManageTarget(int $userId, string $attribute, mixed $subject): bool

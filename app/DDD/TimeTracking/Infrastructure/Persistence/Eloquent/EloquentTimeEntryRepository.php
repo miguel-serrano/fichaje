@@ -92,12 +92,56 @@ class EloquentTimeEntryRepository implements TimeEntryRepositoryInterface
             ->all();
     }
 
+    public function getClosedWorkedSecondsBetween(UserId $userId, int $fromTimestamp, int $toTimestamp): int
+    {
+        $entries = $this->query()
+            ->where('user_id', $userId->value())
+            ->where('entrada', '>=', $fromTimestamp)
+            ->where('entrada', '<', $toTimestamp)
+            ->whereNotNull('salida')
+            ->get(['entrada', 'salida']);
+
+        $totalSeconds = 0;
+
+        foreach ($entries as $entry) {
+            $totalSeconds += $entry->salida - $entry->entrada;
+        }
+
+        return $totalSeconds;
+    }
+
+    /** @return TimeEntry[] */
+    public function findClockingWindowByUserId(UserId $userId): array
+    {
+        $todayStart = strtotime('today 00:00:00');
+
+        return $this->query()
+            ->where('user_id', $userId->value())
+            ->where(function (Builder $query) use ($todayStart): void {
+                $query->whereNull('salida')->orWhere('entrada', '>=', $todayStart);
+            })
+            ->get()
+            ->map(fn (\stdClass $row) => $this->toDomainEntity($row))
+            ->all();
+    }
+
+    /** @return TimeEntry[] */
+    public function findByUserIdBetween(UserId $userId, int $fromTimestamp, int $toTimestamp): array
+    {
+        return $this->query()
+            ->where('user_id', $userId->value())
+            ->where('entrada', '>=', $fromTimestamp)
+            ->where('entrada', '<', $toTimestamp)
+            ->orderBy('entrada')
+            ->get()
+            ->map(fn (\stdClass $row) => $this->toDomainEntity($row))
+            ->all();
+    }
+
     /**
      * Obtiene los segundos trabajados por un usuario en una fecha específica.
      *
-     * @param UserId           $userId         ID del usuario
-     * @param int              $dateTimestamp  Timestamp Unix de la fecha (cualquier momento del día)
-     * @param TimeEntryId|null $excludeEntryId ID de entrada a excluir (opcional)
+     * @param UserId $userId ID del usuario
      */
     public function getWorkedSecondsByUserAndDate(UserId $userId, int $dateTimestamp, ?TimeEntryId $excludeEntryId = null): int
     {

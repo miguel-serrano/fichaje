@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use HttpStatusCode\HttpStatus;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -24,6 +25,6 @@ class HasRole
             }
         }
 
-        abort(403, 'No tienes el rol necesario para acceder a esta pagina.');
+        abort(HttpStatus::FORBIDDEN, 'No tienes el rol necesario para acceder a esta pagina.');
     }
 }

@@ -50,10 +50,12 @@ use App\DDD\Holiday\Application\Command\CreateHolidayRequestCommand;
 use App\DDD\Holiday\Application\Command\RejectHolidayRequestCommand;
 use App\DDD\Holiday\Application\Handler\ApproveHolidayRequestCommandHandler;
 use App\DDD\Holiday\Application\Handler\CreateHolidayRequestCommandHandler;
+use App\DDD\Holiday\Application\Handler\GetApprovedHolidayDaysInYearQueryHandler;
 use App\DDD\Holiday\Application\Handler\GetApprovedHolidaysQueryHandler;
 use App\DDD\Holiday\Application\Handler\GetPendingHolidaysQueryHandler;
 use App\DDD\Holiday\Application\Handler\GetUserHolidaysQueryHandler;
 use App\DDD\Holiday\Application\Handler\RejectHolidayRequestCommandHandler;
+use App\DDD\Holiday\Application\Query\GetApprovedHolidayDaysInYearQuery;
 use App\DDD\Holiday\Application\Query\GetApprovedHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetPendingHolidaysQuery;
 use App\DDD\Holiday\Application\Query\GetUserHolidaysQuery;
@@ -75,11 +77,15 @@ use App\DDD\TimeTracking\Application\Handler\ClockInCommandHandler;
 use App\DDD\TimeTracking\Application\Handler\ClockOutCommandHandler;
 use App\DDD\TimeTracking\Application\Handler\CloseOrphanTimeEntriesCommandHandler;
 use App\DDD\TimeTracking\Application\Handler\GetAccumulatedSecondsQueryHandler;
+use App\DDD\TimeTracking\Application\Handler\GetMonthlyWorkedHoursQueryHandler;
 use App\DDD\TimeTracking\Application\Handler\HasOpenTimeEntryQueryHandler;
 use App\DDD\TimeTracking\Application\Query\GetAccumulatedSecondsQuery;
+use App\DDD\TimeTracking\Application\Query\GetMonthlyWorkedHoursQuery;
 use App\DDD\TimeTracking\Application\Query\HasOpenTimeEntryQuery;
+use App\DDD\User\Application\Command\AcceptTermsCommand;
 use App\DDD\User\Application\Command\DeleteUserCommand;
 use App\DDD\User\Application\Command\ToggleUserActiveCommand;
+use App\DDD\User\Application\Handler\AcceptTermsCommandHandler;
 use App\DDD\User\Application\Handler\DeleteUserCommandHandler;
 use App\DDD\User\Application\Handler\GetAllUsersQueryHandler;
 use App\DDD\User\Application\Handler\GetUserByIdQueryHandler;
@@ -137,6 +143,7 @@ class DDDServiceProvider extends ServiceProvider
         // User Commands
         $tacticianBus->addHandler(DeleteUserCommand::class, DeleteUserCommandHandler::class);
         $tacticianBus->addHandler(ToggleUserActiveCommand::class, ToggleUserActiveCommandHandler::class);
+        $tacticianBus->addHandler(AcceptTermsCommand::class, AcceptTermsCommandHandler::class);
 
         // TimeTracking Commands
         $tacticianBus->addHandler(ClockInCommand::class, ClockInCommandHandler::class);
@@ -179,6 +186,7 @@ class DDDServiceProvider extends ServiceProvider
         // TimeTracking Queries
         $tacticianBus->addHandler(GetAccumulatedSecondsQuery::class, GetAccumulatedSecondsQueryHandler::class);
         $tacticianBus->addHandler(HasOpenTimeEntryQuery::class, HasOpenTimeEntryQueryHandler::class);
+        $tacticianBus->addHandler(GetMonthlyWorkedHoursQuery::class, GetMonthlyWorkedHoursQueryHandler::class);
 
         // Authentication Queries
         $tacticianBus->addHandler(GetAuthenticatedUserQuery::class, GetAuthenticatedUserQueryHandler::class);
@@ -187,6 +195,7 @@ class DDDServiceProvider extends ServiceProvider
         $tacticianBus->addHandler(GetUserHolidaysQuery::class, GetUserHolidaysQueryHandler::class);
         $tacticianBus->addHandler(GetPendingHolidaysQuery::class, GetPendingHolidaysQueryHandler::class);
         $tacticianBus->addHandler(GetApprovedHolidaysQuery::class, GetApprovedHolidaysQueryHandler::class);
+        $tacticianBus->addHandler(GetApprovedHolidayDaysInYearQuery::class, GetApprovedHolidayDaysInYearQueryHandler::class);
 
         // Administration Queries
         $tacticianBus->addHandler(GetUserRolesQuery::class, GetUserRolesQueryHandler::class);

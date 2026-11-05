@@ -25,6 +25,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     protected string $userRoleTable;
 
+    protected string $roleTable;
 
     public function __construct(protected ConnectionInterface $connection)
     {
@@ -45,6 +46,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 'email' => $user->email()->value(),
                 'name' => $user->name()->value(),
                 'is_active' => $user->isActive(),
+                'accepted_terms' => $user->hasAcceptedTerms(),
                 'updated_at' => $now,
             ];
 
@@ -54,7 +56,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
             if ($userId) {
                 $exists = $this->query()->where('id', $userId)->exists();
-                if (! $exists) {
+                if (!$exists) {
                     throw new UserNotFoundException("User {$userId} not found");
                 }
                 $this->query()->where('id', $userId)->update($data);
@@ -71,46 +73,71 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $row = $this->query()->where('id', $id->value())->first();
 
-        if (! $row) {
+        if (!$row) {
             return null;
         }
 
-        $timeEntries = $this->getTimeEntriesForUser($id->value());
-        $roleSlugs = $this->getRoleSlugsForUser($id->value());
-
-        return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
+        return $this->toDomainEntity($row, [], $this->getRoleSlugsForUser($id->value()));
     }
 
     public function findByIdOrFail(UserId $id): User
     {
         $user = $this->findById($id);
 
-        if (! $user) {
+        if (!$user) {
             throw new UserNotFoundException("User {$id->value()} not found");
         }
 
         return $user;
     }
 
+    public function findByIdWithTimeEntriesOrFail(UserId $id): User
+    {
+        $row = $this->query()->where('id', $id->value())->first();
+
+        if (!$row) {
+            throw new UserNotFoundException("User {$id->value()} not found");
+        }
+
+        return $this->toDomainEntity(
+            $row,
+            $this->getTimeEntriesForUser($id->value()),
+            $this->getRoleSlugsForUser($id->value())
+        );
+    }
+
+    /**
+     * @param UserId[] $ids
+     *
+     * @return array<int, User>
+     */
+    public function findByIds(array $ids): array
+    {
+        $userIds = array_values(array_unique(array_map(fn (UserId $id): int => $id->value(), $ids)));
+
+        if ([] === $userIds) {
+            return [];
+        }
+
+        return $this->mapRowsWithRoles($this->query()->whereIn('id', $userIds)->get());
+    }
+
     public function findByUuid(Uuid $uuid): ?User
     {
         $row = $this->query()->where('uuid', $uuid->value())->first();
 
-        if (! $row) {
+        if (!$row) {
             return null;
         }
 
-        $timeEntries = $this->getTimeEntriesForUser((int) $row->id);
-        $roleSlugs = $this->getRoleSlugsForUser((int) $row->id);
-
-        return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
+        return $this->toDomainEntity($row, [], $this->getRoleSlugsForUser((int) $row->id));
     }
 
     public function findByUuidOrFail(Uuid $uuid): User
     {
         $user = $this->findByUuid($uuid);
 
-        if (! $user) {
+        if (!$user) {
             throw new UserNotFoundException("User with UUID {$uuid->value()} not found");
         }
 
@@ -125,22 +152,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     /** @return User[] */
     public function findAll(): array
     {
-        $rows = $this->query()->get();
-
-        if ($rows->isEmpty()) {
-            return [];
-        }
-
-        $userIds = $rows->pluck('id')->toArray();
-        $allTimeEntries = $this->getTimeEntriesForUsers($userIds);
-        $allRoleSlugs = $this->getRoleSlugsForUsers($userIds);
-
-        return $rows->map(function (\stdClass $row) use ($allTimeEntries, $allRoleSlugs) {
-            $timeEntries = $allTimeEntries[$row->id] ?? [];
-            $roleSlugs = $allRoleSlugs[$row->id] ?? [];
-
-            return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
-        })->toArray();
+        return array_values($this->mapRowsWithRoles($this->query()->get()));
     }
 
     public function delete(UserId $id): void
@@ -151,7 +163,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             return $this->query()->where('id', $id->value())->delete() > 0;
         });
 
-        if (! $deleted) {
+        if (!$deleted) {
             throw UserDeletionFailedException::withId($id);
         }
     }
@@ -196,20 +208,7 @@ class EloquentUserRepository implements UserRepositoryInterface
             ->distinct()
             ->get();
 
-        if ($rows->isEmpty()) {
-            return [];
-        }
-
-        $userIds = $rows->pluck('id')->toArray();
-        $allTimeEntries = $this->getTimeEntriesForUsers($userIds);
-        $allRoleSlugs = $this->getRoleSlugsForUsers($userIds);
-
-        return $rows->map(function (\stdClass $row) use ($allTimeEntries, $allRoleSlugs) {
-            $timeEntries = $allTimeEntries[$row->id] ?? [];
-            $roleSlugs = $allRoleSlugs[$row->id] ?? [];
-
-            return $this->toDomainEntity($row, $timeEntries, $roleSlugs);
-        })->toArray();
+        return array_values($this->mapRowsWithRoles($rows));
     }
 
     public function userHasRole(UserId $id, string $roleSlug): bool
@@ -270,39 +269,67 @@ class EloquentUserRepository implements UserRepositoryInterface
         return $this->timeEntryQuery()
             ->where('user_id', $userId)
             ->get()
-            ->map(fn (\stdClass $entry) => [
-                'id' => $entry->id,
-                'user_id' => $entry->user_id,
-                'entrada' => $entry->entrada,
-                'salida' => $entry->salida,
-                'auto_closed' => $entry->auto_closed,
-                'auto_close_reason' => $entry->auto_close_reason,
-            ])->toArray();
+            ->map(fn (\stdClass $entry) => $this->timeEntryToPrimitives($entry))
+            ->toArray();
     }
 
     /**
-     * @param  array<int>  $userIds
-     * @return array<int, array<array-key, mixed>>
+     * "Ventana de fichaje": entradas abiertas (de cualquier día) + entradas que empezaron hoy.
+     * Mismo criterio que TimeEntryRepositoryInterface::findClockingWindowByUserId().
+     *
+     * @return array<array-key, mixed>
      */
-    private function getTimeEntriesForUsers(array $userIds): array
+    protected function getClockingWindowTimeEntriesForUser(int $userId): array
     {
-        if (empty($userIds)) {
-            return [];
-        }
+        $todayStart = $this->todayBounds()['start'];
 
         return $this->timeEntryQuery()
-            ->whereIn('user_id', $userIds)
+            ->where('user_id', $userId)
+            ->where(function (Builder $query) use ($todayStart): void {
+                $query->whereNull('salida')->orWhere('entrada', '>=', $todayStart);
+            })
             ->get()
-            ->groupBy('user_id')
-            ->map(fn ($entries) => $entries->map(fn (\stdClass $entry) => [
-                'id' => $entry->id,
-                'user_id' => $entry->user_id,
-                'entrada' => $entry->entrada,
-                'salida' => $entry->salida,
-                'auto_closed' => $entry->auto_closed,
-                'auto_close_reason' => $entry->auto_close_reason,
-            ])->toArray())
+            ->map(fn (\stdClass $entry) => $this->timeEntryToPrimitives($entry))
             ->toArray();
+    }
+
+    /**
+     * @return array{id: int, user_id: int, entrada: int, salida: ?int, auto_closed: mixed, auto_close_reason: ?string}
+     */
+    private function timeEntryToPrimitives(\stdClass $entry): array
+    {
+        return [
+            'id' => $entry->id,
+            'user_id' => $entry->user_id,
+            'entrada' => $entry->entrada,
+            'salida' => $entry->salida,
+            'auto_closed' => $entry->auto_closed,
+            'auto_close_reason' => $entry->auto_close_reason,
+        ];
+    }
+
+    /**
+     * Mapea filas de usuarios cargando sus roles en una sola consulta (sin fichajes).
+     *
+     * @param iterable<\stdClass> $rows
+     *
+     * @return array<int, User> indexado por id
+     */
+    private function mapRowsWithRoles(iterable $rows): array
+    {
+        $rowsById = [];
+        foreach ($rows as $row) {
+            $rowsById[(int) $row->id] = $row;
+        }
+
+        $allRoleSlugs = $this->getRoleSlugsForUsers(array_keys($rowsById));
+
+        $users = [];
+        foreach ($rowsById as $userId => $row) {
+            $users[$userId] = $this->toDomainEntity($row, [], $allRoleSlugs[$userId] ?? []);
+        }
+
+        return $users;
     }
 
     /**
@@ -318,7 +345,8 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * @param  int[]  $userIds
+     * @param int[] $userIds
+     *
      * @return array<int, string[]>
      */
     private function getRoleSlugsForUsers(array $userIds): array
@@ -338,8 +366,8 @@ class EloquentUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * @param  array<array-key, mixed>  $timeEntries
-     * @param  string[]  $roleSlugs
+     * @param array<array-key, mixed> $timeEntries
+     * @param string[]                $roleSlugs
      */
     protected function toDomainEntity(\stdClass $row, array $timeEntries, array $roleSlugs = []): User
     {
@@ -350,7 +378,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             $row->name,
             (bool) ($row->is_active ?? true),
             $timeEntries,
-            $roleSlugs
+            $roleSlugs,
+            (bool) ($row->accepted_terms ?? false),
         );
     }
 }

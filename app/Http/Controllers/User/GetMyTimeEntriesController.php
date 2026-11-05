@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\DDD\Authentication\Application\Query\GetAuthenticatedUserQuery;
 use App\DDD\Shared\Domain\Bus\QueryBusInterface;
+use App\DDD\TimeTracking\Application\Query\GetMonthlyTimeEntriesQuery;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\User\Application\Query\GetUserDailyRegistrosQuery;
 use App\DDD\User\Application\Query\GetUserTodayRegistrosQuery;
@@ -28,7 +29,7 @@ class GetMyTimeEntriesController extends Controller
             return view('users.detail', [
                 'user' => $authenticatedUser,
                 'allRegistros' => $this->getTodayRegistros($userId),
-                'monthlyRegistros' => $this->getMonthlyRegistros($authenticatedUser),
+                'monthlyRegistros' => $this->getMonthlyRegistros($userId),
                 'dailyRegistros' => $dailyRegistrosData['registros'],
                 'totalMes' => $dailyRegistrosData['total_mes_actual'],
                 'isAdmin' => false,
@@ -68,15 +69,14 @@ class GetMyTimeEntriesController extends Controller
     }
 
     /**
-     * @param \App\DDD\Authentication\Domain\Entity\AuthenticatedUser $user
-     *
      * @return array<TimeEntry>
      */
-    private function getMonthlyRegistros($user): array
+    private function getMonthlyRegistros(int $userId): array
     {
-        return array_filter(
-            $user->timeEntries(),
-            fn (TimeEntry $r) => date('Y-m', $r->startTime()) === date('Y-m')
-        );
+        $now = new \DateTimeImmutable();
+
+        return $this->queryBus->dispatch(
+            GetMonthlyTimeEntriesQuery::create($userId, (int) $now->format('Y'), (int) $now->format('n'))
+        )->timeEntries();
     }
 }

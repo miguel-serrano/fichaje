@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Application\Service;
 
-use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
 use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
-use App\DDD\TimeTracking\Domain\Exceptions\OpenTimeEntryAlreadyExistsException;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
-use App\DDD\TimeTracking\Domain\Services\DailyLimitValidatorService;
 use App\DDD\TimeTracking\Domain\Services\OrphanTimeEntryCloserService;
 use App\DDD\TimeTracking\Domain\Services\TimeEntryCalculationService;
 use App\DDD\User\Domain\Entity\User;
@@ -22,9 +19,7 @@ final class TimeTrackingService
     private function __construct(
         private UserRepositoryInterface $userRepository,
         private TimeEntryRepositoryInterface $timeEntryRepository,
-        private UserPermissionsCheckerInterface $permissionsChecker,
         private TimeEntryCalculationService $calculationService,
-        private DailyLimitValidatorService $dailyLimitValidator,
         private OrphanTimeEntryCloserService $orphanCloser,
         private LoggerInterface $logger,
     ) {
@@ -33,26 +28,20 @@ final class TimeTrackingService
     public static function create(
         UserRepositoryInterface $userRepository,
         TimeEntryRepositoryInterface $timeEntryRepository,
-        UserPermissionsCheckerInterface $permissionsChecker,
         LoggerInterface $logger,
     ): self {
-        $calculationService = TimeEntryCalculationService::create();
-        $dailyLimitValidator = DailyLimitValidatorService::create($calculationService);
-        $orphanCloser = OrphanTimeEntryCloserService::create();
-
         return new self(
             $userRepository,
             $timeEntryRepository,
-            $permissionsChecker,
-            $calculationService,
-            $dailyLimitValidator,
-            $orphanCloser,
+            TimeEntryCalculationService::create(),
+            OrphanTimeEntryCloserService::create(),
             $logger
         );
     }
 
     /**
      * Obtiene la entrada abierta del usuario.
+     * El usuario debe venir con su ventana de fichaje cargada (ActiveUserRepositoryInterface).
      *
      * @throws NoOpenTimeEntryException si no tiene una entrada abierta
      */
@@ -67,46 +56,6 @@ final class TimeTrackingService
         return $openEntry;
     }
 
-    public function clockIn(Uuid $userUuid): void
-    {
-        $user = $this->userRepository->findByUuid($userUuid);
-
-        if (!$user) {
-            throw new \InvalidArgumentException('Usuario no encontrado.');
-        }
-
-        if ($this->calculationService->hasOpenEntry($user->timeEntries())) {
-            throw new OpenTimeEntryAlreadyExistsException();
-        }
-
-        if (!$this->permissionsChecker->isSuperAdmin($user->id()->value())) {
-            $this->dailyLimitValidator->ensureDailyLimitNotExceeded($user->timeEntries());
-        }
-
-        $timeEntry = TimeEntry::create($user->id());
-
-        $this->timeEntryRepository->save($timeEntry);
-    }
-
-    public function clockOut(string $userUuid): void
-    {
-        $user = $this->userRepository->findByUuid(new Uuid($userUuid));
-
-        if (!$user) {
-            throw new \InvalidArgumentException('Usuario no encontrado.');
-        }
-
-        $openEntry = $this->calculationService->findOpenEntry($user->timeEntries());
-
-        if (!$openEntry) {
-            throw new NoOpenTimeEntryException();
-        }
-
-        $openEntry->close();
-
-        $this->timeEntryRepository->update($openEntry);
-    }
-
     public function getAccumulatedSeconds(string $userUuid): int
     {
         $user = $this->userRepository->findByUuid(new Uuid($userUuid));
@@ -115,7 +64,9 @@ final class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        return $this->calculationService->calculateTodayAccumulatedSeconds($user->timeEntries());
+        return $this->calculationService->calculateTodayAccumulatedSeconds(
+            $this->timeEntryRepository->findClockingWindowByUserId($user->id())
+        );
     }
 
     public function hasOpenTimeEntry(string $userUuid): bool
@@ -126,7 +77,9 @@ final class TimeTrackingService
             throw new \InvalidArgumentException('Usuario no encontrado.');
         }
 
-        return $this->calculationService->hasOpenEntry($user->timeEntries());
+        return $this->calculationService->hasOpenEntry(
+            $this->timeEntryRepository->findClockingWindowByUserId($user->id())
+        );
     }
 
     /**

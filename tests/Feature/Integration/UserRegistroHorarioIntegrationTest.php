@@ -2,9 +2,8 @@
 
 namespace Tests\Feature\Integration;
 
-use App\DDD\User\Domain\Interface\UserRepositoryInterface;
-use App\DDD\User\Domain\ValueObjects\Uuid;
 use App\Models\Role;
+use App\Models\TimeEntry;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -15,8 +14,6 @@ use Tests\TestCase;
 
 class UserRegistroHorarioIntegrationTest extends TestCase
 {
-    private UserRepositoryInterface $userRepository;
-
     private User $authenticatedUser;
 
     protected function setUp(): void
@@ -29,7 +26,6 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->seed(RoleSeeder::class);
         $this->seed(RolePermissionSeeder::class);
 
-        $this->userRepository = $this->app->make(UserRepositoryInterface::class);
         $this->authenticatedUser = User::create([
             'uuid' => Str::orderedUuid(),
             'name' => 'Test User',
@@ -47,7 +43,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->actingAs($this->authenticatedUser);
     }
 
-    public function test_users_index_shows_user_list(): void
+    public function testUsersIndexShowsUserList(): void
     {
         // Crear usuario usando el modelo Eloquent
         $testUser = User::create([
@@ -72,7 +68,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->assertEquals('Test User', $foundUser['name']);
     }
 
-    public function test_complete_workflow_registro_horario(): void
+    public function testCompleteWorkflowRegistroHorario(): void
     {
         $entradaResponse = $this->post('/registro-horario/entrada');
         $entradaResponse->assertRedirect(route('user.me'));
@@ -97,7 +93,7 @@ class UserRegistroHorarioIntegrationTest extends TestCase
         $this->assertFalse($tieneRegistroAbiertoFinal);
     }
 
-    public function test_user_deletion_handles_registro_horario_gracefully(): void
+    public function testUserDeletionHandlesRegistroHorarioGracefully(): void
     {
         // Crear usuario usando el modelo Eloquent
         $testUser = User::create([
@@ -108,12 +104,8 @@ class UserRegistroHorarioIntegrationTest extends TestCase
             'is_active' => false,
         ]);
 
-        // Usar el repositorio para fichar con el usuario del dominio
-        $userEntity = $this->userRepository->findByUuid(new Uuid($testUser->uuid));
-        $userEntity->clockIn();
-        $this->userRepository->save($userEntity);
-        $userEntity->clockOut();
-        $this->userRepository->save($userEntity);
+        TimeEntry::factory()->count(2)->create(['user_id' => $testUser->id]);
+        $this->assertDatabaseHas('time_entries', ['user_id' => $testUser->id]);
 
         $deleteResponse = $this->delete("/user/{$testUser->id}");
         $deleteResponse->assertRedirect('/users');

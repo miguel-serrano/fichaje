@@ -5,7 +5,19 @@
       "Bash(sort -u -k2)",
       "Bash(xargs -I{} sh -c 'echo \"--- {}\"; sed -n \"/function handle/,/^    }/p\" {}')",
       "Bash(git mv *)",
-      "Bash(xargs sed -i '' 's/Authorization\\\\\\\\Infrastructure\\\\\\\\Service\\\\\\\\Voter/Authorization\\\\\\\\Domain\\\\\\\\Voter/g')"
+      "Bash(xargs sed -i '' 's/Authorization\\\\\\\\Infrastructure\\\\\\\\Service\\\\\\\\Voter/Authorization\\\\\\\\Domain\\\\\\\\Voter/g')",
+      "Bash(python3 -I - tests/Unit/RegistroHorario/Services/RegistroHorarioServiceTest.php)",
+      "Bash(python3 -I - tests/Feature/Integration/UserRegistroHorarioIntegrationTest.php)",
+      "Bash(python3 -I - resources/views/layouts/app.blade.php)",
+      "Bash(python3 -I - app/Http/Middleware/HasRole.php)",
+      "Bash(python3 -I - .env.example)",
+      "Bash(sed -n '/function __invoke/,/^    }/p' app/Http/Controllers/User/GetMyTimeEntriesController.php)",
+      "Bash(sed -n '/function handle/,/^    }/p' app/DDD/User/Application/Handler/GetUserDailyRegistrosQueryHandler.php app/DDD/User/Application/Handler/GetUserTodayRegistrosQueryHandler.php)",
+      "Bash(python3 -I - app/DDD/User/Infrastructure/Persistence/Eloquent/EloquentUserRepository.php)",
+      "Bash(python3 -I - app/DDD/User/Domain/Interface/UserRepositoryInterface.php)",
+      "Bash(open -a Docker)",
+      "Bash(docker info *)",
+      "Bash(break)"
     ]
   }
 }

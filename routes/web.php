@@ -1,5 +1,8 @@
 <?php
 
+use App\DDD\Administration\Domain\Permission\AdministrationPermission;
+use App\DDD\Holiday\Domain\Permission\HolidayPermission;
+use App\DDD\User\Domain\Permission\UserPermission;
 use App\Http\Controllers\Admin\Holiday\ApproveHolidayController;
 use App\Http\Controllers\Admin\Holiday\IndexHolidaysAdminController;
 use App\Http\Controllers\Admin\Holiday\RejectHolidayController;
@@ -39,6 +42,15 @@ use App\Http\Controllers\User\ShowUserController;
 use App\Http\Controllers\User\ToggleUserActiveController;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * Construye el middleware de permisos a partir de los enums de cada bounded context.
+ * La comprobación la hacen los voters (ver App\Http\Middleware\HasPermission).
+ */
+$permission = static fn (BackedEnum ...$permissions): string => 'permission:'.implode(',', array_map(
+    static fn (BackedEnum $permission): string => (string) $permission->value,
+    $permissions,
+));
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -50,7 +62,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', RegisterController::class)->middleware('throttle:register');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function () use ($permission) {
     Route::post('/logout', LogoutController::class)->name('logout');
 
     Route::get('/bienvenida', [BienvenidoController::class, 'index'])->name('bienvenido');
@@ -61,17 +73,27 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/notifications/{id}/read', MarkNotificationAsReadController::class)->name('notifications.read');
 
-    Route::middleware('admin')->group(function () {
-        Route::get('/users', ListUsersController::class)->name('users.index');
-        Route::get('/user/{id}', ShowUserController::class)->name('user.show');
-        Route::patch('/user/{id}/toggle-active', ToggleUserActiveController::class)->name('user.toggle-active');
-        Route::delete('/user/{id}', DeleteUserController::class)->name('user.delete');
-        Route::get('/admin/holidays', IndexHolidaysAdminController::class)->name('admin.holidays.index');
-        Route::post('/admin/holidays/{id}/approve', ApproveHolidayController::class)->name('admin.holidays.approve');
-        Route::post('/admin/holidays/{id}/reject', RejectHolidayController::class)->name('admin.holidays.reject');
-        Route::post('/user/{id}/roles', AssignRoleToUserController::class)->name('user.roles.assign');
-        Route::delete('/user/{id}/roles/{roleSlug}', RemoveRoleFromUserController::class)->name('user.roles.remove');
+    Route::get('/users', ListUsersController::class)->name('users.index')
+        ->middleware($permission(UserPermission::View));
+    Route::get('/user/{id}', ShowUserController::class)->name('user.show')
+        ->middleware($permission(UserPermission::View));
+    Route::patch('/user/{id}/toggle-active', ToggleUserActiveController::class)->name('user.toggle-active')
+        ->middleware($permission(UserPermission::ToggleActive));
+    Route::delete('/user/{id}', DeleteUserController::class)->name('user.delete')
+        ->middleware($permission(UserPermission::Delete));
+    Route::post('/user/{id}/roles', AssignRoleToUserController::class)->name('user.roles.assign')
+        ->middleware($permission(AdministrationPermission::AssignRoles));
+    Route::delete('/user/{id}/roles/{roleSlug}', RemoveRoleFromUserController::class)->name('user.roles.remove')
+        ->middleware($permission(AdministrationPermission::AssignRoles));
 
+    Route::get('/admin/holidays', IndexHolidaysAdminController::class)->name('admin.holidays.index')
+        ->middleware($permission(HolidayPermission::ViewPending, HolidayPermission::ViewApproved));
+    Route::post('/admin/holidays/{id}/approve', ApproveHolidayController::class)->name('admin.holidays.approve')
+        ->middleware($permission(HolidayPermission::Approve));
+    Route::post('/admin/holidays/{id}/reject', RejectHolidayController::class)->name('admin.holidays.reject')
+        ->middleware($permission(HolidayPermission::Reject));
+
+    Route::middleware($permission(AdministrationPermission::ManageRoles))->group(function () {
         // Role Management
         Route::prefix('admin/roles')->name('admin.roles.')->group(function () {
             Route::get('/', ListRolesController::class)->name('index');
@@ -83,7 +105,9 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{id}', DeleteRoleController::class)->name('destroy');
             Route::put('/{id}/permissions', SyncPermissionsController::class)->name('permissions.sync');
         });
+    });
 
+    Route::middleware($permission(AdministrationPermission::ManagePermissions))->group(function () {
         // Permission Management
         Route::prefix('admin/permissions')->name('admin.permissions.')->group(function () {
             Route::get('/', ListPermissionsController::class)->name('index');

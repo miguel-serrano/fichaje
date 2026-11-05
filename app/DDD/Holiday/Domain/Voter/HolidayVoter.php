@@ -10,7 +10,7 @@ use App\DDD\Holiday\Domain\Permission\HolidayPermission;
 /**
  * Voter para el bounded context Holiday.
  *
- * - Approve, Reject: nadie puede revisar su propia solicitud (subject = userId del solicitante).
+ * - Approve, Reject: nadie puede revisar su propia solicitud salvo el superAdmin (subject = userId del solicitante).
  * - Resto: lógica estándar (superAdmin o permiso por rol).
  */
 final class HolidayVoter extends AbstractPermissionVoter
@@ -44,6 +44,7 @@ final class HolidayVoter extends AbstractPermissionVoter
     {
         return in_array($attribute, self::REVIEW_ATTRIBUTES, true)
             && null !== $subject
-            && $userId === (int) $subject;
+            && $userId === (int) $subject
+            && !$this->permissionsChecker->isSuperAdmin($userId);
     }
 }

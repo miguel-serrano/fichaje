@@ -3,10 +3,16 @@
 namespace App\DDD\User\Domain\Interface;
 
 use App\DDD\User\Domain\Entity\User;
+use App\DDD\User\Domain\Exceptions\UserDeletionFailedException;
+use App\DDD\User\Domain\Exceptions\UserNotFoundException;
 use App\DDD\User\Domain\ValueObjects\Email;
 use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
 
+/**
+ * Salvo que el método diga lo contrario, los usuarios se devuelven con sus roles pero
+ * SIN fichajes (timeEntries() vacío): cargar el historial completo en cada lectura no escala.
+ */
 interface UserRepositoryInterface
 {
     public function save(User $user): User;
@@ -14,14 +20,30 @@ interface UserRepositoryInterface
     public function findById(UserId $id): ?User;
 
     /**
-     * @throws \App\DDD\User\Domain\Exceptions\UserNotFoundException
+     * @throws UserNotFoundException
      */
     public function findByIdOrFail(UserId $id): User;
+
+    /**
+     * Igual que findByIdOrFail() pero con TODO el historial de fichajes (ficha de usuario).
+     *
+     * @throws UserNotFoundException
+     */
+    public function findByIdWithTimeEntriesOrFail(UserId $id): User;
+
+    /**
+     * Carga varios usuarios en una sola consulta (sin fichajes). Los ids inexistentes se ignoran.
+     *
+     * @param UserId[] $ids
+     *
+     * @return array<int, User> indexado por id
+     */
+    public function findByIds(array $ids): array;
 
     public function findByUuid(Uuid $uuid): ?User;
 
     /**
-     * @throws \App\DDD\User\Domain\Exceptions\UserNotFoundException
+     * @throws UserNotFoundException
      */
     public function findByUuidOrFail(Uuid $uuid): User;
 
@@ -31,7 +53,7 @@ interface UserRepositoryInterface
     public function findAll(): array;
 
     /**
-     * @throws \App\DDD\User\Domain\Exceptions\UserDeletionFailedException
+     * @throws UserDeletionFailedException
      */
     public function delete(UserId $id): void;
 

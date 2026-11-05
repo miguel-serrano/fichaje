@@ -32,6 +32,27 @@ interface TimeEntryRepositoryInterface
     public function getWorkedSecondsByUserAndDate(UserId $userId, int $dateTimestamp, ?TimeEntryId $excludeEntryId = null): int;
 
     /**
+     * Segundos trabajados en fichajes cerrados cuya entrada está en [from, to).
+     * Los fichajes abiertos no cuentan.
+     */
+    public function getClosedWorkedSecondsBetween(UserId $userId, int $fromTimestamp, int $toTimestamp): int;
+
+    /**
+     * "Ventana de fichaje": entradas abiertas (de cualquier día) + entradas que empezaron hoy.
+     * Es todo lo que necesitan los validadores de fichaje y el cálculo de segundos de hoy.
+     *
+     * @return TimeEntry[]
+     */
+    public function findClockingWindowByUserId(UserId $userId): array;
+
+    /**
+     * Fichajes del usuario cuya entrada está en [from, to), ordenados por entrada.
+     *
+     * @return TimeEntry[]
+     */
+    public function findByUserIdBetween(UserId $userId, int $fromTimestamp, int $toTimestamp): array;
+
+    /**
      * Close a time entry with auto-close metadata.
      *
      * @param TimeEntryId $id       ID de la entrada

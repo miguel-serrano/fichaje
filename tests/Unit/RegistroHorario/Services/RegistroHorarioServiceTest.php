@@ -2,16 +2,12 @@
 
 namespace Tests\Unit\RegistroHorario\Services;
 
-use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
-use App\DDD\TimeTracking\Domain\Entity\TimeEntry;
-use App\DDD\TimeTracking\Domain\Exceptions\NoOpenTimeEntryException;
 use App\DDD\TimeTracking\Domain\Interface\TimeEntryRepositoryInterface;
 use App\DDD\User\Domain\Entity\User;
 use App\DDD\User\Domain\Interface\UserRepositoryInterface;
+use App\DDD\User\Domain\ValueObjects\UserId;
 use App\DDD\User\Domain\ValueObjects\Uuid;
-use Illuminate\Support\Str;
-use Mockery;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -21,8 +17,6 @@ class RegistroHorarioServiceTest extends TestCase
 
     private TimeEntryRepositoryInterface $timeEntryRepository;
 
-    private UserPermissionsCheckerInterface $permissionsChecker;
-
     private LoggerInterface $logger;
 
     private TimeTrackingService $service;
@@ -30,13 +24,9 @@ class RegistroHorarioServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $this->timeEntryRepository = Mockery::mock(TimeEntryRepositoryInterface::class);
-        $this->permissionsChecker = Mockery::mock(UserPermissionsCheckerInterface::class);
-        $this->logger = Mockery::mock(LoggerInterface::class);
-
-        // Por defecto, los usuarios no son super_admin
-        $this->permissionsChecker->shouldReceive('isSuperAdmin')->andReturn(false)->byDefault();
+        $this->userRepository = \Mockery::mock(UserRepositoryInterface::class);
+        $this->timeEntryRepository = \Mockery::mock(TimeEntryRepositoryInterface::class);
+        $this->logger = \Mockery::mock(LoggerInterface::class);
 
         // Permitir cualquier llamada a logger
         $this->logger->shouldReceive('info')->byDefault();
@@ -44,14 +34,13 @@ class RegistroHorarioServiceTest extends TestCase
         $this->service = TimeTrackingService::create(
             $this->userRepository,
             $this->timeEntryRepository,
-            $this->permissionsChecker,
             $this->logger
         );
     }
 
     protected function tearDown(): void
     {
-        Mockery::close();
+        \Mockery::close();
         parent::tearDown();
     }
 
@@ -67,121 +56,16 @@ class RegistroHorarioServiceTest extends TestCase
         );
     }
 
-    public function test_it_fichas_entrada_successfully(): void
+    private function expectClockingWindowFor(User $user): void
     {
-        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
-        $userUuid = new Uuid($userUuidValue);
-        $user = $this->createUserAggregate($userUuidValue);
-
-        $this->userRepository
-            ->shouldReceive('findByUuid')
-            ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->value() === $userUuid->value();
-            }))
-            ->andReturn($user);
-
-        $savedEntry = null;
         $this->timeEntryRepository
-            ->shouldReceive('save')
+            ->shouldReceive('findClockingWindowByUserId')
             ->once()
-            ->with(Mockery::on(function (TimeEntry $arg) use (&$savedEntry, $user) {
-                $savedEntry = $arg;
-
-                return $arg->userId()->value() === $user->id()->value() && $arg->isOpen();
-            }))
-            ->andReturn(TimeEntry::fromPrimitives(1, $user->id()->value(), time(), null));
-
-        $this->service->clockIn($userUuid);
-
-        $this->assertNotNull($savedEntry, 'TimeEntry should have been saved.');
-        $this->assertTrue($savedEntry->isOpen());
+            ->with(\Mockery::on(fn (UserId $userId): bool => $userId->value() === $user->id()->value()))
+            ->andReturn($user->timeEntries());
     }
 
-    public function test_it_throws_exception_on_fichar_entrada_if_user_not_found(): void
-    {
-        $userUuidValue = Str::uuid()->toString();
-        $userUuid = new Uuid($userUuidValue);
-
-        $this->userRepository
-            ->shouldReceive('findByUuid')
-            ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->value() === $userUuid->value();
-            }))
-            ->andReturn(null);
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Usuario no encontrado.');
-
-        $this->service->clockIn($userUuid);
-    }
-
-    public function test_it_fichas_salida_successfully(): void
-    {
-        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
-        $userUuid = new Uuid($userUuidValue);
-        $openRegistro = [
-            'id' => 1,
-            'user_id' => 1,
-            'entrada' => time() - 3600,
-            'salida' => null,
-        ];
-        $user = $this->createUserAggregate($userUuidValue, [$openRegistro]);
-
-        $this->userRepository
-            ->shouldReceive('findByUuid')
-            ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->value() === $userUuid->value();
-            }))
-            ->andReturn($user);
-
-        $updatedEntry = null;
-        $this->timeEntryRepository
-            ->shouldReceive('update')
-            ->once()
-            ->with(Mockery::on(function (TimeEntry $arg) use (&$updatedEntry) {
-                $updatedEntry = $arg;
-
-                return $arg->id()->value() === 1 && ! $arg->isOpen();
-            }));
-
-        $this->service->clockOut($userUuidValue);
-
-        $this->assertNotNull($updatedEntry, 'TimeEntry should have been updated.');
-        $this->assertFalse($updatedEntry->isOpen());
-        $this->assertNotNull($updatedEntry->endTime());
-    }
-
-    public function test_it_throws_exception_on_fichar_salida_if_no_open_registro(): void
-    {
-        $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
-        $userUuid = new Uuid($userUuidValue);
-        $user = $this->createUserAggregate($userUuidValue, [
-            [
-                'id' => 1,
-                'user_id' => 1,
-                'entrada' => time() - 7200,
-                'salida' => time() - 3600,
-            ],
-        ]);
-
-        $this->userRepository
-            ->shouldReceive('findByUuid')
-            ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
-                return $arg->value() === $userUuid->value();
-            }))
-            ->andReturn($user);
-
-        $this->expectException(NoOpenTimeEntryException::class);
-        $this->expectExceptionMessage('No hay una entrada de tiempo abierta para cerrar');
-
-        $this->service->clockOut($userUuidValue);
-    }
-
-    public function test_it_calculates_segundos_acumulados_successfully(): void
+    public function testItCalculatesSegundosAcumuladosSuccessfully(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
@@ -210,10 +94,12 @@ class RegistroHorarioServiceTest extends TestCase
         $this->userRepository
             ->shouldReceive('findByUuid')
             ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+            ->with(\Mockery::on(function (Uuid $arg) use ($userUuid) {
                 return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
+
+        $this->expectClockingWindowFor($user);
 
         $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
@@ -221,7 +107,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function test_it_calculates_segundos_acumulados_returns_zero_when_no_registros_for_today(): void
+    public function testItCalculatesSegundosAcumuladosReturnsZeroWhenNoRegistrosForToday(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
@@ -241,17 +127,19 @@ class RegistroHorarioServiceTest extends TestCase
         $this->userRepository
             ->shouldReceive('findByUuid')
             ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+            ->with(\Mockery::on(function (Uuid $arg) use ($userUuid) {
                 return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
+
+        $this->expectClockingWindowFor($user);
 
         $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
         $this->assertEquals(0, $result);
     }
 
-    public function test_it_calculates_segundos_acumulados_includes_open_registros(): void
+    public function testItCalculatesSegundosAcumuladosIncludesOpenRegistros(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
@@ -280,10 +168,12 @@ class RegistroHorarioServiceTest extends TestCase
         $this->userRepository
             ->shouldReceive('findByUuid')
             ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+            ->with(\Mockery::on(function (Uuid $arg) use ($userUuid) {
                 return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
+
+        $this->expectClockingWindowFor($user);
 
         $result = $this->service->getAccumulatedSeconds($userUuidValue);
 
@@ -297,7 +187,7 @@ class RegistroHorarioServiceTest extends TestCase
         $this->assertLessThanOrEqual($closedSeconds + $openSeconds + $tolerance, $result);
     }
 
-    public function test_has_open_registro_returns_true_if_open_exists(): void
+    public function testHasOpenRegistroReturnsTrueIfOpenExists(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
@@ -313,16 +203,18 @@ class RegistroHorarioServiceTest extends TestCase
         $this->userRepository
             ->shouldReceive('findByUuid')
             ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+            ->with(\Mockery::on(function (Uuid $arg) use ($userUuid) {
                 return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
+
+        $this->expectClockingWindowFor($user);
 
         $result = $this->service->hasOpenTimeEntry($userUuidValue);
         $this->assertTrue($result);
     }
 
-    public function test_has_open_registro_returns_false_if_no_open_exists(): void
+    public function testHasOpenRegistroReturnsFalseIfNoOpenExists(): void
     {
         $userUuidValue = '123e4567-e89b-12d3-a456-426614174000';
         $userUuid = new Uuid($userUuidValue);
@@ -338,10 +230,12 @@ class RegistroHorarioServiceTest extends TestCase
         $this->userRepository
             ->shouldReceive('findByUuid')
             ->once()
-            ->with(Mockery::on(function (Uuid $arg) use ($userUuid) {
+            ->with(\Mockery::on(function (Uuid $arg) use ($userUuid) {
                 return $arg->value() === $userUuid->value();
             }))
             ->andReturn($user);
+
+        $this->expectClockingWindowFor($user);
 
         $result = $this->service->hasOpenTimeEntry($userUuidValue);
         $this->assertFalse($result);

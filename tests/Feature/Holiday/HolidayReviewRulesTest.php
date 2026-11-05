@@ -77,12 +77,35 @@ class HolidayReviewRulesTest extends TestCase
         $this->assertDatabaseMissing('notifications', ['user_id' => $employee->id]);
     }
 
-    public function testSuperAdminCannotApproveOwnRequest(): void
+    public function testSuperAdminCanApproveOwnRequest(): void
     {
         $superAdmin = $this->createUserWithRole('super_admin');
         $holidayRequest = HolidayRequest::factory()->create(['user_id' => $superAdmin->id]);
 
         $response = $this->actingAs($superAdmin)->post(route('admin.holidays.approve', $holidayRequest->id));
+
+        $response->assertRedirect(route('admin.holidays.index'));
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('holiday_requests', ['id' => $holidayRequest->id, 'status' => 'approved']);
+    }
+
+    public function testSuperAdminCanRejectOwnRequest(): void
+    {
+        $superAdmin = $this->createUserWithRole('super_admin');
+        $holidayRequest = HolidayRequest::factory()->create(['user_id' => $superAdmin->id]);
+
+        $response = $this->actingAs($superAdmin)->post(route('admin.holidays.reject', $holidayRequest->id));
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('holiday_requests', ['id' => $holidayRequest->id, 'status' => 'rejected']);
+    }
+
+    public function testAdminCannotApproveOwnRequest(): void
+    {
+        $admin = $this->createUserWithRole('admin');
+        $holidayRequest = HolidayRequest::factory()->create(['user_id' => $admin->id]);
+
+        $response = $this->actingAs($admin)->post(route('admin.holidays.approve', $holidayRequest->id));
 
         $response->assertRedirect(route('admin.holidays.index'));
         $response->assertSessionHas('error');

@@ -8,8 +8,6 @@ use App\DDD\Holiday\Domain\Exceptions\InvalidHolidayDateRangeException;
 
 final class DateRange
 {
-    private const SECONDS_PER_DAY = 86400;
-
     private int $startDate;
 
     private int $endDate;
@@ -99,8 +97,38 @@ final class DateRange
         return $this->startDate <= $other->endDate && $this->endDate >= $other->startDate;
     }
 
+    /**
+     * Días naturales del rango, ambos incluidos.
+     * Se cuenta por fechas de calendario: dividir segundos entre 86400 falla en los cambios de hora.
+     */
     public function totalDays(): int
     {
-        return (int) (($this->endDate - $this->startDate) / self::SECONDS_PER_DAY) + 1;
+        return self::calendarDaysBetween($this->startDate, $this->endDate);
+    }
+
+    /**
+     * Días del rango que caen dentro del año indicado (p. ej. 28/12–03/01 cuenta 4 en el primer año y 3 en el siguiente).
+     */
+    public function daysInYear(int $year): int
+    {
+        $yearStart = (new \DateTimeImmutable(sprintf('%04d-01-01 00:00:00', $year)))->getTimestamp();
+        $yearEnd = (new \DateTimeImmutable(sprintf('%04d-12-31 00:00:00', $year)))->getTimestamp();
+
+        $start = max($this->startDate, $yearStart);
+        $end = min($this->endDate, $yearEnd);
+
+        if ($end < $start) {
+            return 0;
+        }
+
+        return self::calendarDaysBetween($start, $end);
+    }
+
+    private static function calendarDaysBetween(int $startTimestamp, int $endTimestamp): int
+    {
+        $start = (new \DateTimeImmutable())->setTimestamp($startTimestamp)->setTime(0, 0);
+        $end = (new \DateTimeImmutable())->setTimestamp($endTimestamp)->setTime(0, 0);
+
+        return (int) $start->diff($end)->days + 1;
     }
 }

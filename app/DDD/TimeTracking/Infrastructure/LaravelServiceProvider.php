@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\DDD\TimeTracking\Infrastructure;
 
-use App\DDD\Authorization\Domain\Interface\UserPermissionsCheckerInterface;
 use App\DDD\Authorization\Infrastructure\LaravelServiceProvider as AuthorizationServiceProvider;
 use App\DDD\TimeTracking\Application\Service\TimeTrackingService;
 use App\DDD\TimeTracking\Domain\Interface\ClockInValidatorInterface;
@@ -33,7 +32,6 @@ class LaravelServiceProvider extends ServiceProvider
             return TimeTrackingService::create(
                 $app->make(UserRepositoryInterface::class),
                 $app->make(TimeEntryRepositoryInterface::class),
-                $app->make(UserPermissionsCheckerInterface::class),
                 $app->make(LoggerInterface::class)
             );
         });
